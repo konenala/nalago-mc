@@ -183,6 +183,18 @@ func (b *botClient) logPacket(dir string, pkt pk.Packet) {
 	b.recorder.logPacket(dir, b.recState, pkt)
 }
 
+func (b *botClient) sendPlayBrand() error {
+	buf := &bytes.Buffer{}
+	_, _ = pk.String("vanilla").WriteTo(buf)
+	pkt := pk.Marshal(
+		packetid.ServerboundCustomPayload,
+		pk.Identifier("minecraft:brand"),
+		pk.ByteArray(buf.Bytes()),
+	)
+	b.logPacket("out", pkt)
+	return b.conn.WritePacket(pkt)
+}
+
 func (b *botClient) setRecState(state string) {
 	if b.recorder == nil {
 		return
@@ -242,6 +254,10 @@ func (b *botClient) Connect(ctx context.Context, addr string, options *bot.Conne
 
 	err = b.configuration()
 	if err != nil {
+		return err
+	}
+	// play 階段再送一次 brand custom payload，貼近原版/ mineflayer
+	if err := b.sendPlayBrand(); err != nil {
 		return err
 	}
 	b.setRecState("play")
