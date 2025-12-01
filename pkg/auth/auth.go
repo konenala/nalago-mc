@@ -112,7 +112,7 @@ func (a *Auth) HandleLogin(ctx context.Context) error {
 
 			err = a.WritePacket(pk.Marshal(
 				packetid.ServerboundLoginCustomQueryAnswer,
-				&server.LoginCustomQueryAnswer{MessageID: query.MessageID},
+				&server.LoginCustomQueryAnswer{MessageID: query.MessageID, HasData: false},
 			))
 			if err != nil {
 				return errors.Join(ErrLogin, fmt.Errorf("read login custom query fail: %w", err))

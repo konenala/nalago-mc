@@ -101,6 +101,7 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
+			time.Sleep(2 * time.Millisecond)
 		case packetid.ClientboundConfigResourcePackPush:
 			var pkt client.AddResourcePack
 			err = p.Scan(&pkt)
@@ -118,6 +119,7 @@ func (b *botClient) configuration() (err error) {
 				return err
 			}
 		case packetid.ClientboundConfigResourcePackPop:
+			time.Sleep(2 * time.Millisecond)
 			continue
 		case packetid.ClientboundConfigUpdateEnabledFeatures,
 			packetid.ClientboundConfigRegistryData,
