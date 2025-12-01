@@ -30,6 +30,7 @@ import (
 // handshakeProtocol is the protocol number used in handshake. Default 772.
 // Use SetProtocolVersion to override before calling Connect.
 var handshakeProtocol int32 = 772
+var disableAbilities bool
 
 // handshakeExtra 用於附加到握手主機欄位（例如 Proxy Forwarding Secret）。
 // 留空則不附加。
@@ -46,6 +47,11 @@ func SetProtocolVersion(v int32) {
 // 若伺服器未要求，請保持空字串避免斷線。
 func SetHandshakeExtra(extra string) {
 	handshakeExtra = extra
+}
+
+// SetDisableAbilities 控制是否攔截 PlayerAbilities 封包送出
+func SetDisableAbilities(disable bool) {
+	disableAbilities = disable
 }
 
 type botClient struct {
@@ -153,6 +159,11 @@ func (b *botClient) IsConnected() bool {
 }
 
 func (b *botClient) WritePacket(ctx context.Context, packet server.ServerboundPacket) error {
+	if disableAbilities {
+		if packet.PacketID() == packetid.ServerboundPlayerAbilities {
+			return nil
+		}
+	}
 	err := b.conn.WritePacket(pk.Marshal(packet.PacketID(), packet))
 	if err != nil {
 		return err
