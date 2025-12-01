@@ -68,6 +68,7 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
+			fmt.Printf("[CONFIG] Disconnected: %s\n", reason.String())
 			return errors.New("kicked: " + reason.String())
 		case packetid.ClientboundConfigFinishConfiguration:
 			err = b.conn.WritePacket(pk.Marshal(

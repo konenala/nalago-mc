@@ -27,11 +27,21 @@ import (
 // Use SetProtocolVersion to override before calling Connect.
 var handshakeProtocol int32 = 772
 
+// handshakeExtra 用於附加到握手主機欄位（例如 Proxy Forwarding Secret）。
+// 留空則不附加。
+var handshakeExtra string
+
 // SetProtocolVersion overrides the handshake protocol version (must be >0).
 func SetProtocolVersion(v int32) {
 	if v > 0 {
 		handshakeProtocol = v
 	}
+}
+
+// SetHandshakeExtra 設定握手時附加在 host 後的額外字串（通常為代理轉發密鑰）。
+// 若伺服器未要求，請保持空字串避免斷線。
+func SetHandshakeExtra(extra string) {
+	handshakeExtra = extra
 }
 
 type botClient struct {
@@ -146,6 +156,11 @@ func (b *botClient) HandleGame(ctx context.Context) error {
 }
 
 func (b *botClient) handshake(host string, port uint64) error {
+	// 若設定了附加字串，依照部分代理/轉發插件要求附加於 host（以 NUL 分隔）。
+	if handshakeExtra != "" {
+		host = host + "\x00" + handshakeExtra
+	}
+
 	return b.conn.WritePacket(pk.Marshal(
 		0,
 		pk.VarInt(handshakeProtocol),

@@ -75,6 +75,7 @@ func (a *Auth) HandleLogin(ctx context.Context) error {
 			var reason chat.JsonMessage
 			err = p.Scan(&reason)
 
+			fmt.Printf("[LOGIN] Disconnected: %s\n", chat.Message(reason).ClearString())
 			return errors.Join(ErrKick, fmt.Errorf("kicked by server: %s", chat.Message(reason).ClearString()))
 		case packetid.ClientboundLoginHello:
 			var hello client.LoginHello
