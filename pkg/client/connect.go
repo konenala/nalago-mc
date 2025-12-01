@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"git.konjactw.dev/falloutBot/go-mc/chat"
@@ -12,7 +13,6 @@ import (
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
-	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/server"
 )
 
 func (b *botClient) login() error {
