@@ -167,8 +167,9 @@ func (b *botClient) WritePacket(ctx context.Context, packet server.ServerboundPa
 			return nil
 		}
 	}
-	err := b.conn.WritePacket(pk.Marshal(packet.PacketID(), packet))
-	if err != nil {
+	pkt := pk.Marshal(packet.PacketID(), packet)
+	b.logPacket("out", pkt)
+	if err := b.conn.WritePacket(pkt); err != nil {
 		return err
 	}
 	return nil
