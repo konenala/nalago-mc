@@ -29,7 +29,7 @@ func (b *botClient) login() error {
 
 func (b *botClient) configuration() (err error) {
 	// 進入 configuration 狀態後先送一次 ClientInformation，否則部分伺服器會在發送 registry/feature 前直接踢人
-	if err = b.conn.WritePacket(pk.Marshal(
+	pkt := pk.Marshal(
 		packetid.ServerboundConfigClientInformation,
 		pk.String("en_us"),    // Location
 		pk.Byte(10),           // ViewDistance
@@ -40,7 +40,9 @@ func (b *botClient) configuration() (err error) {
 		pk.Boolean(false),     // EnableTextFiltering
 		pk.Boolean(true),      // AllowListing
 		pk.VarInt(0),          // ParticleStatus: all
-	)); err != nil {
+	)
+	b.logPacket("out", pkt)
+	if err = b.conn.WritePacket(pkt); err != nil {
 		return err
 	}
 
@@ -48,11 +50,13 @@ func (b *botClient) configuration() (err error) {
 	{
 		buf := &bytes.Buffer{}
 		_, _ = pk.String("vanilla").WriteTo(buf)
-		if err = b.conn.WritePacket(pk.Marshal(
+		pkt = pk.Marshal(
 			packetid.ServerboundConfigCustomPayload,
 			pk.Identifier("minecraft:brand"),
 			pk.ByteArray(buf.Bytes()),
-		)); err != nil {
+		)
+		b.logPacket("out", pkt)
+		if err = b.conn.WritePacket(pkt); err != nil {
 			return err
 		}
 	}
@@ -60,6 +64,7 @@ func (b *botClient) configuration() (err error) {
 	var p pk.Packet
 	for {
 		err = b.conn.ReadPacket(&p)
+		b.logPacket("in", p)
 
 		switch packetid.ClientboundPacketID(p.ID) {
 		case packetid.ClientboundConfigDisconnect:
@@ -71,9 +76,9 @@ func (b *botClient) configuration() (err error) {
 			fmt.Printf("[CONFIG] Disconnected: %s\n", reason.String())
 			return errors.New("kicked: " + reason.String())
 		case packetid.ClientboundConfigFinishConfiguration:
-			err = b.conn.WritePacket(pk.Marshal(
-				packetid.ServerboundConfigFinishConfiguration,
-			))
+			pkt = pk.Marshal(packetid.ServerboundConfigFinishConfiguration)
+			b.logPacket("out", pkt)
+			err = b.conn.WritePacket(pkt)
 			return err
 		case packetid.ClientboundConfigKeepAlive:
 			var keepAliveID pk.Long
@@ -81,7 +86,9 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
-			err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigKeepAlive, keepAliveID))
+			pkt = pk.Marshal(packetid.ServerboundConfigKeepAlive, keepAliveID)
+			b.logPacket("out", pkt)
+			err = b.conn.WritePacket(pkt)
 			if err != nil {
 				return err
 			}
@@ -91,13 +98,17 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
-			err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigPong, pingID))
+			pkt = pk.Marshal(packetid.ServerboundConfigPong, pingID)
+			b.logPacket("out", pkt)
+			err = b.conn.WritePacket(pkt)
 			if err != nil {
 				return err
 			}
 
 		case packetid.ClientboundConfigSelectKnownPacks:
-			err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigSelectKnownPacks, pk.VarInt(0)))
+			pkt = pk.Marshal(packetid.ServerboundConfigSelectKnownPacks, pk.VarInt(0))
+			b.logPacket("out", pkt)
+			err = b.conn.WritePacket(pkt)
 			if err != nil {
 				return err
 			}
@@ -109,13 +120,19 @@ func (b *botClient) configuration() (err error) {
 				return err
 			}
 			u := pk.UUID(pkt.UUID)
-			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(3))); err != nil { // accepted
+			pktOut := pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(3))
+			b.logPacket("out", pktOut)
+			if err = b.conn.WritePacket(pktOut); err != nil { // accepted
 				return err
 			}
-			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(4))); err != nil { // downloaded
+			pktOut = pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(4))
+			b.logPacket("out", pktOut)
+			if err = b.conn.WritePacket(pktOut); err != nil { // downloaded
 				return err
 			}
-			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(0))); err != nil { // successfully_loaded
+			pktOut = pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(0))
+			b.logPacket("out", pktOut)
+			if err = b.conn.WritePacket(pktOut); err != nil { // successfully_loaded
 				return err
 			}
 		case packetid.ClientboundConfigResourcePackPop:

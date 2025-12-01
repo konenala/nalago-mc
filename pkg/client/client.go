@@ -3,10 +3,14 @@ package client
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strconv"
+	"sync"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 
@@ -50,10 +54,83 @@ type botClient struct {
 	eventHandler  bot.EventHandler
 	connected     bool
 	authProvider  auth.Provider
+	recorder      *packetRecorder
+	recState      string
 
 	inventory *inventory.Manager
 	world     *world.World
 	player    *player.Player
+}
+
+// packetRecorder 簡易登入階段封包記錄器
+type packetRecorder struct {
+	max     int
+	timeout time.Duration
+	file    string
+	mu      sync.Mutex
+	buf     []packetLog
+	start   time.Time
+	wrote   bool
+}
+
+type packetLog struct {
+	Ts    int64  `json:"ts"`
+	Dir   string `json:"dir"`
+	ID    int32  `json:"id"`
+	State string `json:"state"`
+	Data  string `json:"data"` // hex 編碼的原始封包內容
+}
+
+func newPacketRecorderFromEnv() *packetRecorder {
+	if os.Getenv("DUMP_LOGIN_PKT") != "1" {
+		return nil
+	}
+	max := 500
+	if v, err := strconv.Atoi(os.Getenv("LOGIN_DUMP_MAX")); err == nil && v > 0 {
+		max = v
+	}
+	timeout := 30 * time.Second
+	if v, err := strconv.Atoi(os.Getenv("LOGIN_DUMP_TIMEOUT")); err == nil && v > 0 {
+		timeout = time.Duration(v) * time.Millisecond
+	}
+	file := os.Getenv("LOGIN_DUMP_FILE")
+	if file == "" {
+		file = "login_packets.json"
+	}
+	rec := &packetRecorder{max: max, timeout: timeout, file: file, start: time.Now()}
+	go func() {
+		time.Sleep(timeout)
+		rec.Flush()
+	}()
+	return rec
+}
+
+func (p *packetRecorder) logPacket(dir, state string, pkt pk.Packet) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	if p.wrote || len(p.buf) >= p.max {
+		return
+	}
+	entry := packetLog{
+		Ts:    time.Now().UnixMilli(),
+		Dir:   dir,
+		ID:    pkt.ID,
+		State: state,
+		Data:  fmt.Sprintf("%x", pkt.Data),
+	}
+	p.buf = append(p.buf, entry)
+}
+
+func (p *packetRecorder) Flush() {
+	p.mu.Lock()
+	if p.wrote || len(p.buf) == 0 {
+		p.mu.Unlock()
+		return
+	}
+	p.wrote = true
+	data, _ := json.MarshalIndent(p.buf, "", "  ")
+	p.mu.Unlock()
+	_ = os.WriteFile(p.file, data, 0o644)
 }
 
 func (b *botClient) Player() bot.Player {
@@ -63,6 +140,9 @@ func (b *botClient) Player() bot.Player {
 func (b *botClient) Close(ctx context.Context) error {
 	if err := b.conn.Close(); err != nil {
 		return err
+	}
+	if b.recorder != nil {
+		b.recorder.Flush()
 	}
 
 	return nil
@@ -96,6 +176,20 @@ func (b *botClient) Inventory() bot.InventoryHandler {
 	return b.inventory
 }
 
+func (b *botClient) logPacket(dir string, pkt pk.Packet) {
+	if b.recorder == nil {
+		return
+	}
+	b.recorder.logPacket(dir, b.recState, pkt)
+}
+
+func (b *botClient) setRecState(state string) {
+	if b.recorder == nil {
+		return
+	}
+	b.recState = state
+}
+
 func (b *botClient) Connect(ctx context.Context, addr string, options *bot.ConnectOptions) error {
 	host, portStr, err := net.SplitHostPort(addr)
 	var port uint64
@@ -122,10 +216,13 @@ func (b *botClient) Connect(ctx context.Context, addr string, options *bot.Conne
 			return err
 		}
 	}
-	b.conn, err = dialer.DialMCContext(ctx, addr)
+	baseConn, err := dialer.DialMCContext(ctx, addr)
 	if err != nil {
 		return err
 	}
+
+	b.conn = baseConn
+	b.recState = "handshaking"
 
 	if options != nil && options.FakeHost != "" {
 		host = options.FakeHost
@@ -135,16 +232,19 @@ func (b *botClient) Connect(ctx context.Context, addr string, options *bot.Conne
 	if err != nil {
 		return err
 	}
+	b.setRecState("login")
 
 	err = b.login()
 	if err != nil {
 		return err
 	}
+	b.setRecState("configuration")
 
 	err = b.configuration()
 	if err != nil {
 		return err
 	}
+	b.setRecState("play")
 
 	b.connected = true
 
@@ -160,14 +260,15 @@ func (b *botClient) handshake(host string, port uint64) error {
 	if handshakeExtra != "" {
 		host = host + "\x00" + handshakeExtra
 	}
-
-	return b.conn.WritePacket(pk.Marshal(
+	pkt := pk.Marshal(
 		0,
 		pk.VarInt(handshakeProtocol),
 		pk.String(host),
 		pk.UnsignedShort(port),
 		pk.VarInt(2), // to game state
-	))
+	)
+	b.logPacket("out", pkt)
+	return b.conn.WritePacket(pkt)
 }
 
 func (b *botClient) handlePackets(ctx context.Context) error {
@@ -183,6 +284,7 @@ func (b *botClient) handlePackets(ctx context.Context) error {
 			if err := b.conn.ReadPacket(&p); err != nil {
 				return err
 			}
+			b.logPacket("in", p)
 			pktID := packetid.ClientboundPacketID(p.ID)
 			if pktID == packetid.ClientboundStartConfiguration {
 				err := b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigurationAcknowledged))
@@ -224,6 +326,7 @@ func NewClient(options *bot.ClientOptions) bot.Client {
 		packetHandler: newPacketHandler(),
 		eventHandler:  NewEventHandler(),
 		authProvider:  options.AuthProvider,
+		recorder:      newPacketRecorderFromEnv(),
 	}
 
 	if options.AuthProvider == nil {
