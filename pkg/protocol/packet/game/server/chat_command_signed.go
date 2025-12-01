@@ -17,9 +17,9 @@ type ChatCommandSigned struct {
 	Timestamp          int64
 	Salt               int64
 	ArgumentSignatures []SignedSignatures
-	MessageCount       int32          `mc:"VarInt"`
+	Offset             int32          `mc:"VarInt"`
+	Checksum           int8           `mc:"Byte"`
 	Acknowledged       pk.FixedBitSet `mc:"FixedBitSet" size:"20"`
-	Checksum           int8
 }
 
 func (*ChatCommandSigned) PacketID() packetid.ServerboundPacketID {

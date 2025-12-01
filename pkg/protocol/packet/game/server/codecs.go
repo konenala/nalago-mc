@@ -153,18 +153,18 @@ func (c *Chat) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 	}
-	temp, err = (*packet.VarInt)(&c.MessageCount).ReadFrom(r)
+	temp, err = (*packet.VarInt)(&c.Offset).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Byte)(&c.Checksum).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	c.Acknowledged = packet.NewFixedBitSet(20)
 	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).ReadFrom(r)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	temp, err = (*packet.Byte)(&c.Checksum).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -201,17 +201,17 @@ func (c Chat) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 	}
-	temp, err = (*packet.VarInt)(&c.MessageCount).WriteTo(w)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).WriteTo(w)
+	temp, err = (*packet.VarInt)(&c.Offset).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	temp, err = (*packet.Byte)(&c.Checksum).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -244,12 +244,73 @@ func (c *ChatCommand) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
+	temp, err = (*packet.Long)(&c.Timestamp).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Long)(&c.Salt).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = packet.Array(&c.ArgumentSignatures).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.VarInt)(&c.Offset).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Byte)(&c.Checksum).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	c.Acknowledged = packet.NewFixedBitSet(20)
+	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 	return n, err
 }
 
 func (c ChatCommand) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	temp, err = (*packet.String)(&c.Command).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Long)(&c.Timestamp).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Long)(&c.Salt).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = packet.Array(&c.ArgumentSignatures).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.VarInt)(&c.Offset).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Byte)(&c.Checksum).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -307,18 +368,18 @@ func (c *ChatCommandSigned) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.VarInt)(&c.MessageCount).ReadFrom(r)
+	temp, err = (*packet.VarInt)(&c.Offset).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.Byte)(&c.Checksum).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	c.Acknowledged = packet.NewFixedBitSet(20)
 	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).ReadFrom(r)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	temp, err = (*packet.Byte)(&c.Checksum).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -348,17 +409,17 @@ func (c ChatCommandSigned) WriteTo(w io.Writer) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.VarInt)(&c.MessageCount).WriteTo(w)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).WriteTo(w)
+	temp, err = (*packet.VarInt)(&c.Offset).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	temp, err = (*packet.Byte)(&c.Checksum).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	temp, err = (*packet.FixedBitSet)(&c.Acknowledged).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

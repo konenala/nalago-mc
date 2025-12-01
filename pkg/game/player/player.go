@@ -389,9 +389,7 @@ func (p *Player) OpenMenu(command string) (bot.Container, error) {
 		return nil, fmt.Errorf("client is not initialized")
 	}
 
-	if err := p.c.WritePacket(context.Background(), &server.ChatCommand{
-		Command: command,
-	}); err != nil {
+	if err := p.Command(command); err != nil {
 		return nil, fmt.Errorf("failed to open menu with command '%s': %w", command, err)
 	}
 
@@ -400,18 +398,39 @@ func (p *Player) OpenMenu(command string) (bot.Container, error) {
 }
 
 func (p *Player) Command(msg string) error {
-	return p.Chat("/" + msg)
+	ts := time.Now().UnixMilli()
+	salt := rand.Int63()
+	if salt == 0 {
+		salt = 1
+	}
+	ack := pk.NewFixedBitSet(20)
+
+	return p.c.WritePacket(context.Background(), &server.ChatCommand{
+		Command:            msg,
+		Timestamp:          ts,
+		Salt:               salt,
+		ArgumentSignatures: nil,
+		Offset:             0,
+		Checksum:           1,
+		Acknowledged:       ack,
+	})
 }
 
 func (p *Player) Chat(msg string) error {
-	pkt := &server.Chat{
+	ts := time.Now().UnixMilli()
+	salt := rand.Int63()
+	if salt == 0 {
+		salt = 1
+	}
+	ack := pk.NewFixedBitSet(20)
+
+	return p.c.WritePacket(context.Background(), &server.Chat{
 		Message:      msg,
-		Timestamp:    time.Now().UnixMilli(),
-		Salt:         rand.Int63(),
+		Timestamp:    ts,
+		Salt:         salt,
 		HasSignature: false,
 		Offset:       0,
-		Checksum:     0,
-		Acknowledged: pk.NewFixedBitSet(20),
-	}
-	return p.c.WritePacket(context.Background(), pkt)
+		Checksum:     1,
+		Acknowledged: ack,
+	})
 }
