@@ -53,6 +53,10 @@ func New(c bot.Client) *Player {
 		if !p.Overlay {
 			bot.PublishEvent(c, MessageEvent{Message: p.Content})
 		}
+		// 回送聊天確認，部分聊天插件要求 acknowledgement
+		_ = c.WritePacket(context.Background(), &server.ChatAck{
+			MessageCount: pl.chat.IncSeen(),
+		})
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerPosition) {
 		fmt.Println(p)

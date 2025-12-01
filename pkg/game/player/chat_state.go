@@ -8,6 +8,7 @@ import (
 // 目前僅支援無簽名聊天，checksum 與 ack 都維持最小合法值。
 type chatState struct {
 	pending int32
+	seen    int32
 }
 
 // NextOffset 回傳目前 pending 做為 offset。
@@ -30,4 +31,10 @@ func (s *chatState) AckBitset() pk.FixedBitSet {
 // - 我們目前未追蹤 lastSeen，因此固定回 1。
 func (s *chatState) Checksum() int8 {
 	return 1
+}
+
+// IncSeen 供客戶端收到聊天時增加計數並回傳目前累計。
+func (s *chatState) IncSeen() int32 {
+	s.seen++
+	return s.seen
 }
