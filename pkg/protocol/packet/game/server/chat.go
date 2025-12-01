@@ -12,9 +12,9 @@ type Chat struct {
 	Salt         int64
 	HasSignature bool
 	//opt:optional:HasSignature
-	Signature    []byte `mc:"ByteArray"`
-	Offset       int32  `mc:"VarInt"`
-	Checksum     int8
+	Signature    []byte         `mc:"ByteArray"`
+	Offset       int32          `mc:"VarInt"`
+	Checksum     int8           `mc:"Byte"`
 	Acknowledged pk.FixedBitSet `mc:"FixedBitSet" size:"20"`
 }
 
