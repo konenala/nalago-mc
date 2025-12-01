@@ -24,6 +24,8 @@ type Player struct {
 	entity  *world.Entity
 	stateID int32
 
+	chat chatState
+
 	lastReceivedPacketTime time.Time
 }
 
@@ -403,15 +405,15 @@ func (p *Player) Command(msg string) error {
 	if salt == 0 {
 		salt = 1
 	}
-	ack := pk.NewFixedBitSet(20)
+	ack := p.chat.AckBitset()
 
 	return p.c.WritePacket(context.Background(), &server.ChatCommand{
 		Command:            msg,
 		Timestamp:          ts,
 		Salt:               salt,
 		ArgumentSignatures: nil,
-		Offset:             0,
-		Checksum:           1,
+		Offset:             p.chat.NextOffset(),
+		Checksum:           p.chat.Checksum(),
 		Acknowledged:       ack,
 	})
 }
@@ -422,15 +424,15 @@ func (p *Player) Chat(msg string) error {
 	if salt == 0 {
 		salt = 1
 	}
-	ack := pk.NewFixedBitSet(20)
+	ack := p.chat.AckBitset()
 
 	return p.c.WritePacket(context.Background(), &server.Chat{
 		Message:      msg,
 		Timestamp:    ts,
 		Salt:         salt,
 		HasSignature: false,
-		Offset:       0,
-		Checksum:     1,
+		Offset:       p.chat.NextOffset(),
+		Checksum:     p.chat.Checksum(),
 		Acknowledged: ack,
 	})
 }
