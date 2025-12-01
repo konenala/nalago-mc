@@ -1,6 +1,7 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/server"
 )
 
 func (b *botClient) login() error {
@@ -26,6 +28,35 @@ func (b *botClient) login() error {
 }
 
 func (b *botClient) configuration() (err error) {
+	// 進入 configuration 狀態後先送一次 ClientInformation，否則部分伺服器會在發送 registry/feature 前直接踢人
+	if err = b.conn.WritePacket(pk.Marshal(
+		packetid.ServerboundConfigClientInformation,
+		pk.String("en_us"),    // Location
+		pk.Byte(10),           // ViewDistance
+		pk.VarInt(0),          // ChatMode: enabled
+		pk.Boolean(true),      // ChatColor
+		pk.UnsignedByte(0x7f), // DisplayedSkinParts (全開)
+		pk.VarInt(1),          // MainHand: right
+		pk.Boolean(false),     // EnableTextFiltering
+		pk.Boolean(true),      // AllowListing
+		pk.VarInt(0),          // ParticleStatus: all
+	)); err != nil {
+		return err
+	}
+
+	// 送出 brand custom payload（minecraft:brand）
+	{
+		buf := &bytes.Buffer{}
+		_, _ = pk.String("vanilla").WriteTo(buf)
+		if err = b.conn.WritePacket(pk.Marshal(
+			packetid.ServerboundConfigCustomPayload,
+			pk.Identifier("minecraft:brand"),
+			pk.ByteArray(buf.Bytes()),
+		)); err != nil {
+			return err
+		}
+	}
+
 	var p pk.Packet
 	for {
 		err = b.conn.ReadPacket(&p)
@@ -99,6 +130,8 @@ func (b *botClient) configuration() (err error) {
 			packetid.ClientboundConfigStoreCookie,
 			packetid.ClientboundConfigTransfer,
 			packetid.ClientboundConfigCookieRequest:
+			// 模擬玩家節奏，避免短時間大量回應；亦避免未處理封包阻塞
+			time.Sleep(5 * time.Millisecond)
 			continue
 		default:
 			continue
