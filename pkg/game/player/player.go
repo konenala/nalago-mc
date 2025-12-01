@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"math/rand"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
@@ -399,13 +400,18 @@ func (p *Player) OpenMenu(command string) (bot.Container, error) {
 }
 
 func (p *Player) Command(msg string) error {
-	return p.c.WritePacket(context.Background(), &server.ChatCommand{
-		Command: msg,
-	})
+	return p.Chat("/" + msg)
 }
 
 func (p *Player) Chat(msg string) error {
-	return p.c.WritePacket(context.Background(), &server.Chat{
-		Message: msg,
-	})
+	pkt := &server.Chat{
+		Message:      msg,
+		Timestamp:    time.Now().UnixMilli(),
+		Salt:         rand.Int63(),
+		HasSignature: false,
+		MessageCount: 0,
+		Acknowledged: pk.NewFixedBitSet(20),
+		Checksum:     0,
+	}
+	return p.c.WritePacket(context.Background(), pkt)
 }
