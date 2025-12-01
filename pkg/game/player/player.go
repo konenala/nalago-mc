@@ -409,9 +409,9 @@ func (p *Player) Chat(msg string) error {
 		Timestamp:    time.Now().UnixMilli(),
 		Salt:         rand.Int63(),
 		HasSignature: false,
-		MessageCount: 0,
-		Acknowledged: pk.NewFixedBitSet(20),
+		Offset:       0,
 		Checksum:     0,
+		Acknowledged: pk.NewFixedBitSet(20),
 	}
 	return p.c.WritePacket(context.Background(), pkt)
 }

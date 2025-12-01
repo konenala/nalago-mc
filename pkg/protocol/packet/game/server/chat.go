@@ -12,10 +12,10 @@ type Chat struct {
 	Salt         int64
 	HasSignature bool
 	//opt:optional:HasSignature
-	Signature    []byte         `mc:"ByteArray"`
-	MessageCount int32          `mc:"VarInt"`
-	Acknowledged pk.FixedBitSet `mc:"FixedBitSet" size:"20"`
+	Signature    []byte `mc:"ByteArray"`
+	Offset       int32  `mc:"VarInt"`
 	Checksum     int8
+	Acknowledged pk.FixedBitSet `mc:"FixedBitSet" size:"20"`
 }
 
 func (*Chat) PacketID() packetid.ServerboundPacketID {
