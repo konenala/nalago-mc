@@ -10,6 +10,7 @@ import (
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 )
 
 func (b *botClient) login() error {
@@ -68,6 +69,37 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
+		case packetid.ClientboundConfigResourcePackPush:
+			var pkt client.AddResourcePack
+			err = p.Scan(&pkt)
+			if err != nil {
+				return err
+			}
+			u := pk.UUID(pkt.UUID)
+			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(3))); err != nil { // accepted
+				return err
+			}
+			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(4))); err != nil { // downloaded
+				return err
+			}
+			if err = b.conn.WritePacket(pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(0))); err != nil { // successfully_loaded
+				return err
+			}
+		case packetid.ClientboundConfigResourcePackPop:
+			continue
+		case packetid.ClientboundConfigUpdateEnabledFeatures,
+			packetid.ClientboundConfigRegistryData,
+			packetid.ClientboundConfigUpdateTags,
+			packetid.ClientboundConfigCustomPayload,
+			packetid.ClientboundConfigServerLinks,
+			packetid.ClientboundConfigCustomReportDetails,
+			packetid.ClientboundConfigResetChat,
+			packetid.ClientboundConfigClearDialog,
+			packetid.ClientboundConfigShowDialog,
+			packetid.ClientboundConfigStoreCookie,
+			packetid.ClientboundConfigTransfer,
+			packetid.ClientboundConfigCookieRequest:
+			continue
 		default:
 			continue
 		}
