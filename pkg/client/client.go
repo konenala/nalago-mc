@@ -62,10 +62,13 @@ type botClient struct {
 	authProvider  auth.Provider
 	recorder      *packetRecorder
 	recState      string
+	chatKeys      *ChatKeys
 
 	inventory *inventory.Manager
 	world     *world.World
 	player    *player.Player
+
+	chatSessionSent bool
 }
 
 // packetRecorder 簡易登入階段封包記錄器
@@ -279,6 +282,8 @@ func (b *botClient) Connect(ctx context.Context, addr string, options *bot.Conne
 }
 
 func (b *botClient) HandleGame(ctx context.Context) error {
+	// 進入 play 前先送 chat_session_update（若有密鑰）
+	b.sendChatSessionUpdate()
 	return b.handlePackets(ctx)
 }
 
@@ -354,6 +359,7 @@ func NewClient(options *bot.ClientOptions) bot.Client {
 		eventHandler:  NewEventHandler(),
 		authProvider:  options.AuthProvider,
 		recorder:      newPacketRecorderFromEnv(),
+		chatKeys:      chatKeys,
 	}
 
 	if options.AuthProvider == nil {
@@ -365,4 +371,18 @@ func NewClient(options *bot.ClientOptions) bot.Client {
 	c.player = player.New(c)
 
 	return c
+}
+
+func (b *botClient) sendChatSessionUpdate() {
+	if b.chatSessionSent || b.chatKeys == nil || b.conn == nil {
+		return
+	}
+	pkt := pk.Marshal(
+		packetid.ServerboundChatSessionUpdate,
+		pk.UUID(b.chatKeys.SessionID),
+		b.chatKeys.Public,
+	)
+	b.logPacket("out", pkt)
+	_ = b.conn.WritePacket(pkt)
+	b.chatSessionSent = true
 }
