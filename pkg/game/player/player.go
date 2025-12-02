@@ -12,6 +12,7 @@ import (
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 
 	"git.konjactw.dev/patyhank/minego/pkg/bot"
+	"git.konjactw.dev/patyhank/minego/pkg/crypto"
 	"git.konjactw.dev/patyhank/minego/pkg/game/world"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
@@ -26,15 +27,22 @@ type Player struct {
 
 	chat chatState
 
+	// Chat signing (Minecraft 1.19+)
+	signer       *crypto.ChatSigner
+	messageChain *crypto.MessageChain
+	messageIndex int32
+
 	lastReceivedPacketTime time.Time
 }
 
 // New 創建新的 Player 實例
 func New(c bot.Client) *Player {
 	pl := &Player{
-		c:       c,
-		entity:  &world.Entity{},
-		stateID: 1,
+		c:            c,
+		entity:       &world.Entity{},
+		stateID:      1,
+		messageChain: crypto.NewMessageChain(),
+		messageIndex: 0,
 	}
 
 	c.PacketHandler().AddGenericPacketHandler(func(ctx context.Context, pk client.ClientboundPacket) {
