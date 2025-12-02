@@ -60,20 +60,17 @@ func New(c bot.Client) *Player {
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.SystemChatMessage) {
 		if !p.Overlay {
-			// System messages must be tracked for chat acknowledgment
-			pl.chat.IncSeen(nil)
+			// 系統訊息不參與 lastSeen（與 nmp 行為一致），僅發佈事件
 			bot.PublishEvent(c, MessageEvent{Message: p.Content})
 		}
 	})
 	// Handle player chat messages for seen tracking (important for chat acknowledgment)
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerChat) {
 
-		// ALL chat messages (signed or not) must be tracked for acknowledgment
-		var signature []byte
+		// 只追蹤有簽章的聊天（unsigned 不進入 lastSeen），對齊 nmp 行為
 		if p.HasSignature && len(p.Signature) > 0 {
-			signature = p.Signature
+			pl.chat.IncSeen(p.Signature)
 		}
-		pl.chat.IncSeen(signature)
 
 		// Auto-send acknowledgement if pending > 64
 		if pl.chat.Pending() > 64 {
