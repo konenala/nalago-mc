@@ -60,23 +60,27 @@ func New(c bot.Client) *Player {
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.SystemChatMessage) {
 		if !p.Overlay {
+			// System messages must be tracked for chat acknowledgment
+			pl.chat.IncSeen(nil)
 			bot.PublishEvent(c, MessageEvent{Message: p.Content})
 		}
 	})
 	// Handle player chat messages for seen tracking (important for chat acknowledgment)
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerChat) {
-		// Only track signed messages (mineflayer chat.js:227)
-		// Unsigned messages are not acknowledged
-		if p.HasSignature && len(p.Signature) > 0 {
-			pl.chat.IncSeen(p.Signature)
 
-			// Auto-send acknowledgement if pending > 64 (mineflayer chat.js:227-232)
-			if pl.chat.Pending() > 64 {
-				_ = c.WritePacket(ctx, &server.ChatAck{
-					MessageCount: pl.chat.Pending(),
-				})
-				pl.chat.SetPending(0)
-			}
+		// ALL chat messages (signed or not) must be tracked for acknowledgment
+		var signature []byte
+		if p.HasSignature && len(p.Signature) > 0 {
+			signature = p.Signature
+		}
+		pl.chat.IncSeen(signature)
+
+		// Auto-send acknowledgement if pending > 64
+		if pl.chat.Pending() > 64 {
+			_ = c.WritePacket(ctx, &server.ChatAck{
+				MessageCount: pl.chat.Pending(),
+			})
+			pl.chat.ResetPending()
 		}
 
 		// Note: We don't publish this as MessageEvent since SystemChatMessage already handles it
@@ -458,7 +462,7 @@ func (p *Player) Command(msg string) error {
 		Command:            msg,
 		Timestamp:          ts,
 		Salt:               salt,
-		ArgumentSignatures: nil,
+		ArgumentSignatures: make([]server.SignedSignatures, 0),
 		Offset:             p.chat.NextOffset(),
 		Checksum:           p.chat.Checksum(),
 		Acknowledged:       ackBitset,
