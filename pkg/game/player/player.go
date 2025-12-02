@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
+	"github.com/google/uuid"
 
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 
@@ -39,7 +40,7 @@ type Player struct {
 func New(c bot.Client) *Player {
 	pl := &Player{
 		c:            c,
-		entity:       &world.Entity{},
+		entity:       nil, // Will be initialized when first position packet is received
 		stateID:      1,
 		messageChain: crypto.NewMessageChain(),
 		messageIndex: 0,
@@ -64,6 +65,11 @@ func New(c bot.Client) *Player {
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerPosition) {
 		fmt.Println(p)
+		// Ensure entity is initialized before accessing
+		if pl.entity == nil || pl.entity.Entity == nil {
+			// Initialize player entity with default values
+			pl.entity = world.NewEntity(0, uuid.Nil, 0, mgl64.Vec3{p.X, p.Y, p.Z}, mgl64.Vec2{float64(p.YRot), float64(p.XRot)})
+		}
 		position := pl.entity.Position()
 		if p.Flags&0x01 != 0 {
 			position[0] += p.X
