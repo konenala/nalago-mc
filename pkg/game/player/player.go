@@ -132,6 +132,19 @@ func (p *Player) UpdateStateID(id int32) {
 	p.stateID = id
 }
 
+// SetChatSigner 設置聊天簽名器（用於 Minecraft 1.19+）
+func (p *Player) SetChatSigner(signer *crypto.ChatSigner) {
+	p.signer = signer
+	// Reset message chain when setting new signer
+	p.messageChain.Clear()
+	p.messageIndex = 0
+}
+
+// GetChatSigner 返回當前的聊天簽名器
+func (p *Player) GetChatSigner() *crypto.ChatSigner {
+	return p.signer
+}
+
 // Entity 返回玩家實體
 func (p *Player) Entity() bot.Entity {
 	return p.entity
@@ -415,7 +428,7 @@ func (p *Player) Command(msg string) error {
 	}
 	ack := p.chat.AckBitset()
 
-	return p.c.WritePacket(context.Background(), &server.ChatCommand{
+	commandPacket := &server.ChatCommand{
 		Command:            msg,
 		Timestamp:          ts,
 		Salt:               salt,
@@ -423,7 +436,17 @@ func (p *Player) Command(msg string) error {
 		Offset:             p.chat.NextOffset(),
 		Checksum:           p.chat.Checksum(),
 		Acknowledged:       ack,
-	})
+	}
+
+	// Sign the command if we have a signer
+	// Note: Commands in MC 1.19+ can have per-argument signatures
+	// For now we keep ArgumentSignatures as nil (server will handle unsigned commands)
+	if p.signer != nil && !p.signer.IsExpired() {
+		// Track command attempt in chain even without signature
+		p.messageIndex++
+	}
+
+	return p.c.WritePacket(context.Background(), commandPacket)
 }
 
 func (p *Player) Chat(msg string) error {
@@ -434,7 +457,7 @@ func (p *Player) Chat(msg string) error {
 	}
 	ack := p.chat.AckBitset()
 
-	return p.c.WritePacket(context.Background(), &server.Chat{
+	chatPacket := &server.Chat{
 		Message:      msg,
 		Timestamp:    ts,
 		Salt:         salt,
@@ -442,5 +465,20 @@ func (p *Player) Chat(msg string) error {
 		Offset:       p.chat.NextOffset(),
 		Checksum:     p.chat.Checksum(),
 		Acknowledged: ack,
-	})
+	}
+
+	// Sign the message if we have a signer
+	if p.signer != nil && !p.signer.IsExpired() {
+		signature, err := p.signer.SignChatMessage(msg, ts, salt)
+		if err == nil && signature != nil {
+			chatPacket.HasSignature = true
+			chatPacket.Signature = signature
+
+			// Track message in chain
+			p.messageIndex++
+			p.messageChain.AddMessage(p.messageIndex, signature)
+		}
+	}
+
+	return p.c.WritePacket(context.Background(), chatPacket)
 }
