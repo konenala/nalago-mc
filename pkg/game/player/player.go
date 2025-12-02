@@ -63,6 +63,16 @@ func New(c bot.Client) *Player {
 			bot.PublishEvent(c, MessageEvent{Message: p.Content})
 		}
 	})
+	// Handle player chat messages for seen tracking (important for chat acknowledgment)
+	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerChat) {
+		// Update seen count for chat acknowledgment and track signature
+		var signature []byte
+		if p.HasSignature {
+			signature = p.Signature
+		}
+		pl.chat.IncSeen(signature)
+		// Note: We don't publish this as MessageEvent since SystemChatMessage already handles it
+	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerPosition) {
 		fmt.Println(p)
 		// Ensure entity is initialized before accessing
@@ -485,6 +495,10 @@ func (p *Player) Chat(msg string) error {
 			p.messageChain.AddMessage(p.messageIndex, signature)
 		}
 	}
+
+	// Reset pending count after sending (CRITICAL for chat acknowledgment)
+	// Mineflayer does this in chat.js:415
+	p.chat.ResetPending()
 
 	return p.c.WritePacket(context.Background(), chatPacket)
 }
