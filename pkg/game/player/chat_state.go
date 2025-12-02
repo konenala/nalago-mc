@@ -33,17 +33,28 @@ func (s *chatState) SetPending(value int32) {
 	s.pending = value
 }
 
-// AckBitset 產生 20bit 固定長度的 ack bitset。
-// 每個 bit 代表對應 lastSeen 消息是否被確認。
-// 參考 mineflayer: chat.js:340-362 (getAcknowledgements)
-func (s *chatState) AckBitset() pk.FixedBitSet {
-	bitset := pk.NewFixedBitSet(20)
+// GetAcknowledgements 返回 acknowledgements 數組和 bitset
+// 完全匹配 mineflayer getAcknowledgements() (chat.js:340-362)
+func (s *chatState) GetAcknowledgements() (acknowledgements [][]byte, bitset pk.FixedBitSet) {
+	bitset = pk.NewFixedBitSet(20)
+	acknowledgements = make([][]byte, 0, 20)
+
 	// Mark all seen messages as acknowledged
 	for i := 0; i < 20; i++ {
 		if len(s.lastSeen[i]) > 0 { // Check if signature exists
 			bitset.Set(i, true)
+			acknowledgements = append(acknowledgements, s.lastSeen[i])
 		}
 	}
+
+	return acknowledgements, bitset
+}
+
+// AckBitset 產生 20bit 固定長度的 ack bitset。
+// 每個 bit 代表對應 lastSeen 消息是否被確認。
+// 參考 mineflayer: chat.js:340-362 (getAcknowledgements)
+func (s *chatState) AckBitset() pk.FixedBitSet {
+	_, bitset := s.GetAcknowledgements()
 	return bitset
 }
 

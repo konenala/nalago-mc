@@ -289,8 +289,11 @@ func (b *botClient) HandleGame(ctx context.Context) error {
 
 	// 初始化 chat signer（用於 Minecraft 1.19+ 聊天簽名）
 	if b.chatKeys != nil && len(b.chatKeys.PrivateDER) > 0 {
+		// Get player UUID from auth provider
+		profile := b.authProvider.FetchProfile(ctx)
 		signer, err := crypto.NewChatSigner(
 			b.chatKeys.PrivateDER,
+			profile.UUID,
 			b.chatKeys.SessionID,
 		)
 		if err == nil {

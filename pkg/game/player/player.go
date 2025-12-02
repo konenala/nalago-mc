@@ -450,7 +450,9 @@ func (p *Player) Command(msg string) error {
 	if salt == 0 {
 		salt = 1
 	}
-	ack := p.chat.AckBitset()
+
+	// Get acknowledgements and bitset (same as Chat)
+	_, ackBitset := p.chat.GetAcknowledgements()
 
 	commandPacket := &server.ChatCommand{
 		Command:            msg,
@@ -459,7 +461,7 @@ func (p *Player) Command(msg string) error {
 		ArgumentSignatures: nil,
 		Offset:             p.chat.NextOffset(),
 		Checksum:           p.chat.Checksum(),
-		Acknowledged:       ack,
+		Acknowledged:       ackBitset,
 	}
 
 	// Sign the command if we have a signer
@@ -470,6 +472,9 @@ func (p *Player) Command(msg string) error {
 		p.messageIndex++
 	}
 
+	// Reset pending count after sending (same as Chat)
+	p.chat.ResetPending()
+
 	return p.c.WritePacket(context.Background(), commandPacket)
 }
 
@@ -479,7 +484,9 @@ func (p *Player) Chat(msg string) error {
 	if salt == 0 {
 		salt = 1
 	}
-	ack := p.chat.AckBitset()
+
+	// Get acknowledgements and bitset (mineflayer chat.js:405, 410-413)
+	acknowledgements, ackBitset := p.chat.GetAcknowledgements()
 
 	chatPacket := &server.Chat{
 		Message:      msg,
@@ -488,12 +495,13 @@ func (p *Player) Chat(msg string) error {
 		HasSignature: false,
 		Offset:       p.chat.NextOffset(),
 		Checksum:     p.chat.Checksum(),
-		Acknowledged: ack,
+		Acknowledged: ackBitset,
 	}
 
-	// Sign the message if we have a signer
+	// Sign the message if we have a signer (mineflayer chat.js:410)
 	if p.signer != nil && !p.signer.IsExpired() {
-		signature, err := p.signer.SignChatMessage(msg, ts, salt)
+		// Pass acknowledgements to signature (CRITICAL - mineflayer chat.js:462)
+		signature, err := p.signer.SignChatMessage(msg, ts, salt, acknowledgements)
 		if err == nil && signature != nil {
 			chatPacket.HasSignature = true
 			chatPacket.Signature = signature
