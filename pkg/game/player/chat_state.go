@@ -23,6 +23,16 @@ func (s *chatState) ResetPending() {
 	s.pending = 0
 }
 
+// Pending 返回當前 pending 計數（用於 ChatAck 判斷）
+func (s *chatState) Pending() int32 {
+	return s.pending
+}
+
+// SetPending 設置 pending 計數（用於 ChatAck 重置）
+func (s *chatState) SetPending(value int32) {
+	s.pending = value
+}
+
 // AckBitset 產生 20bit 固定長度的 ack bitset。
 // 每個 bit 代表對應 lastSeen 消息是否被確認。
 // 參考 mineflayer: chat.js:340-362 (getAcknowledgements)

@@ -65,12 +65,20 @@ func New(c bot.Client) *Player {
 	})
 	// Handle player chat messages for seen tracking (important for chat acknowledgment)
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerChat) {
-		// Update seen count for chat acknowledgment and track signature
-		var signature []byte
-		if p.HasSignature {
-			signature = p.Signature
+		// Only track signed messages (mineflayer chat.js:227)
+		// Unsigned messages are not acknowledged
+		if p.HasSignature && len(p.Signature) > 0 {
+			pl.chat.IncSeen(p.Signature)
+
+			// Auto-send acknowledgement if pending > 64 (mineflayer chat.js:227-232)
+			if pl.chat.Pending() > 64 {
+				_ = c.WritePacket(ctx, &server.ChatAck{
+					MessageCount: pl.chat.Pending(),
+				})
+				pl.chat.SetPending(0)
+			}
 		}
-		pl.chat.IncSeen(signature)
+
 		// Note: We don't publish this as MessageEvent since SystemChatMessage already handles it
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerPosition) {
