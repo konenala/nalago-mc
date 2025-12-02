@@ -13,7 +13,8 @@ require (
 require (
 	git.konjactw.dev/falloutBot/go-mc v0.0.0-20250827122940-185020e31ce8
 	github.com/go-gl/mathgl v1.2.0
+	github.com/konjacbot/prismarine-go v0.0.0
 	golang.org/x/net v0.47.0
 )
 
-replace github.com/konjacbot/prismarine-go => ../../prismarine-go
+replace github.com/konjacbot/prismarine-go => ../prismarine-go

@@ -20,6 +20,7 @@ import (
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
 	"git.konjactw.dev/patyhank/minego/pkg/bot"
+	"git.konjactw.dev/patyhank/minego/pkg/crypto"
 	"git.konjactw.dev/patyhank/minego/pkg/game/inventory"
 	"git.konjactw.dev/patyhank/minego/pkg/game/player"
 	"git.konjactw.dev/patyhank/minego/pkg/game/world"
@@ -285,6 +286,19 @@ func (b *botClient) Connect(ctx context.Context, addr string, options *bot.Conne
 func (b *botClient) HandleGame(ctx context.Context) error {
 	// 進入 play 前先送 chat_session_update（若有密鑰）
 	b.sendChatSessionUpdate()
+
+	// 初始化 chat signer（用於 Minecraft 1.19+ 聊天簽名）
+	if b.chatKeys != nil && len(b.chatKeys.PrivateDER) > 0 {
+		signer, err := crypto.NewChatSigner(
+			b.chatKeys.PrivateDER,
+			b.chatKeys.SessionID,
+		)
+		if err == nil {
+			b.player.SetChatSigner(signer)
+		}
+		// 如果創建失敗，靜默忽略（回退到 unsigned chat）
+	}
+
 	return b.handlePackets(ctx)
 }
 
