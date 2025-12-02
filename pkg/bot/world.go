@@ -4,7 +4,6 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/entity"
 	"git.konjactw.dev/falloutBot/go-mc/level/block"
 
 	"git.konjactw.dev/patyhank/minego/pkg/protocol"
@@ -22,13 +21,13 @@ type World interface {
 	Entities() []Entity
 	GetEntity(id int32) Entity
 	GetNearbyEntities(radius int32) []Entity
-	GetEntitiesByType(entityType entity.ID) []Entity
+	GetEntitiesByType(entityType int32) []Entity
 }
 
 type Entity interface {
 	ID() int32
 	UUID() uuid.UUID
-	Type() entity.ID
+	Type() int32
 	Position() mgl64.Vec3
 	Rotation() mgl64.Vec2
 

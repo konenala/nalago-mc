@@ -9,7 +9,6 @@ import (
 	"github.com/go-gl/mathgl/mgl64"
 	"golang.org/x/exp/constraints"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/entity"
 	"git.konjactw.dev/falloutBot/go-mc/level"
 	"git.konjactw.dev/falloutBot/go-mc/level/block"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
@@ -62,15 +61,13 @@ func NewWorld(c bot.Client) *World {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
 
-		w.entities[p.ID] = &Entity{
-			id:         p.ID,
-			entityUUID: p.UUID,
-			entityType: entity.ID(p.Type),
-			pos:        mgl64.Vec3{p.X, p.Y, p.Z},
-			rot:        mgl64.Vec2{pk.Angle(p.XRot).ToDeg(), pk.Angle(p.YRot).ToDeg()},
-			metadata:   nil,
-			equipment:  nil,
-		}
+		w.entities[p.ID] = NewEntity(
+			p.ID,
+			p.UUID,
+			int32(p.Type),
+			mgl64.Vec3{p.X, p.Y, p.Z},
+			mgl64.Vec2{pk.Angle(p.XRot).ToDeg(), pk.Angle(p.YRot).ToDeg()},
+		)
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *cp.RemoveEntities) {
 		w.entityLock.Lock()
@@ -113,7 +110,9 @@ func NewWorld(c bot.Client) *World {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
 		if e, ok := w.entities[p.EntityID]; ok {
-			e.pos = e.pos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
+			currentPos := e.Position()
+			newPos := currentPos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
+			e.SetPosition(newPos)
 		}
 	})
 
@@ -121,7 +120,7 @@ func NewWorld(c bot.Client) *World {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
 		if e, ok := w.entities[p.EntityID]; ok {
-			e.rot = mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)}
+			e.SetRotation(mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)})
 		}
 	})
 
@@ -129,7 +128,9 @@ func NewWorld(c bot.Client) *World {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
 		if e, ok := w.entities[p.EntityID]; ok {
-			e.pos = e.pos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
+			currentPos := e.Position()
+			newPos := currentPos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
+			e.SetPosition(newPos)
 		}
 	})
 
@@ -335,7 +336,7 @@ func (w *World) GetNearbyEntities(radius int32) []bot.Entity {
 	var entities []bot.Entity
 
 	for _, e := range w.entities {
-		sqr := e.pos.Sub(selfPos).LenSqr()
+		sqr := e.Position().Sub(selfPos).LenSqr()
 		if sqr <= float64(radius*radius) {
 			entities = append(entities, e)
 		}
@@ -343,13 +344,13 @@ func (w *World) GetNearbyEntities(radius int32) []bot.Entity {
 	return entities
 }
 
-func (w *World) GetEntitiesByType(entityType entity.ID) []bot.Entity {
+func (w *World) GetEntitiesByType(entityType int32) []bot.Entity {
 	w.entityLock.Lock()
 	defer w.entityLock.Unlock()
 
 	var entities []bot.Entity
 	for _, e := range w.entities {
-		if e.entityType == entityType {
+		if e.Type() == entityType {
 			entities = append(entities, e)
 		}
 	}
