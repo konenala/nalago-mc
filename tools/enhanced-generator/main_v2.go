@@ -762,6 +762,12 @@ func mapType(t string) string {
 		"vec3f64":                 "[3]float64",
 		"vec3f":                   "[3]float32",
 		"vec3i":                   "[3]int32",
+		"HashedSlot":              "interface{}", // TODO: 实现 HashedSlot 类型
+		"UntrustedSlot":           "interface{}", // TODO: 实现 UntrustedSlot 类型
+		"MovementFlags":           "uint8",       // bitflags
+		"RecipeBookSetting":       "interface{}", // TODO: 实现 RecipeBookSetting 类型
+		"tags":                    "interface{}", // TODO: 实现 tags 类型
+		"Particle":                "interface{}", // TODO: 实现 Particle 类型
 	}
 
 	if mapped, ok := mapping[t]; ok {
@@ -1005,7 +1011,9 @@ func generateSwitchField(fieldName string, switchDef []interface{}, parentFields
 		return generateFallbackSwitchField(fieldName, cfg)
 	}
 	var compareFieldType string
+	var compareFieldIsPointer bool
 	if pf := findParentField(parentFields, compareField); pf != nil {
+		compareFieldIsPointer = strings.HasPrefix(pf.GoType, "*")
 		compareFieldType = strings.TrimPrefix(pf.GoType, "*")
 	}
 
@@ -1015,7 +1023,7 @@ func generateSwitchField(fieldName string, switchDef []interface{}, parentFields
 	}
 
 	// 其他情況視為 union
-	return generateUnionSwitchField(fieldName, cfg, compareField, compareFieldType)
+	return generateUnionSwitchField(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer)
 }
 
 // 依 compareTo 尋找父欄位
@@ -1150,7 +1158,7 @@ func generateDirectOptionalWrite(fieldName, innerType string) []string {
 }
 
 // 生成 union switch 欄位
-func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string) *PacketField {
+func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool) *PacketField {
 	comment := fmt.Sprintf("// Switch 基於 %s：\n", compareField)
 	for v, t := range cfg.Fields {
 		comment += fmt.Sprintf("//   %v -> %v\n", v, t)
@@ -1163,15 +1171,22 @@ func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField,
 		Name:      toPascalCase(fieldName),
 		GoType:    "interface{}",
 		Comment:   comment,
-		ReadCode:  generateUnionReadCode(fieldName, cfg, compareField, compareFieldType),
+		ReadCode:  generateUnionReadCode(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer),
 		WriteCode: generateUnionWriteCode(fieldName, cfg),
 	}
 }
 
-func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string) []string {
+func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool) []string {
 	targetField := toPascalCase(fieldName)
+
+	// 如果 compareField 是指针类型，需要解引用
+	switchExpr := fmt.Sprintf("p.%s", compareField)
+	if compareFieldIsPointer {
+		switchExpr = fmt.Sprintf("*p.%s", compareField)
+	}
+
 	code := []string{
-		fmt.Sprintf("switch p.%s {", compareField),
+		fmt.Sprintf("switch %s {", switchExpr),
 	}
 
 	for rawKey, rawType := range cfg.Fields {
@@ -1261,7 +1276,8 @@ func buildCompareLiteral(v interface{}, compareFieldType string) string {
 		}
 		return fmt.Sprintf("%f", val)
 	case string:
-		if compareFieldType == "string" {
+		if compareFieldType == "string" || compareFieldType == "interface{}" {
+			// string 类型或 interface{} (mapper) 类型，需要加引号
 			return fmt.Sprintf("%q", val)
 		}
 		// 非字串就直接回傳原字串（假設為數值/枚舉）
@@ -1338,6 +1354,16 @@ func generateValueReadLines(typeName, target string) []string {
 			"		" + target + "[i] = float32(f)",
 			"	}",
 		}
+	case "vec3i":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		var v pk.VarInt",
+			"		temp, err = v.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		" + target + "[i] = int32(v)",
+			"	}",
+		}
 	case "void":
 		return []string{}
 	default:
@@ -1394,6 +1420,14 @@ func generateValueWriteLines(typeName, valueExpr string) []string {
 		return []string{
 			"	for i := 0; i < 3; i++ {",
 			"		temp, err = pk.Float(" + valueExpr + "[i]).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		}
+	case "vec3i":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		temp, err = pk.VarInt(" + valueExpr + "[i]).WriteTo(w)",
 			"		n += temp",
 			"		if err != nil { return n, err }",
 			"	}",
@@ -1855,12 +1889,23 @@ func toPascalCase(s string) string {
 // 收集需要的導入
 func (p *PacketDef) collectImports() {
 	p.Imports["\"io\""] = true
-	p.Imports["\"fmt\""] = true
 	p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid\""] = true
-	p.Imports["pk \"git.konjactw.dev/falloutBot/go-mc/net/packet\""] = true
 
 	needSlot := false
 	needMetadata := false
+	needFmt := false
+	needPk := false
+
+	checkFmtUsage := func(code []string) {
+		for _, line := range code {
+			if strings.Contains(line, "fmt.") {
+				needFmt = true
+			}
+			if strings.Contains(line, "pk.") {
+				needPk = true
+			}
+		}
+	}
 
 	addFieldImports := func(fields []PacketField) {
 		for _, f := range fields {
@@ -1878,11 +1923,40 @@ func (p *PacketDef) collectImports() {
 		addFieldImports(s.Fields)
 	}
 
+	// 检查是否使用了 fmt
+	for _, f := range p.Fields {
+		checkFmtUsage(f.ReadCode)
+		checkFmtUsage(f.WriteCode)
+		if needFmt {
+			break
+		}
+	}
+	if !needFmt {
+		for _, s := range p.SubStructs {
+			for _, f := range s.Fields {
+				checkFmtUsage(f.ReadCode)
+				checkFmtUsage(f.WriteCode)
+				if needFmt {
+					break
+				}
+			}
+			if needFmt {
+				break
+			}
+		}
+	}
+
+	if needPk {
+		p.Imports["pk \"git.konjactw.dev/falloutBot/go-mc/net/packet\""] = true
+	}
 	if needSlot {
 		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/slot\""] = true
 	}
 	if needMetadata {
 		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata\""] = true
+	}
+	if needFmt {
+		p.Imports["\"fmt\""] = true
 	}
 }
 
