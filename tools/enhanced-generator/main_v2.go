@@ -1290,6 +1290,10 @@ func generateReadCode(fieldName, typeName string, optional bool) []string {
 		return []string{"// TODO: Read " + fieldName + " (unsupported type " + typeName + ")"}
 	}
 	varName := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:])
+	// 避免與 package 名稱衝突導致誤判 import
+	if varName == "metadata" {
+		varName = "metadataVal"
+	}
 	var code []string
 
 	switch typeName {
