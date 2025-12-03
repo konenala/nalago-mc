@@ -1,3 +1,7 @@
+//go:build ignore
+// +build ignore
+
+// 備用舊版入口，預設不參與編譯／測試。保留以便比對或回退。
 package main
 
 import (

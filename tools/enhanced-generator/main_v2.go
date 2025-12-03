@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"text/template"
 )
@@ -66,6 +67,7 @@ var (
 	direction    = flag.String("direction", "client", "client or server")
 	verbose      = flag.Bool("v", false, "Verbose output")
 	genCodec     = flag.Bool("codec", true, "Generate ReadFrom/WriteTo methods")
+	packetidPkg  = flag.String("packetid", "git.konjactw.dev/falloutBot/go-mc/data/packetid", "packetid import path")
 )
 
 // 全局变量：收集所有生成的结构体名称，避免重复
@@ -212,7 +214,7 @@ func parseFields(fields []interface{}, globalTypes map[string]interface{}, paren
 		name, _ := fieldMap["name"].(string)
 		fieldType := fieldMap["type"]
 
-		field := parseFieldType(name, fieldType, globalTypes, parentName, packet)
+		field := parseFieldType(name, fieldType, globalTypes, parentName, packet, result)
 		if field != nil {
 			result = append(result, *field)
 		}
@@ -221,7 +223,7 @@ func parseFields(fields []interface{}, globalTypes map[string]interface{}, paren
 	return result
 }
 
-func parseFieldType(name string, fieldType interface{}, globalTypes map[string]interface{}, parentName string, packet *PacketDef) *PacketField {
+func parseFieldType(name string, fieldType interface{}, globalTypes map[string]interface{}, parentName string, packet *PacketDef, parentFields []PacketField) *PacketField {
 	field := &PacketField{
 		Name:      toPascalCase(name),
 		ReadCode:  []string{},
@@ -276,11 +278,8 @@ func parseFieldType(name string, fieldType interface{}, globalTypes map[string]i
 				}
 
 			case "switch":
-				// Switch 類型 - 使用 interface{}，标注需要手动实现
-				field.GoType = "interface{}"
-				field.Comment = "// TODO: Switch type - conditional field based on other field value"
-				field.ReadCode = []string{"// TODO: Implement switch field read"}
-				field.WriteCode = []string{"// TODO: Implement switch field write"}
+				// Switch 類型 - 根據 compareTo 產生對應欄位
+				return generateSwitchField(name, t, parentFields)
 
 			case "buffer":
 				// ByteArray
@@ -822,6 +821,372 @@ func mapTypeToPkType(t string) string {
 		return mapped
 	}
 	return t
+}
+
+// SwitchConfig Switch 類型的配置
+type SwitchConfig struct {
+	CompareTo string                 // 比較的字段路徑，如 "flags/has_background_texture"
+	Fields    map[string]interface{} // 條件值 -> 類型映射
+	Default   string                 // 預設類型
+}
+
+// 解析 switch 配置
+func parseSwitchConfig(switchDef []interface{}) *SwitchConfig {
+	if len(switchDef) < 2 {
+		return nil
+	}
+
+	configMap, ok := switchDef[1].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	cfg := &SwitchConfig{}
+	if compareTo, ok := configMap["compareTo"].(string); ok {
+		cfg.CompareTo = compareTo
+	}
+	if fields, ok := configMap["fields"].(map[string]interface{}); ok {
+		cfg.Fields = fields
+	}
+	if def, ok := configMap["default"].(string); ok {
+		cfg.Default = def
+	}
+	return cfg
+}
+
+// 產生 switch 欄位
+func generateSwitchField(fieldName string, switchDef []interface{}, parentFields []PacketField) *PacketField {
+	cfg := parseSwitchConfig(switchDef)
+	if cfg == nil {
+		return generateFallbackSwitchField(fieldName, nil)
+	}
+
+	compareField, bitFlag := parseSwitchCompareTo(cfg.CompareTo, parentFields)
+	if compareField == "" {
+		return generateFallbackSwitchField(fieldName, cfg)
+	}
+	var compareFieldType string
+	if pf := findParentField(parentFields, compareField); pf != nil {
+		compareFieldType = strings.TrimPrefix(pf.GoType, "*")
+	}
+
+	// 單一條件 + default void → 可視為 optional
+	if len(cfg.Fields) == 1 && cfg.Default == "void" {
+		return generateOptionalSwitchField(fieldName, cfg, compareField, compareFieldType, bitFlag)
+	}
+
+	// 其他情況視為 union
+	return generateUnionSwitchField(fieldName, cfg, compareField, compareFieldType)
+}
+
+// 依 compareTo 尋找父欄位
+func findParentField(parentFields []PacketField, name string) *PacketField {
+	for i := range parentFields {
+		if parentFields[i].Name == name {
+			return &parentFields[i]
+		}
+	}
+	return nil
+}
+
+// 解析 compareTo（支援 "flags/xxx" 形式）
+func parseSwitchCompareTo(compareTo string, parentFields []PacketField) (fieldName string, bitFlag int) {
+	parts := strings.Split(compareTo, "/")
+	if len(parts) == 1 {
+		return toPascalCase(parts[0]), -1
+	}
+
+	fieldName = toPascalCase(parts[0])
+	// 支援 "flags/0" 這類直接指定位序
+	if pos, err := strconv.Atoi(parts[1]); err == nil && pos >= 0 {
+		return fieldName, pos
+	}
+	// 無法解析時回退
+	return fieldName, -1
+}
+
+// 生成 optional switch
+func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, bitFlag int) *PacketField {
+	var innerType string
+	var compareVal interface{}
+	for k, v := range cfg.Fields {
+		if t, ok := v.(string); ok {
+			innerType = t
+			compareVal = k
+			break
+		}
+	}
+	if innerType == "" {
+		return generateFallbackSwitchField(fieldName, cfg)
+	}
+
+	field := &PacketField{
+		Name:     toPascalCase(fieldName),
+		GoType:   "*" + mapType(innerType),
+		Optional: true,
+		Comment:  fmt.Sprintf("// Optional，當 %s 符合條件時出現", compareField),
+	}
+
+	compareLiteral := buildCompareLiteral(compareVal, compareFieldType)
+	if bitFlag >= 0 {
+		field.ReadCode = generateBitFlagOptionalRead(field.Name, compareField, bitFlag, innerType)
+		field.WriteCode = generateBitFlagOptionalWrite(field.Name, compareField, bitFlag, innerType)
+	} else {
+		field.ReadCode = generateDirectOptionalRead(field.Name, compareField, compareLiteral, innerType)
+		field.WriteCode = generateDirectOptionalWrite(field.Name, innerType)
+	}
+	return field
+}
+
+// 基於位元旗標的 optional 讀取
+func generateBitFlagOptionalRead(fieldName, flagField string, bitPos int, innerType string) []string {
+	code := []string{
+		fmt.Sprintf("// 旗標存在才讀取 %s", fieldName),
+		fmt.Sprintf("if p.%s & (1 << %d) != 0 {", flagField, bitPos),
+		fmt.Sprintf("	var val %s", mapType(innerType)),
+	}
+
+	code = append(code, generateValueReadLines(innerType, "val")...)
+	code = append(code,
+		fmt.Sprintf("	p.%s = &val", fieldName),
+		"}",
+	)
+	return code
+}
+
+// 基於位元旗標的 optional 寫入
+func generateBitFlagOptionalWrite(fieldName, flagField string, bitPos int, innerType string) []string {
+	code := []string{
+		fmt.Sprintf("// 若欄位存在則寫入 %s", fieldName),
+		fmt.Sprintf("if p.%s != nil {", fieldName),
+	}
+	code = append(code, generateValueWriteLines(innerType, "*p."+fieldName)...)
+	code = append(code,
+		"	if err != nil { return n, err }",
+		"}",
+	)
+	return code
+}
+
+// 基於直接欄位比較的 optional 讀取
+func generateDirectOptionalRead(fieldName, compareField, compareLiteral, innerType string) []string {
+	code := []string{
+		fmt.Sprintf("// 當 %s == %s 時讀取 %s", compareField, compareLiteral, fieldName),
+		fmt.Sprintf("if p.%s == %s {", compareField, compareLiteral),
+		fmt.Sprintf("	var val %s", mapType(innerType)),
+	}
+	code = append(code, generateValueReadLines(innerType, "val")...)
+	code = append(code,
+		fmt.Sprintf("	p.%s = &val", fieldName),
+		"}",
+	)
+	return code
+}
+
+// 基於直接欄位比較的 optional 寫入
+func generateDirectOptionalWrite(fieldName, innerType string) []string {
+	code := []string{
+		fmt.Sprintf("if p.%s != nil {", fieldName),
+	}
+	code = append(code, generateValueWriteLines(innerType, "*p."+fieldName)...)
+	code = append(code,
+		"	if err != nil { return n, err }",
+		"}",
+	)
+	return code
+}
+
+// 生成 union switch 欄位
+func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string) *PacketField {
+	comment := fmt.Sprintf("// Switch 基於 %s：\n", compareField)
+	for v, t := range cfg.Fields {
+		comment += fmt.Sprintf("//   %v -> %v\n", v, t)
+	}
+	if cfg.Default != "" {
+		comment += fmt.Sprintf("//   default -> %s", cfg.Default)
+	}
+
+	return &PacketField{
+		Name:      toPascalCase(fieldName),
+		GoType:    "interface{}",
+		Comment:   comment,
+		ReadCode:  generateUnionReadCode(fieldName, cfg, compareField, compareFieldType),
+		WriteCode: generateUnionWriteCode(fieldName, cfg),
+	}
+}
+
+func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string) []string {
+	code := []string{
+		fmt.Sprintf("switch p.%s {", compareField),
+	}
+
+	for rawKey, rawType := range cfg.Fields {
+		typeStr, ok := rawType.(string)
+		if !ok {
+			continue
+		}
+		valueLiteral := buildCompareLiteral(rawKey, compareFieldType)
+		if valueLiteral == "" {
+			continue
+		}
+
+		code = append(code,
+			fmt.Sprintf("case %s:", valueLiteral),
+			fmt.Sprintf("	var val %s", mapType(typeStr)),
+		)
+		code = append(code, generateValueReadLines(typeStr, "val")...)
+		code = append(code, fmt.Sprintf("	p.%s = val", fieldName))
+	}
+
+	if cfg.Default != "" && cfg.Default != "void" {
+		code = append(code,
+			"default:",
+			fmt.Sprintf("	var val %s", mapType(cfg.Default)),
+		)
+		code = append(code, generateValueReadLines(cfg.Default, "val")...)
+		code = append(code, fmt.Sprintf("	p.%s = val", fieldName))
+	} else {
+		code = append(code,
+			"default:",
+			"	// 無對應負載",
+		)
+	}
+
+	code = append(code, "}")
+	return code
+}
+
+func generateUnionWriteCode(fieldName string, cfg *SwitchConfig) []string {
+	code := []string{
+		fmt.Sprintf("switch v := p.%s.(type) {", fieldName),
+	}
+
+	seen := map[string]bool{}
+	for _, rawType := range cfg.Fields {
+		typeStr, ok := rawType.(string)
+		if !ok {
+			continue
+		}
+		goType := mapType(typeStr)
+		if seen[goType] {
+			continue
+		}
+		seen[goType] = true
+
+		code = append(code, fmt.Sprintf("case %s:", goType))
+		code = append(code, generateValueWriteLines(typeStr, "v")...)
+		code = append(code, "	if err != nil { return n, err }")
+	}
+
+	if cfg.Default != "" && cfg.Default != "void" {
+		goType := mapType(cfg.Default)
+		if !seen[goType] {
+			code = append(code, fmt.Sprintf("case %s:", goType))
+			code = append(code, generateValueWriteLines(cfg.Default, "v")...)
+			code = append(code, "	if err != nil { return n, err }")
+		}
+	}
+
+	code = append(code,
+		"default:",
+		fmt.Sprintf("	return n, fmt.Errorf(\"unsupported switch type for %s: %T\", \"%s\", p.%s)", fieldName, fieldName, fieldName),
+		"}",
+	)
+	return code
+}
+
+// 建立比較值字面
+func buildCompareLiteral(v interface{}, compareFieldType string) string {
+	switch val := v.(type) {
+	case bool:
+		return fmt.Sprintf("%t", val)
+	case float64:
+		if val == float64(int64(val)) {
+			return fmt.Sprintf("%d", int64(val))
+		}
+		return fmt.Sprintf("%f", val)
+	case string:
+		if compareFieldType == "string" {
+			return fmt.Sprintf("%q", val)
+		}
+		// 非字串就直接回傳原字串（假設為數值/枚舉）
+		return val
+	default:
+		return fmt.Sprintf("%v", val)
+	}
+}
+
+// 產生針對指定型別的讀取片段，賦值給 target 變數
+func generateValueReadLines(typeName, target string) []string {
+	switch typeName {
+	case "string", "pstring":
+		return []string{
+			"	var elem pk.String",
+			"	temp, err = elem.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	" + target + " = string(elem)",
+		}
+	case "varint", "varlong":
+		return []string{
+			"	var elem pk.VarInt",
+			"	temp, err = elem.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	" + target + " = int32(elem)",
+		}
+	case "bool":
+		return []string{
+			"	var elem pk.Boolean",
+			"	temp, err = elem.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	" + target + " = bool(elem)",
+		}
+	default:
+		return []string{
+			"	temp, err = (*pk." + mapTypeToPkType(typeName) + ")(&" + target + ").ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		}
+	}
+}
+
+// 產生針對指定型別的寫入片段，資料來自 valueExpr
+func generateValueWriteLines(typeName, valueExpr string) []string {
+	switch typeName {
+	case "string", "pstring":
+		return []string{
+			"	temp, err = pk.String(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	case "varint", "varlong":
+		return []string{
+			"	temp, err = pk.VarInt(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	case "bool":
+		return []string{
+			"	temp, err = pk.Boolean(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	default:
+		return []string{
+			"	temp, err = pk." + mapTypeToPkType(typeName) + "(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	}
+}
+
+// 回退 switch 欄位（無法解析時）
+func generateFallbackSwitchField(fieldName string, cfg *SwitchConfig) *PacketField {
+	return &PacketField{
+		Name:      toPascalCase(fieldName),
+		GoType:    "interface{}",
+		Comment:   "// TODO: Switch type - conditional field based on other field value",
+		ReadCode:  []string{"// TODO: Implement switch field read"},
+		WriteCode: []string{"// TODO: Implement switch field write"},
+	}
 }
 
 // 生成寫入代碼
