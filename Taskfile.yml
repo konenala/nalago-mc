@@ -1,0 +1,30 @@
+version: '3'
+
+vars:
+  PROTOCOL_JSON: '{{.PROTOCOL_JSON | default "E:/bot編寫/go-mc/minecraft-data-pc-1_21_10/data/pc/1.21.10/protocol.json"}}'
+  GENERATOR: tools/enhanced-generator/main_v2.go
+  OUTPUT_BASE: pkg/protocol/packet/game
+
+tasks:
+  build:gen:
+    desc: 編譯 enhanced-generator.exe（固定輸出，避免 go run 觸發防毒）
+    cmds:
+      - powershell -NoLogo -Command "$env:GOCACHE='{{.PWD}}/.gocache'; $env:GOMODCACHE='{{.PWD}}/.gomodcache'; $env:TEMP='{{.PWD}}/.tmp'; $env:TMP='{{.PWD}}/.tmp'; mkdir {{.PWD}}/.gocache,{{.PWD}}/.gomodcache,{{.PWD}}/.tmp -Force | Out-Null; go build -o tools/enhanced-generator/enhanced-generator.exe {{.GENERATOR}}"
+
+  gen:client:
+    desc: 使用編譯好的 enhanced-generator.exe 產生 Client 封包
+    deps: [build:gen]
+    cmds:
+      - powershell -NoLogo -Command "tools/enhanced-generator/enhanced-generator.exe -protocol \"{{.PROTOCOL_JSON}}\" -output \"{{.OUTPUT_BASE}}/client\" -direction client -codec=true -v"
+
+  gen:server:
+    desc: 使用編譯好的 enhanced-generator.exe 產生 Server 封包
+    deps: [build:gen]
+    cmds:
+      - powershell -NoLogo -Command "tools/enhanced-generator/enhanced-generator.exe -protocol \"{{.PROTOCOL_JSON}}\" -output \"{{.OUTPUT_BASE}}/server\" -direction server -codec=true -v"
+
+  gen:all:
+    desc: 一次產生 Client/Server 封包
+    deps:
+      - gen:client
+      - gen:server
