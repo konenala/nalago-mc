@@ -34,14 +34,14 @@ func (p *SetDifficulty) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 2:
-		p.NewDifficulty = "normal"
-	case 3:
-		p.NewDifficulty = "hard"
 	case 0:
 		p.NewDifficulty = "peaceful"
 	case 1:
 		p.NewDifficulty = "easy"
+	case 2:
+		p.NewDifficulty = "normal"
+	case 3:
+		p.NewDifficulty = "hard"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for NewDifficulty", mapperVal)
 	}
@@ -55,18 +55,6 @@ func (p SetDifficulty) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.NewDifficulty {
-	case "normal":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "hard":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "peaceful":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
@@ -75,6 +63,18 @@ func (p SetDifficulty) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "easy":
 		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "normal":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "hard":
+		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

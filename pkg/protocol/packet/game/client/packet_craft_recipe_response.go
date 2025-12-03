@@ -15,11 +15,11 @@ type CraftRecipeResponseRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
+	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
 	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 
 	Data interface{}
 }
@@ -36,16 +36,16 @@ func (p *CraftRecipeResponseRecipeDisplay) ReadFrom(r io.Reader) (n int64, err e
 		return n, err
 	}
 	switch mapperVal {
+	case 3:
+		p.Type = "stonecutter"
+	case 4:
+		p.Type = "smithing"
 	case 0:
 		p.Type = "crafting_shapeless"
 	case 1:
 		p.Type = "crafting_shaped"
 	case 2:
 		p.Type = "furnace"
-	case 3:
-		p.Type = "stonecutter"
-	case 4:
-		p.Type = "smithing"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -64,6 +64,18 @@ func (p CraftRecipeResponseRecipeDisplay) WriteTo(w io.Writer) (n int64, err err
 	_ = temp
 
 	switch p.Type {
+	case "stonecutter":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "smithing":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "crafting_shapeless":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
@@ -78,18 +90,6 @@ func (p CraftRecipeResponseRecipeDisplay) WriteTo(w io.Writer) (n int64, err err
 		}
 	case "furnace":
 		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stonecutter":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smithing":
-		temp, err = pk.VarInt(4).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

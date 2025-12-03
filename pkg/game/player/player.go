@@ -76,7 +76,7 @@ func New(c bot.Client) *Player {
 
 	bot.AddHandler(c, func(ctx context.Context, p *client.KeepAlive) {
 		_ = c.WritePacket(ctx, &server.KeepAlive{
-			ID: p.ID,
+			ID: p.KeepAliveId,
 		})
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.Disconnect) {

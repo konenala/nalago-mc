@@ -82,14 +82,14 @@ type DeclareRecipesStoneCutterRecipesEntrySlotDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
+	//   with_remainder -> [container [map[name:input type:SlotDisplay] map[name:remainder type:SlotDisplay]]]
+	//   composite -> [array map[countType:varint type:SlotDisplay]]
 	//   empty -> void
 	//   any_fuel -> void
 	//   item -> varint
 	//   item_stack -> Slot
 	//   tag -> string
 	//   smithing_trim -> [container [map[name:base type:SlotDisplay] map[name:material type:SlotDisplay] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
-	//   with_remainder -> [container [map[name:input type:SlotDisplay] map[name:remainder type:SlotDisplay]]]
-	//   composite -> [array map[countType:varint type:SlotDisplay]]
 
 	Data interface{}
 }
@@ -106,12 +106,6 @@ func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader)
 		return n, err
 	}
 	switch mapperVal {
-	case 1:
-		p.Type = "any_fuel"
-	case 2:
-		p.Type = "item"
-	case 3:
-		p.Type = "item_stack"
 	case 4:
 		p.Type = "tag"
 	case 5:
@@ -122,17 +116,17 @@ func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader)
 		p.Type = "composite"
 	case 0:
 		p.Type = "empty"
+	case 1:
+		p.Type = "any_fuel"
+	case 2:
+		p.Type = "item"
+	case 3:
+		p.Type = "item_stack"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
 
 	switch p.Type {
-	case "empty":
-		var val struct{}
-		p.Data = val
-	case "any_fuel":
-		var val struct{}
-		p.Data = val
 	case "item":
 		var val int32
 		var elem pk.VarInt
@@ -161,6 +155,12 @@ func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader)
 		}
 		val = string(elem)
 		p.Data = val
+	case "empty":
+		var val struct{}
+		p.Data = val
+	case "any_fuel":
+		var val struct{}
+		p.Data = val
 	default:
 		// 無對應負載
 	}
@@ -174,24 +174,6 @@ func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (
 	_ = temp
 
 	switch p.Type {
-	case "any_fuel":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_stack":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "tag":
 		temp, err = pk.VarInt(4).WriteTo(w)
 		n += temp
@@ -218,6 +200,24 @@ func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (
 		}
 	case "empty":
 		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "any_fuel":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item_stack":
+		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

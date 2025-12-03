@@ -15,11 +15,11 @@ type RecipeBookAddEntriesEntryRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
+	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
-	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 
 	Data interface{}
 }
@@ -36,16 +36,16 @@ func (p *RecipeBookAddEntriesEntryRecipeDisplay) ReadFrom(r io.Reader) (n int64,
 		return n, err
 	}
 	switch mapperVal {
-	case 0:
-		p.Type = "crafting_shapeless"
-	case 1:
-		p.Type = "crafting_shaped"
 	case 2:
 		p.Type = "furnace"
 	case 3:
 		p.Type = "stonecutter"
 	case 4:
 		p.Type = "smithing"
+	case 0:
+		p.Type = "crafting_shapeless"
+	case 1:
+		p.Type = "crafting_shaped"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -64,18 +64,6 @@ func (p RecipeBookAddEntriesEntryRecipeDisplay) WriteTo(w io.Writer) (n int64, e
 	_ = temp
 
 	switch p.Type {
-	case "crafting_shapeless":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crafting_shaped":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "furnace":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
@@ -90,6 +78,18 @@ func (p RecipeBookAddEntriesEntryRecipeDisplay) WriteTo(w io.Writer) (n int64, e
 		}
 	case "smithing":
 		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crafting_shapeless":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crafting_shaped":
+		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -150,32 +150,32 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 		return n, err
 	}
 	switch mapperVal {
+	case 10:
+		p.Category = "stonecutter"
+	case 11:
+		p.Category = "smithing"
 	case 1:
 		p.Category = "crafting_redstone"
 	case 3:
 		p.Category = "crafting_misc"
 	case 4:
 		p.Category = "furnace_food"
-	case 7:
-		p.Category = "blast_furnace_blocks"
-	case 9:
-		p.Category = "smoker_food"
+	case 5:
+		p.Category = "furnace_blocks"
+	case 8:
+		p.Category = "blast_furnace_misc"
 	case 12:
 		p.Category = "campfire"
 	case 0:
 		p.Category = "crafting_building_blocks"
 	case 2:
 		p.Category = "crafting_equipment"
-	case 5:
-		p.Category = "furnace_blocks"
 	case 6:
 		p.Category = "furnace_misc"
-	case 8:
-		p.Category = "blast_furnace_misc"
-	case 10:
-		p.Category = "stonecutter"
-	case 11:
-		p.Category = "smithing"
+	case 7:
+		p.Category = "blast_furnace_blocks"
+	case 9:
+		p.Category = "smoker_food"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Category", mapperVal)
 	}
@@ -247,6 +247,18 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 	}
 
 	switch p.Category {
+	case "stonecutter":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "smithing":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "crafting_redstone":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
@@ -265,14 +277,14 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		if err != nil {
 			return n, err
 		}
-	case "blast_furnace_blocks":
-		temp, err = pk.VarInt(7).WriteTo(w)
+	case "furnace_blocks":
+		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "smoker_food":
-		temp, err = pk.VarInt(9).WriteTo(w)
+	case "blast_furnace_misc":
+		temp, err = pk.VarInt(8).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -295,32 +307,20 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		if err != nil {
 			return n, err
 		}
-	case "furnace_blocks":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "furnace_misc":
 		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "blast_furnace_misc":
-		temp, err = pk.VarInt(8).WriteTo(w)
+	case "blast_furnace_blocks":
+		temp, err = pk.VarInt(7).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "stonecutter":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smithing":
-		temp, err = pk.VarInt(11).WriteTo(w)
+	case "smoker_food":
+		temp, err = pk.VarInt(9).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

@@ -45,7 +45,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 	p.Flags = flags
 
 	switch p.Flags {
-	case 1:
+	case 3:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -55,7 +55,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Source = val
-	case 3:
+	case 1:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)

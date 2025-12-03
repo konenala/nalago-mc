@@ -75,21 +75,21 @@ type ExplosionExplosionParticle struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   falling_dust -> varint
-	//   entity_effect -> i32
-	//   sculk_charge -> f32
-	//   tinted_leaves -> i32
-	//   firefly -> void
-	//   block_crumble -> varint
-	//   dust -> [container [map[name:red type:f32] map[name:green type:f32] map[name:blue type:f32] map[name:scale type:f32]]]
-	//   dust_color_transition -> [container [map[name:fromRed type:f32] map[name:fromGreen type:f32] map[name:fromBlue type:f32] map[name:scale type:f32] map[name:toRed type:f32] map[name:toGreen type:f32] map[name:toBlue type:f32]]]
-	//   item -> Slot
-	//   trail -> [container [map[name:target type:vec3f64] map[name:color type:u8]]]
-	//   block_marker -> varint
-	//   shriek -> varint
 	//   vibration -> [container [map[name:positionType type:[mapper map[mappings:map[0:block 1:entity] type:varint]]] map[name:position type:[switch map[compareTo:positionType fields:map[block:position entity:[container [map[name:entityId type:varint] map[name:entityEyeHeight type:f32]]]]]]] map[name:ticks type:varint]]]
 	//   block -> varint
+	//   falling_dust -> varint
+	//   dust_color_transition -> [container [map[name:fromRed type:f32] map[name:fromGreen type:f32] map[name:fromBlue type:f32] map[name:scale type:f32] map[name:toRed type:f32] map[name:toGreen type:f32] map[name:toBlue type:f32]]]
+	//   trail -> [container [map[name:target type:vec3f64] map[name:color type:u8]]]
 	//   dust_pillar -> varint
+	//   block_crumble -> varint
+	//   dust -> [container [map[name:red type:f32] map[name:green type:f32] map[name:blue type:f32] map[name:scale type:f32]]]
+	//   entity_effect -> i32
+	//   item -> Slot
+	//   shriek -> varint
+	//   tinted_leaves -> i32
+	//   firefly -> void
+	//   block_marker -> varint
+	//   sculk_charge -> f32
 
 	Data interface{}
 }
@@ -106,270 +106,240 @@ func (p *ExplosionExplosionParticle) ReadFrom(r io.Reader) (n int64, err error) 
 		return n, err
 	}
 	switch mapperVal {
-	case 74:
-		p.Type = "campfire_cosy_smoke"
-	case 25:
-		p.Type = "gust_emitter_large"
-	case 33:
-		p.Type = "cherry_leaves"
-	case 44:
-		p.Type = "heart"
-	case 53:
-		p.Type = "lava"
-	case 61:
-		p.Type = "sneeze"
 	case 27:
 		p.Type = "sonic_boom"
-	case 78:
-		p.Type = "landing_honey"
+	case 49:
+		p.Type = "item_slime"
 	case 81:
 		p.Type = "ash"
-	case 113:
-		p.Type = "firefly"
-	case 47:
-		p.Type = "vibration"
-	case 68:
-		p.Type = "witch"
-	case 91:
-		p.Type = "snowflake"
 	case 109:
 		p.Type = "ominous_spawning"
-	case 67:
-		p.Type = "splash"
-	case 7:
-		p.Type = "dragon_breath"
-	case 30:
-		p.Type = "fishing"
-	case 52:
-		p.Type = "large_smoke"
-	case 104:
-		p.Type = "dust_plume"
-	case 11:
-		p.Type = "dripping_water"
-	case 38:
-		p.Type = "sculk_charge_pop"
-	case 70:
-		p.Type = "current_down"
-	case 76:
-		p.Type = "dripping_honey"
-	case 89:
-		p.Type = "white_ash"
-	case 99:
-		p.Type = "wax_off"
+	case 111:
+		p.Type = "trial_omen"
+	case 51:
+		p.Type = "item_snowball"
+	case 57:
+		p.Type = "portal"
+	case 93:
+		p.Type = "falling_dripstone_lava"
+	case 17:
+		p.Type = "enchanted_hit"
 	case 18:
 		p.Type = "enchant"
 	case 43:
 		p.Type = "composter"
+	case 91:
+		p.Type = "snowflake"
+	case 15:
+		p.Type = "effect"
+	case 16:
+		p.Type = "elder_guardian"
+	case 60:
+		p.Type = "white_smoke"
+	case 61:
+		p.Type = "sneeze"
+	case 95:
+		p.Type = "falling_dripstone_water"
+	case 47:
+		p.Type = "vibration"
+	case 94:
+		p.Type = "dripping_dripstone_water"
+	case 28:
+		p.Type = "falling_dust"
+	case 69:
+		p.Type = "bubble_pop"
+	case 80:
+		p.Type = "falling_spore_blossom"
+	case 19:
+		p.Type = "end_rod"
+	case 56:
+		p.Type = "poof"
+	case 77:
+		p.Type = "falling_honey"
+	case 89:
+		p.Type = "white_ash"
+	case 3:
+		p.Type = "bubble"
+	case 32:
+		p.Type = "infested"
+	case 50:
+		p.Type = "item_cobweb"
+	case 13:
+		p.Type = "dust"
+	case 87:
+		p.Type = "landing_obsidian_tear"
+	case 92:
+		p.Type = "dripping_dripstone_lava"
+	case 104:
+		p.Type = "dust_plume"
+	case 9:
+		p.Type = "falling_lava"
+	case 35:
+		p.Type = "tinted_leaves"
 	case 65:
 		p.Type = "totem_of_undying"
+	case 100:
+		p.Type = "electric_spark"
+	case 105:
+		p.Type = "trial_spawner_detected_player"
+	case 106:
+		p.Type = "trial_spawner_detected_player_ominous"
+	case 11:
+		p.Type = "dripping_water"
+	case 41:
+		p.Type = "flash"
+	case 59:
+		p.Type = "smoke"
+	case 62:
+		p.Type = "spit"
+	case 71:
+		p.Type = "bubble_column_up"
+	case 58:
+		p.Type = "rain"
+	case 63:
+		p.Type = "squid_ink"
+	case 72:
+		p.Type = "nautilus"
+	case 76:
+		p.Type = "dripping_honey"
+	case 82:
+		p.Type = "crimson_spore"
+	case 86:
+		p.Type = "falling_obsidian_tear"
+	case 21:
+		p.Type = "explosion_emitter"
+	case 74:
+		p.Type = "campfire_cosy_smoke"
+	case 83:
+		p.Type = "warped_spore"
+	case 85:
+		p.Type = "dripping_obsidian_tear"
 	case 73:
 		p.Type = "dolphin"
-	case 103:
-		p.Type = "egg_crack"
+	case 98:
+		p.Type = "wax_on"
+	case 99:
+		p.Type = "wax_off"
+	case 108:
+		p.Type = "dust_pillar"
+	case 48:
+		p.Type = "trail"
+	case 26:
+		p.Type = "gust_emitter_small"
+	case 12:
+		p.Type = "falling_water"
+	case 6:
+		p.Type = "damage_indicator"
+	case 46:
+		p.Type = "item"
+	case 112:
+		p.Type = "block_crumble"
+	case 7:
+		p.Type = "dragon_breath"
+	case 38:
+		p.Type = "sculk_charge_pop"
+	case 39:
+		p.Type = "soul_fire_flame"
+	case 5:
+		p.Type = "crit"
+	case 10:
+		p.Type = "landing_lava"
+	case 113:
+		p.Type = "firefly"
+	case 0:
+		p.Type = "angry_villager"
+	case 29:
+		p.Type = "firework"
+	case 52:
+		p.Type = "large_smoke"
+	case 68:
+		p.Type = "witch"
+	case 88:
+		p.Type = "reverse_portal"
+	case 40:
+		p.Type = "soul"
+	case 45:
+		p.Type = "instant_effect"
+	case 70:
+		p.Type = "current_down"
+	case 102:
+		p.Type = "shriek"
+	case 4:
+		p.Type = "cloud"
+	case 24:
+		p.Type = "small_gust"
+	case 36:
+		p.Type = "sculk_soul"
+	case 53:
+		p.Type = "lava"
+	case 64:
+		p.Type = "sweep_attack"
+	case 67:
+		p.Type = "splash"
+	case 84:
+		p.Type = "spore_blossom_air"
+	case 23:
+		p.Type = "gust"
+	case 25:
+		p.Type = "gust_emitter_large"
+	case 14:
+		p.Type = "dust_color_transition"
+	case 79:
+		p.Type = "falling_nectar"
+	case 101:
+		p.Type = "scrape"
+	case 22:
+		p.Type = "explosion"
+	case 37:
+		p.Type = "sculk_charge"
+	case 75:
+		p.Type = "campfire_signal_smoke"
+	case 30:
+		p.Type = "fishing"
+	case 44:
+		p.Type = "heart"
 	case 110:
 		p.Type = "raid_omen"
 	case 20:
 		p.Type = "entity_effect"
-	case 29:
-		p.Type = "firework"
-	case 36:
-		p.Type = "sculk_soul"
-	case 62:
-		p.Type = "spit"
-	case 77:
-		p.Type = "falling_honey"
-	case 22:
-		p.Type = "explosion"
-	case 41:
-		p.Type = "flash"
-	case 85:
-		p.Type = "dripping_obsidian_tear"
-	case 93:
-		p.Type = "falling_dripstone_lava"
-	case 3:
-		p.Type = "bubble"
-	case 37:
-		p.Type = "sculk_charge"
-	case 96:
-		p.Type = "glow_squid_ink"
-	case 55:
-		p.Type = "note"
-	case 106:
-		p.Type = "trial_spawner_detected_player_ominous"
-	case 107:
-		p.Type = "vault_connection"
-	case 0:
-		p.Type = "angry_villager"
-	case 19:
-		p.Type = "end_rod"
-	case 23:
-		p.Type = "gust"
-	case 31:
-		p.Type = "flame"
-	case 9:
-		p.Type = "falling_lava"
-	case 34:
-		p.Type = "pale_oak_leaves"
-	case 108:
-		p.Type = "dust_pillar"
-	case 10:
-		p.Type = "landing_lava"
-	case 46:
-		p.Type = "item"
-	case 111:
-		p.Type = "trial_omen"
-	case 12:
-		p.Type = "falling_water"
-	case 15:
-		p.Type = "effect"
-	case 24:
-		p.Type = "small_gust"
-	case 57:
-		p.Type = "portal"
-	case 2:
-		p.Type = "block_marker"
-	case 28:
-		p.Type = "falling_dust"
-	case 56:
-		p.Type = "poof"
-	case 59:
-		p.Type = "smoke"
-	case 63:
-		p.Type = "squid_ink"
-	case 84:
-		p.Type = "spore_blossom_air"
-	case 100:
-		p.Type = "electric_spark"
-	case 16:
-		p.Type = "elder_guardian"
 	case 54:
 		p.Type = "mycelium"
-	case 86:
-		p.Type = "falling_obsidian_tear"
-	case 87:
-		p.Type = "landing_obsidian_tear"
-	case 26:
-		p.Type = "gust_emitter_small"
-	case 51:
-		p.Type = "item_snowball"
-	case 101:
-		p.Type = "scrape"
-	case 105:
-		p.Type = "trial_spawner_detected_player"
-	case 1:
-		p.Type = "block"
-	case 50:
-		p.Type = "item_cobweb"
-	case 64:
-		p.Type = "sweep_attack"
-	case 21:
-		p.Type = "explosion_emitter"
-	case 90:
-		p.Type = "small_flame"
-	case 4:
-		p.Type = "cloud"
-	case 32:
-		p.Type = "infested"
-	case 72:
-		p.Type = "nautilus"
-	case 75:
-		p.Type = "campfire_signal_smoke"
-	case 80:
-		p.Type = "falling_spore_blossom"
-	case 102:
-		p.Type = "shriek"
-	case 13:
-		p.Type = "dust"
-	case 17:
-		p.Type = "enchanted_hit"
-	case 39:
-		p.Type = "soul_fire_flame"
-	case 71:
-		p.Type = "bubble_column_up"
-	case 88:
-		p.Type = "reverse_portal"
-	case 60:
-		p.Type = "white_smoke"
-	case 79:
-		p.Type = "falling_nectar"
-	case 94:
-		p.Type = "dripping_dripstone_water"
-	case 112:
-		p.Type = "block_crumble"
-	case 82:
-		p.Type = "crimson_spore"
-	case 83:
-		p.Type = "warped_spore"
-	case 97:
-		p.Type = "glow"
-	case 98:
-		p.Type = "wax_on"
-	case 40:
-		p.Type = "soul"
-	case 48:
-		p.Type = "trail"
-	case 49:
-		p.Type = "item_slime"
-	case 69:
-		p.Type = "bubble_pop"
+	case 107:
+		p.Type = "vault_connection"
+	case 34:
+		p.Type = "pale_oak_leaves"
+	case 2:
+		p.Type = "block_marker"
+	case 55:
+		p.Type = "note"
+	case 78:
+		p.Type = "landing_honey"
 	case 8:
 		p.Type = "dripping_lava"
-	case 45:
-		p.Type = "instant_effect"
-	case 66:
-		p.Type = "underwater"
-	case 5:
-		p.Type = "crit"
-	case 35:
-		p.Type = "tinted_leaves"
-	case 58:
-		p.Type = "rain"
-	case 95:
-		p.Type = "falling_dripstone_water"
-	case 6:
-		p.Type = "damage_indicator"
-	case 92:
-		p.Type = "dripping_dripstone_lava"
-	case 14:
-		p.Type = "dust_color_transition"
+	case 33:
+		p.Type = "cherry_leaves"
+	case 96:
+		p.Type = "glow_squid_ink"
+	case 103:
+		p.Type = "egg_crack"
+	case 90:
+		p.Type = "small_flame"
+	case 97:
+		p.Type = "glow"
+	case 31:
+		p.Type = "flame"
 	case 42:
 		p.Type = "happy_villager"
+	case 1:
+		p.Type = "block"
+	case 66:
+		p.Type = "underwater"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
 
 	switch p.Type {
-	case "block_marker":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "shriek":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
 	case "block":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "dust_pillar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -389,6 +359,26 @@ func (p *ExplosionExplosionParticle) ReadFrom(r io.Reader) (n int64, err error) 
 		}
 		val = int32(elem)
 		p.Data = val
+	case "dust_pillar":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Data = val
+	case "block_crumble":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Data = val
 	case "entity_effect":
 		var val int32
 		temp, err = (*pk.Int)(&val).ReadFrom(r)
@@ -397,13 +387,23 @@ func (p *ExplosionExplosionParticle) ReadFrom(r io.Reader) (n int64, err error) 
 			return n, err
 		}
 		p.Data = val
-	case "sculk_charge":
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
+	case "item":
+		var val slot.Slot
+		temp, err = (*slot.Slot)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.Data = val
+	case "shriek":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
 		p.Data = val
 	case "tinted_leaves":
 		var val int32
@@ -416,7 +416,7 @@ func (p *ExplosionExplosionParticle) ReadFrom(r io.Reader) (n int64, err error) 
 	case "firefly":
 		var val struct{}
 		p.Data = val
-	case "block_crumble":
+	case "block_marker":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -426,9 +426,9 @@ func (p *ExplosionExplosionParticle) ReadFrom(r io.Reader) (n int64, err error) 
 		}
 		val = int32(elem)
 		p.Data = val
-	case "item":
-		var val slot.Slot
-		temp, err = (*slot.Slot)(&val).ReadFrom(r)
+	case "sculk_charge":
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -447,50 +447,14 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Type {
-	case "campfire_cosy_smoke":
-		temp, err = pk.VarInt(74).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "gust_emitter_large":
-		temp, err = pk.VarInt(25).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cherry_leaves":
-		temp, err = pk.VarInt(33).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "heart":
-		temp, err = pk.VarInt(44).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lava":
-		temp, err = pk.VarInt(53).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sneeze":
-		temp, err = pk.VarInt(61).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "sonic_boom":
 		temp, err = pk.VarInt(27).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "landing_honey":
-		temp, err = pk.VarInt(78).WriteTo(w)
+	case "item_slime":
+		temp, err = pk.VarInt(49).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -501,98 +465,38 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "firefly":
-		temp, err = pk.VarInt(113).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "vibration":
-		temp, err = pk.VarInt(47).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "witch":
-		temp, err = pk.VarInt(68).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "snowflake":
-		temp, err = pk.VarInt(91).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "ominous_spawning":
 		temp, err = pk.VarInt(109).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "splash":
-		temp, err = pk.VarInt(67).WriteTo(w)
+	case "trial_omen":
+		temp, err = pk.VarInt(111).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "dragon_breath":
-		temp, err = pk.VarInt(7).WriteTo(w)
+	case "item_snowball":
+		temp, err = pk.VarInt(51).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "fishing":
-		temp, err = pk.VarInt(30).WriteTo(w)
+	case "portal":
+		temp, err = pk.VarInt(57).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "large_smoke":
-		temp, err = pk.VarInt(52).WriteTo(w)
+	case "falling_dripstone_lava":
+		temp, err = pk.VarInt(93).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "dust_plume":
-		temp, err = pk.VarInt(104).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dripping_water":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sculk_charge_pop":
-		temp, err = pk.VarInt(38).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "current_down":
-		temp, err = pk.VarInt(70).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dripping_honey":
-		temp, err = pk.VarInt(76).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "white_ash":
-		temp, err = pk.VarInt(89).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wax_off":
-		temp, err = pk.VarInt(99).WriteTo(w)
+	case "enchanted_hit":
+		temp, err = pk.VarInt(17).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -609,8 +513,260 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
+	case "snowflake":
+		temp, err = pk.VarInt(91).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "effect":
+		temp, err = pk.VarInt(15).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "elder_guardian":
+		temp, err = pk.VarInt(16).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "white_smoke":
+		temp, err = pk.VarInt(60).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sneeze":
+		temp, err = pk.VarInt(61).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_dripstone_water":
+		temp, err = pk.VarInt(95).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "vibration":
+		temp, err = pk.VarInt(47).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dripping_dripstone_water":
+		temp, err = pk.VarInt(94).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_dust":
+		temp, err = pk.VarInt(28).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "bubble_pop":
+		temp, err = pk.VarInt(69).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_spore_blossom":
+		temp, err = pk.VarInt(80).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "end_rod":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "poof":
+		temp, err = pk.VarInt(56).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_honey":
+		temp, err = pk.VarInt(77).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "white_ash":
+		temp, err = pk.VarInt(89).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "bubble":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "infested":
+		temp, err = pk.VarInt(32).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item_cobweb":
+		temp, err = pk.VarInt(50).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dust":
+		temp, err = pk.VarInt(13).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "landing_obsidian_tear":
+		temp, err = pk.VarInt(87).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dripping_dripstone_lava":
+		temp, err = pk.VarInt(92).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dust_plume":
+		temp, err = pk.VarInt(104).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_lava":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "tinted_leaves":
+		temp, err = pk.VarInt(35).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "totem_of_undying":
 		temp, err = pk.VarInt(65).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "electric_spark":
+		temp, err = pk.VarInt(100).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "trial_spawner_detected_player":
+		temp, err = pk.VarInt(105).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "trial_spawner_detected_player_ominous":
+		temp, err = pk.VarInt(106).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dripping_water":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "flash":
+		temp, err = pk.VarInt(41).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "smoke":
+		temp, err = pk.VarInt(59).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "spit":
+		temp, err = pk.VarInt(62).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "bubble_column_up":
+		temp, err = pk.VarInt(71).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "rain":
+		temp, err = pk.VarInt(58).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "squid_ink":
+		temp, err = pk.VarInt(63).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "nautilus":
+		temp, err = pk.VarInt(72).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dripping_honey":
+		temp, err = pk.VarInt(76).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crimson_spore":
+		temp, err = pk.VarInt(82).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_obsidian_tear":
+		temp, err = pk.VarInt(86).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "explosion_emitter":
+		temp, err = pk.VarInt(21).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "campfire_cosy_smoke":
+		temp, err = pk.VarInt(74).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "warped_spore":
+		temp, err = pk.VarInt(83).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dripping_obsidian_tear":
+		temp, err = pk.VarInt(85).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -621,8 +777,248 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "egg_crack":
-		temp, err = pk.VarInt(103).WriteTo(w)
+	case "wax_on":
+		temp, err = pk.VarInt(98).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "wax_off":
+		temp, err = pk.VarInt(99).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dust_pillar":
+		temp, err = pk.VarInt(108).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "trail":
+		temp, err = pk.VarInt(48).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "gust_emitter_small":
+		temp, err = pk.VarInt(26).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_water":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "damage_indicator":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item":
+		temp, err = pk.VarInt(46).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "block_crumble":
+		temp, err = pk.VarInt(112).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dragon_breath":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sculk_charge_pop":
+		temp, err = pk.VarInt(38).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "soul_fire_flame":
+		temp, err = pk.VarInt(39).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crit":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "landing_lava":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "firefly":
+		temp, err = pk.VarInt(113).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "angry_villager":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "firework":
+		temp, err = pk.VarInt(29).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "large_smoke":
+		temp, err = pk.VarInt(52).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "witch":
+		temp, err = pk.VarInt(68).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "reverse_portal":
+		temp, err = pk.VarInt(88).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "soul":
+		temp, err = pk.VarInt(40).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "instant_effect":
+		temp, err = pk.VarInt(45).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "current_down":
+		temp, err = pk.VarInt(70).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "shriek":
+		temp, err = pk.VarInt(102).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "cloud":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "small_gust":
+		temp, err = pk.VarInt(24).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sculk_soul":
+		temp, err = pk.VarInt(36).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "lava":
+		temp, err = pk.VarInt(53).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sweep_attack":
+		temp, err = pk.VarInt(64).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "splash":
+		temp, err = pk.VarInt(67).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "spore_blossom_air":
+		temp, err = pk.VarInt(84).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "gust":
+		temp, err = pk.VarInt(23).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "gust_emitter_large":
+		temp, err = pk.VarInt(25).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "dust_color_transition":
+		temp, err = pk.VarInt(14).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "falling_nectar":
+		temp, err = pk.VarInt(79).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "scrape":
+		temp, err = pk.VarInt(101).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "explosion":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sculk_charge":
+		temp, err = pk.VarInt(37).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "campfire_signal_smoke":
+		temp, err = pk.VarInt(75).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "fishing":
+		temp, err = pk.VarInt(30).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "heart":
+		temp, err = pk.VarInt(44).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -639,80 +1035,8 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "firework":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sculk_soul":
-		temp, err = pk.VarInt(36).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "spit":
-		temp, err = pk.VarInt(62).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_honey":
-		temp, err = pk.VarInt(77).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "explosion":
-		temp, err = pk.VarInt(22).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "flash":
-		temp, err = pk.VarInt(41).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dripping_obsidian_tear":
-		temp, err = pk.VarInt(85).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_dripstone_lava":
-		temp, err = pk.VarInt(93).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bubble":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sculk_charge":
-		temp, err = pk.VarInt(37).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glow_squid_ink":
-		temp, err = pk.VarInt(96).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "note":
-		temp, err = pk.VarInt(55).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trial_spawner_detected_player_ominous":
-		temp, err = pk.VarInt(106).WriteTo(w)
+	case "mycelium":
+		temp, err = pk.VarInt(54).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -723,86 +1047,8 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "angry_villager":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "end_rod":
-		temp, err = pk.VarInt(19).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "gust":
-		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "flame":
-		temp, err = pk.VarInt(31).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_lava":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "pale_oak_leaves":
 		temp, err = pk.VarInt(34).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dust_pillar":
-		temp, err = pk.VarInt(108).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "landing_lava":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item":
-		temp, err = pk.VarInt(46).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trial_omen":
-		temp, err = pk.VarInt(111).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_water":
-		temp, err = pk.VarInt(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "effect":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "small_gust":
-		temp, err = pk.VarInt(24).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "portal":
-		temp, err = pk.VarInt(57).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -813,254 +1059,14 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "falling_dust":
-		temp, err = pk.VarInt(28).WriteTo(w)
+	case "note":
+		temp, err = pk.VarInt(55).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "poof":
-		temp, err = pk.VarInt(56).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smoke":
-		temp, err = pk.VarInt(59).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "squid_ink":
-		temp, err = pk.VarInt(63).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "spore_blossom_air":
-		temp, err = pk.VarInt(84).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "electric_spark":
-		temp, err = pk.VarInt(100).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "elder_guardian":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "mycelium":
-		temp, err = pk.VarInt(54).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_obsidian_tear":
-		temp, err = pk.VarInt(86).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "landing_obsidian_tear":
-		temp, err = pk.VarInt(87).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "gust_emitter_small":
-		temp, err = pk.VarInt(26).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_snowball":
-		temp, err = pk.VarInt(51).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "scrape":
-		temp, err = pk.VarInt(101).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trial_spawner_detected_player":
-		temp, err = pk.VarInt(105).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_cobweb":
-		temp, err = pk.VarInt(50).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sweep_attack":
-		temp, err = pk.VarInt(64).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "explosion_emitter":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "small_flame":
-		temp, err = pk.VarInt(90).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cloud":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "infested":
-		temp, err = pk.VarInt(32).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "nautilus":
-		temp, err = pk.VarInt(72).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "campfire_signal_smoke":
-		temp, err = pk.VarInt(75).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_spore_blossom":
-		temp, err = pk.VarInt(80).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "shriek":
-		temp, err = pk.VarInt(102).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dust":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchanted_hit":
-		temp, err = pk.VarInt(17).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "soul_fire_flame":
-		temp, err = pk.VarInt(39).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bubble_column_up":
-		temp, err = pk.VarInt(71).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "reverse_portal":
-		temp, err = pk.VarInt(88).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "white_smoke":
-		temp, err = pk.VarInt(60).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "falling_nectar":
-		temp, err = pk.VarInt(79).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dripping_dripstone_water":
-		temp, err = pk.VarInt(94).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_crumble":
-		temp, err = pk.VarInt(112).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crimson_spore":
-		temp, err = pk.VarInt(82).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "warped_spore":
-		temp, err = pk.VarInt(83).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glow":
-		temp, err = pk.VarInt(97).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wax_on":
-		temp, err = pk.VarInt(98).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "soul":
-		temp, err = pk.VarInt(40).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trail":
-		temp, err = pk.VarInt(48).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_slime":
-		temp, err = pk.VarInt(49).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bubble_pop":
-		temp, err = pk.VarInt(69).WriteTo(w)
+	case "landing_honey":
+		temp, err = pk.VarInt(78).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -1071,62 +1077,56 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "instant_effect":
-		temp, err = pk.VarInt(45).WriteTo(w)
+	case "cherry_leaves":
+		temp, err = pk.VarInt(33).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "underwater":
-		temp, err = pk.VarInt(66).WriteTo(w)
+	case "glow_squid_ink":
+		temp, err = pk.VarInt(96).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "crit":
-		temp, err = pk.VarInt(5).WriteTo(w)
+	case "egg_crack":
+		temp, err = pk.VarInt(103).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "tinted_leaves":
-		temp, err = pk.VarInt(35).WriteTo(w)
+	case "small_flame":
+		temp, err = pk.VarInt(90).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "rain":
-		temp, err = pk.VarInt(58).WriteTo(w)
+	case "glow":
+		temp, err = pk.VarInt(97).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "falling_dripstone_water":
-		temp, err = pk.VarInt(95).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage_indicator":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dripping_dripstone_lava":
-		temp, err = pk.VarInt(92).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dust_color_transition":
-		temp, err = pk.VarInt(14).WriteTo(w)
+	case "flame":
+		temp, err = pk.VarInt(31).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	case "happy_villager":
 		temp, err = pk.VarInt(42).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "block":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "underwater":
+		temp, err = pk.VarInt(66).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -1142,8 +1142,8 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
+	case slot.Slot:
+		temp, err = (v).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -1152,8 +1152,8 @@ func (p ExplosionExplosionParticle) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case slot.Slot:
-		temp, err = (v).WriteTo(w)
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

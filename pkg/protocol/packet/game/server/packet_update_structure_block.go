@@ -166,14 +166,14 @@ func (p *UpdateStructureBlock) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 0:
-		p.Flags = "ignore_entities"
 	case 1:
 		p.Flags = "show_air"
 	case 2:
 		p.Flags = "show_bounding_box"
 	case 3:
 		p.Flags = "strict"
+	case 0:
+		p.Flags = "ignore_entities"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Flags", mapperVal)
 	}
@@ -277,12 +277,6 @@ func (p UpdateStructureBlock) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.Flags {
-	case "ignore_entities":
-		temp, err = pk.UnsignedByte(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "show_air":
 		temp, err = pk.UnsignedByte(1).WriteTo(w)
 		n += temp
@@ -297,6 +291,12 @@ func (p UpdateStructureBlock) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "strict":
 		temp, err = pk.UnsignedByte(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ignore_entities":
+		temp, err = pk.UnsignedByte(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

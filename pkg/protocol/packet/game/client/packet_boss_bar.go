@@ -109,7 +109,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 4:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -119,7 +119,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Color = val
-	case 0:
+	case 4:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -134,7 +134,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 0:
+	case 4:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -144,7 +144,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Dividers = val
-	case 4:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
