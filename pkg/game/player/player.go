@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"os"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
