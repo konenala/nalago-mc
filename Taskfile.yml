@@ -8,9 +8,13 @@ vars:
 tasks:
   build:gen:
     desc: 編譯 enhanced-generator.exe（固定輸出，避免 go run 觸發防毒）
+    env:
+      GOCACHE: '{{.PWD}}/.gocache'
+      GOMODCACHE: '{{.PWD}}/.gomodcache'
+      TEMP: '{{.PWD}}/.tmp'
+      TMP: '{{.PWD}}/.tmp'
     cmds:
-      - powershell -NoLogo -Command "$env:GOCACHE='{{.PWD}}/.gocache'; $env:GOMODCACHE='{{.PWD}}/.gomodcache'; $env:TEMP='{{.PWD}}/.tmp'; $env:TMP='{{.PWD}}/.tmp'; mkdir {{.PWD}}/.gocache,{{.PWD}}/.gomodcache,{{.PWD}}/.tmp -Force | Out-Null; go build -o tools/enhanced-generator/enhanced-generator.exe {{.GENERATOR}}"
-
+      - powershell -NoLogo -Command "mkdir '{{.PWD}}/.gocache','{{.PWD}}/.gomodcache','{{.PWD}}/.tmp' -Force | Out-Null; go build -o tools/enhanced-generator/enhanced-generator.exe {{.GENERATOR}}"
   gen:client:
     desc: 使用編譯好的 enhanced-generator.exe 產生 Client 封包
     deps: [build:gen]

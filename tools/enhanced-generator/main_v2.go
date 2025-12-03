@@ -1768,6 +1768,16 @@ func generateDirectOptionalWrite(fieldName, innerType string, fromParent bool) [
 // 產生 option[array] 的讀寫片段，readLines/writeLines 為單元素讀寫
 func generateOptionalArrayRW(field *PacketField, countType string, readLines, writeLines []string) {
 	elemType := strings.TrimPrefix(field.GoType, "*[]")
+	needsDecl := true
+	for _, line := range readLines {
+		if strings.Contains(line, "var v ") {
+			needsDecl = false
+			break
+		}
+	}
+	if needsDecl {
+		readLines = append([]string{"\t\tvar v " + elemType}, readLines...)
+	}
 	field.ReadCode = []string{
 		fmt.Sprintf("var has%s pk.Boolean", field.Name),
 		fmt.Sprintf("temp, err = has%s.ReadFrom(r)", field.Name),
@@ -1800,6 +1810,7 @@ func generateOptionalArrayRW(field *PacketField, countType string, readLines, wr
 		"	n += temp",
 		"	if err != nil { return n, err }",
 		"	for i := range *p." + field.Name + " {",
+		"		_ = i",
 	}
 	field.WriteCode = append(field.WriteCode, writeLines...)
 	field.WriteCode = append(field.WriteCode,
