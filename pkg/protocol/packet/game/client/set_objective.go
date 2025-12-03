@@ -1,13 +1,14 @@
 package client
 
-import "git.konjactw.dev/falloutBot/go-mc/chat"
+import "git.konjactw.dev/falloutBot/go-mc/nbt"
 
 //codec:gen
 type ObjectivesData struct {
-	Value           chat.Message
+	DisplayText     nbt.RawMessage `mc:"NBT"`
 	HasNumberFormat bool
-	//opt:optional:HasNumberFormat
-	NumberFormat *ScoreNumberFormat
+	NumberFormat    int32 `mc:"VarInt"`
+	HasStyling      bool
+	Styling         nbt.RawMessage `mc:"NBT"`
 }
 
 type ObjectivesCreateData struct {

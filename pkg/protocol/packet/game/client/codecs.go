@@ -3826,12 +3826,12 @@ func (c RemoveEntities) WriteTo(w io.Writer) (n int64, err error) {
 }
 func (c *RemoveMobEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
-	temp, err = (*packet.Int)(&c.EntityID).ReadFrom(r)
+	temp, err = (*packet.VarInt)(&c.EntityID).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.Int)(&c.EffectID).ReadFrom(r)
+	temp, err = (*packet.VarInt)(&c.EffectID).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -3841,12 +3841,12 @@ func (c *RemoveMobEffect) ReadFrom(r io.Reader) (n int64, err error) {
 
 func (c RemoveMobEffect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
-	temp, err = (*packet.Int)(&c.EntityID).WriteTo(w)
+	temp, err = (*packet.VarInt)(&c.EntityID).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.Int)(&c.EffectID).WriteTo(w)
+	temp, err = (*packet.VarInt)(&c.EffectID).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -4754,7 +4754,7 @@ func (c SetHeldItem) WriteTo(w io.Writer) (n int64, err error) {
 }
 func (c *ObjectivesData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
-	temp, err = (&c.Value).ReadFrom(r)
+	temp, err = packet.NBT(&c.DisplayText).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -4765,11 +4765,18 @@ func (c *ObjectivesData) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if c.HasNumberFormat {
-		c.NumberFormat = new(ScoreNumberFormat)
-		temp, err = (*ScoreNumberFormat)(c.NumberFormat).ReadFrom(r)
+		temp, err = (*packet.VarInt)(&c.NumberFormat).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
+		}
+		if c.NumberFormat == 1 || c.NumberFormat == 2 {
+			c.HasStyling = true
+			temp, err = packet.NBT(&c.Styling).ReadFrom(r)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	}
 	return n, err
@@ -4777,7 +4784,7 @@ func (c *ObjectivesData) ReadFrom(r io.Reader) (n int64, err error) {
 
 func (c ObjectivesData) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
-	temp, err = (&c.Value).WriteTo(w)
+	temp, err = packet.NBT(&c.DisplayText).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -4788,10 +4795,17 @@ func (c ObjectivesData) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	if c.HasNumberFormat {
-		temp, err = (*ScoreNumberFormat)(c.NumberFormat).WriteTo(w)
+		temp, err = (*packet.VarInt)(&c.NumberFormat).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
+		}
+		if c.NumberFormat == 1 || c.NumberFormat == 2 && c.HasStyling {
+			temp, err = packet.NBT(&c.Styling).WriteTo(w)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	}
 	return n, err
@@ -5223,61 +5237,14 @@ func (c UpdateTeamsRemoveEntities) WriteTo(w io.Writer) (n int64, err error) {
 	}
 	return n, err
 }
-func (c *ScoreNumberFormat) ReadFrom(r io.Reader) (n int64, err error) {
-	var temp int64
-	temp, err = (*packet.Int)(&c.NumberFormat).ReadFrom(r)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	if c.NumberFormat == 1 {
-		temp, err = packet.NBT(&c.StyledTag).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-	if c.NumberFormat == 2 {
-		temp, err = (&c.Content).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-	return n, err
-}
-
-func (c ScoreNumberFormat) WriteTo(w io.Writer) (n int64, err error) {
-	var temp int64
-	temp, err = (*packet.Int)(&c.NumberFormat).WriteTo(w)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	if c.NumberFormat == 1 {
-		temp, err = packet.NBT(&c.StyledTag).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-	if c.NumberFormat == 2 {
-		temp, err = (&c.Content).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-	return n, err
-}
 func (c *UpdateScore) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
-	temp, err = (*packet.String)(&c.EntityName).ReadFrom(r)
+	temp, err = (*packet.String)(&c.ItemName).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.String)(&c.ObjectiveName).ReadFrom(r)
+	temp, err = (*packet.String)(&c.ScoreName).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -5287,28 +5254,39 @@ func (c *UpdateScore) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
+	// display_name: option<nbt>
 	temp, err = (*packet.Boolean)(&c.HasDisplayName).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	if c.HasDisplayName {
-		temp, err = (&c.DisplayName).ReadFrom(r)
+		temp, err = packet.NBT(&c.DisplayName).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	}
-	temp, err = (*packet.Boolean)(&c.HasScoreFormat).ReadFrom(r)
+	// number_format: option<varint>
+	temp, err = (*packet.Boolean)(&c.HasNumberFormat).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	if c.HasScoreFormat {
-		temp, err = (&c.NumberFormat).ReadFrom(r)
+	if c.HasNumberFormat {
+		temp, err = (*packet.VarInt)(&c.NumberFormat).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
+		}
+		// styling switch(number_format) 1|2 -> NBT
+		if c.NumberFormat == 1 || c.NumberFormat == 2 {
+			c.HasStyling = true
+			temp, err = packet.NBT(&c.Styling).ReadFrom(r)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	}
 	return n, err
@@ -5316,12 +5294,12 @@ func (c *UpdateScore) ReadFrom(r io.Reader) (n int64, err error) {
 
 func (c UpdateScore) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
-	temp, err = (*packet.String)(&c.EntityName).WriteTo(w)
+	temp, err = (*packet.String)(&c.ItemName).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	temp, err = (*packet.String)(&c.ObjectiveName).WriteTo(w)
+	temp, err = (*packet.String)(&c.ScoreName).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -5331,28 +5309,37 @@ func (c UpdateScore) WriteTo(w io.Writer) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
+	// display_name option
 	temp, err = (*packet.Boolean)(&c.HasDisplayName).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	if c.HasDisplayName {
-		temp, err = (&c.DisplayName).WriteTo(w)
+		temp, err = packet.NBT(&c.DisplayName).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	}
-	temp, err = (*packet.Boolean)(&c.HasScoreFormat).WriteTo(w)
+	// number_format option
+	temp, err = (*packet.Boolean)(&c.HasNumberFormat).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	if c.HasScoreFormat {
-		temp, err = (&c.NumberFormat).WriteTo(w)
+	if c.HasNumberFormat {
+		temp, err = (*packet.VarInt)(&c.NumberFormat).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
+		}
+		if c.NumberFormat == 1 || c.NumberFormat == 2 {
+			temp, err = packet.NBT(&c.Styling).WriteTo(w)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	}
 	return n, err
