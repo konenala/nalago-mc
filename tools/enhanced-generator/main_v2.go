@@ -40,16 +40,22 @@ type PacketField struct {
 	ReadCode         []string
 	WriteCode        []string
 	NeedsPointer     bool
-	IsStruct         bool   // 是否是子结构体
-	StructName       string // 子结构体名称
-	ConditionalField string // 條件字段（匿名 switch 展平）
-	ConditionalValue string // 條件值
+	IsStruct         bool           // 是否是子结构体
+	StructName       string         // 子结构体名称
+	ConditionalField string         // 條件字段（匿名 switch 展平）
+	ConditionalValue string         // 條件值
+	FlagMap          map[string]int // 若為 bitflags，旗標名稱 → 位元序
+	NeedsParent      bool           // 該字段生成需要父層上下文（compareTo 包含 ../）
+	IsMapper         bool           // 是否為 mapper 類型
+	MapperBase       string         // mapper 的底層型別（如 varint）
 }
 
 // StructDef 结构体定义（包括嵌套的子结构体）
 type StructDef struct {
-	Name   string
-	Fields []PacketField
+	Name        string
+	Fields      []PacketField
+	Parent      string
+	NeedsParent bool
 }
 
 // PacketDef 封包定義
@@ -76,6 +82,9 @@ var (
 // 全局变量：收集所有生成的结构体名称，避免重复
 var generatedStructs = make(map[string]bool)
 var structCounter = make(map[string]int)
+var structFlagMaps = make(map[string]map[string]map[string]int) // struct -> field -> flagName->pos
+var structParent = make(map[string]string)
+var structFields = make(map[string][]PacketField) // struct -> fields
 var skipPackets = map[string]bool{
 	// client manual implementations
 	"packet_player_chat": true,
@@ -183,6 +192,9 @@ func parsePackets(packetTypes map[string]interface{}, globalTypes map[string]int
 		// 重置结构体计数器
 		generatedStructs = make(map[string]bool)
 		structCounter = make(map[string]int)
+		structFlagMaps = make(map[string]map[string]map[string]int)
+		structParent = make(map[string]string)
+		structFields = make(map[string][]PacketField)
 
 		packet := parsePacket(name, def, globalTypes)
 		if packet != nil {
@@ -227,6 +239,7 @@ func parsePacket(name string, def interface{}, globalTypes map[string]interface{
 		SubStructs:   []StructDef{},
 		GenerateInit: true,
 	}
+	structParent[structName] = ""
 
 	// 解析字段，收集子结构体
 	packet.Fields = parseFields(fields, globalTypes, structName, packet)
@@ -426,6 +439,11 @@ func parseFields(fields []interface{}, globalTypes map[string]interface{}, paren
 		}
 	}
 
+	// 記錄當前結構的欄位資訊以便父層查詢
+	if parentName != "" {
+		structFields[parentName] = result
+	}
+
 	return result
 }
 
@@ -505,7 +523,7 @@ func parseFieldType(name string, fieldType interface{}, globalTypes map[string]i
 
 			case "switch":
 				// Switch 類型 - 根據 compareTo 產生對應欄位
-				return generateSwitchField(name, t, parentFields)
+				return generateSwitchField(name, t, parentFields, parentName)
 
 			case "bitflags":
 				// 位元旗標，依據底層 type（通常 u8）
@@ -521,6 +539,24 @@ func parseFieldType(name string, fieldType interface{}, globalTypes map[string]i
 				field.Comment = "// Bitflags"
 				field.ReadCode = generateReadCode(field.Name, baseType, false)
 				field.WriteCode = generateWriteCode(field.Name, baseType, false)
+				// 收集旗標位置
+				if len(t) > 1 {
+					if def, ok := t[1].(map[string]interface{}); ok {
+						if flags, ok := def["flags"].([]interface{}); ok {
+							field.FlagMap = make(map[string]int)
+							for i, f := range flags {
+								if s, ok := f.(string); ok {
+									field.FlagMap[s] = i
+								}
+							}
+							// 記錄於全域表供 ../ 查詢
+							if structFlagMaps[parentName] == nil {
+								structFlagMaps[parentName] = make(map[string]map[string]int)
+							}
+							structFlagMaps[parentName][field.Name] = field.FlagMap
+						}
+					}
+				}
 
 			case "buffer":
 				// ByteArray
@@ -576,6 +612,8 @@ func parseFieldType(name string, fieldType interface{}, globalTypes map[string]i
 				if len(t) > 1 {
 					if mapperDef, ok := t[1].(map[string]interface{}); ok {
 						baseType, _ := mapperDef["type"].(string)
+						field.IsMapper = true
+						field.MapperBase = baseType
 						mappings, _ := mapperDef["mappings"].(map[string]interface{})
 						field.GoType = "string"
 						field.Comment = "// Mapper to string"
@@ -657,8 +695,9 @@ func parseOptionalField(name string, t []interface{}, globalTypes map[string]int
 					field.GoType = "*" + baseField.StructName
 					field.IsStruct = true
 					field.StructName = baseField.StructName
-					field.ReadCode = generateOptionalStructReadCode(field.Name, baseField.StructName)
-					field.WriteCode = generateOptionalStructWriteCode(field.Name, baseField.StructName)
+					field.NeedsParent = baseField.NeedsParent
+					field.ReadCode = generateOptionalStructReadCode(field.Name, baseField.StructName, baseField.NeedsParent)
+					field.WriteCode = generateOptionalStructWriteCode(field.Name, baseField.StructName, baseField.NeedsParent)
 					return field
 				}
 			}
@@ -681,10 +720,58 @@ func parseOptionalField(name string, t []interface{}, globalTypes map[string]int
 							field.GoType = "*" + subStructName
 							field.IsStruct = true
 							field.StructName = subStructName
+							field.NeedsParent = subStruct.NeedsParent
 
 							// 生成 optional struct 的读写代码
-							field.ReadCode = generateOptionalStructReadCode(field.Name, subStructName)
-							field.WriteCode = generateOptionalStructWriteCode(field.Name, subStructName)
+							field.ReadCode = generateOptionalStructReadCode(field.Name, subStructName, subStruct.NeedsParent)
+							field.WriteCode = generateOptionalStructWriteCode(field.Name, subStructName, subStruct.NeedsParent)
+						}
+					} else if innerTypeName == "array" {
+						// option[array] -> *[]T (支援簡單型別或 container)
+						if len(inner) > 1 {
+							if arrDef, ok := inner[1].(map[string]interface{}); ok {
+								countType, _ := arrDef["countType"].(string)
+								if elemStr, ok := arrDef["type"].(string); ok && elemStr != "" {
+									// 簡單元素
+									field.GoType = "*[]" + mapType(elemStr)
+									readLines := generateValueReadLines(elemStr, "v")
+									writeLines := generateValueWriteLines(elemStr, "(*p."+field.Name+")[i]")
+									generateOptionalArrayRW(field, countType, readLines, writeLines)
+								} else if elemArr, ok := arrDef["type"].([]interface{}); ok && len(elemArr) > 0 {
+									if elemName, ok := elemArr[0].(string); ok && elemName == "container" {
+										// 生成子結構
+										subStructName := generateSubStructName(parentName, field.Name+"Entry")
+										subStruct := parseContainerToStruct(subStructName, elemArr, globalTypes, parentName, packet)
+										if subStruct != nil {
+											packet.SubStructs = append(packet.SubStructs, *subStruct)
+											field.GoType = "*[]" + subStructName
+											readLines := []string{
+												"	var v " + subStructName,
+												func() string {
+													if subStruct.NeedsParent {
+														return "	temp, err = v.ReadFromWithParent(r, p)"
+													}
+													return "	temp, err = v.ReadFrom(r)"
+												}(),
+												"	n += temp",
+												"	if err != nil { return n, err }",
+											}
+											writeLines := []string{
+												func() string {
+													if subStruct.NeedsParent {
+														return "	temp, err = (*p." + field.Name + ")[i].WriteToWithParent(w, &p)"
+													}
+													return "	temp, err = (*p." + field.Name + ")[i].WriteTo(w)"
+												}(),
+												"	n += temp",
+												"	if err != nil { return n, err }",
+											}
+											field.NeedsParent = subStruct.NeedsParent
+											generateOptionalArrayRW(field, countType, readLines, writeLines)
+										}
+									}
+								}
+							}
 						}
 					} else if innerTypeName == "buffer" || innerTypeName == "restBuffer" {
 						// option[buffer]
@@ -750,8 +837,9 @@ func parseArrayField(name string, t []interface{}, globalTypes map[string]interf
 						field.GoType = "[]" + baseField.StructName
 						field.IsStruct = true
 						field.StructName = baseField.StructName
-						field.ReadCode = generateStructArrayReadCode(field.Name, baseField.StructName, countType)
-						field.WriteCode = generateStructArrayWriteCode(field.Name, baseField.StructName, countType)
+						field.NeedsParent = baseField.NeedsParent
+						field.ReadCode = generateStructArrayReadCode(field.Name, baseField.StructName, countType, baseField.NeedsParent)
+						field.WriteCode = generateStructArrayWriteCode(field.Name, baseField.StructName, countType, baseField.NeedsParent)
 						return field
 					}
 				}
@@ -779,10 +867,11 @@ func parseArrayField(name string, t []interface{}, globalTypes map[string]interf
 								field.GoType = "[]" + subStructName
 								field.IsStruct = true
 								field.StructName = subStructName
+								field.NeedsParent = subStruct.NeedsParent
 
 								// 生成结构体数组的读写代码
-								field.ReadCode = generateStructArrayReadCode(field.Name, subStructName, countType)
-								field.WriteCode = generateStructArrayWriteCode(field.Name, subStructName, countType)
+								field.ReadCode = generateStructArrayReadCode(field.Name, subStructName, countType, subStruct.NeedsParent)
+								field.WriteCode = generateStructArrayWriteCode(field.Name, subStructName, countType, subStruct.NeedsParent)
 							}
 						} else if elemTypeName == "array" {
 							// array[array] - 嵌套数组
@@ -828,15 +917,24 @@ func parseContainerField(name string, t []interface{}, globalTypes map[string]in
 		packet.SubStructs = append(packet.SubStructs, *subStruct)
 		field.GoType = subStructName
 		field.StructName = subStructName
+		field.NeedsParent = subStruct.NeedsParent
 
 		// 生成嵌套结构体的读写代码
+		readCall := fmt.Sprintf("p.%s.ReadFrom(r)", field.Name)
+		if subStruct.NeedsParent {
+			readCall = fmt.Sprintf("p.%s.ReadFromWithParent(r, p)", field.Name)
+		}
+		writeCall := fmt.Sprintf("p.%s.WriteTo(w)", field.Name)
+		if subStruct.NeedsParent {
+			writeCall = fmt.Sprintf("p.%s.WriteToWithParent(w, &p)", field.Name)
+		}
 		field.ReadCode = []string{
-			fmt.Sprintf("temp, err = p.%s.ReadFrom(r)", field.Name),
+			fmt.Sprintf("temp, err = %s", readCall),
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
 		field.WriteCode = []string{
-			fmt.Sprintf("temp, err = p.%s.WriteTo(w)", field.Name),
+			fmt.Sprintf("temp, err = %s", writeCall),
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
@@ -859,9 +957,21 @@ func parseContainerToStruct(structName string, containerDef []interface{}, globa
 		return nil
 	}
 
+	structParent[structName] = parentName
+
+	childFields := parseFields(fields, globalTypes, structName, packet)
+	needsParent := false
+	for _, f := range childFields {
+		if f.NeedsParent {
+			needsParent = true
+			break
+		}
+	}
 	subStruct := &StructDef{
-		Name:   structName,
-		Fields: parseFields(fields, globalTypes, structName, packet),
+		Name:        structName,
+		Fields:      childFields,
+		Parent:      parentName,
+		NeedsParent: needsParent,
 	}
 
 	return subStruct
@@ -882,7 +992,7 @@ func generateSubStructName(parentName, fieldName string) string {
 }
 
 // 生成 optional struct 的读取代码
-func generateOptionalStructReadCode(fieldName, structName string) []string {
+func generateOptionalStructReadCode(fieldName, structName string, needsParent bool) []string {
 	return []string{
 		fmt.Sprintf("var has%s pk.Boolean", fieldName),
 		fmt.Sprintf("temp, err = has%s.ReadFrom(r)", fieldName),
@@ -890,7 +1000,12 @@ func generateOptionalStructReadCode(fieldName, structName string) []string {
 		"if err != nil { return n, err }",
 		fmt.Sprintf("if has%s {", fieldName),
 		fmt.Sprintf("	p.%s = &%s{}", fieldName, structName),
-		fmt.Sprintf("	temp, err = p.%s.ReadFrom(r)", fieldName),
+		func() string {
+			if needsParent {
+				return fmt.Sprintf("	temp, err = p.%s.ReadFromWithParent(r, p)", fieldName)
+			}
+			return fmt.Sprintf("	temp, err = p.%s.ReadFrom(r)", fieldName)
+		}(),
 		"	n += temp",
 		"	if err != nil { return n, err }",
 		"}",
@@ -898,13 +1013,18 @@ func generateOptionalStructReadCode(fieldName, structName string) []string {
 }
 
 // 生成 optional struct 的写入代码
-func generateOptionalStructWriteCode(fieldName, structName string) []string {
+func generateOptionalStructWriteCode(fieldName, structName string, needsParent bool) []string {
 	return []string{
 		fmt.Sprintf("if p.%s != nil {", fieldName),
 		"	temp, err = pk.Boolean(true).WriteTo(w)",
 		"	n += temp",
 		"	if err != nil { return n, err }",
-		fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName),
+		func() string {
+			if needsParent {
+				return fmt.Sprintf("	temp, err = p.%s.WriteToWithParent(w, &p)", fieldName)
+			}
+			return fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName)
+		}(),
 		"	n += temp",
 		"	if err != nil { return n, err }",
 		"} else {",
@@ -916,16 +1036,21 @@ func generateOptionalStructWriteCode(fieldName, structName string) []string {
 }
 
 // 生成结构体数组的读取代码
-func generateStructArrayReadCode(fieldName, structName, countType string) []string {
+func generateStructArrayReadCode(fieldName, structName, countType string, needsParent bool) []string {
 	countVar := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count")
 	return []string{
-		fmt.Sprintf("var %s pk.VarInt", countVar),
+		fmt.Sprintf("var %s pk.%s", countVar, mapTypeToPkType(countType)),
 		fmt.Sprintf("temp, err = %s.ReadFrom(r)", countVar),
 		"n += temp",
 		"if err != nil { return n, err }",
 		fmt.Sprintf("p.%s = make([]%s, %s)", fieldName, structName, countVar),
 		fmt.Sprintf("for i := 0; i < int(%s); i++ {", countVar),
-		fmt.Sprintf("	temp, err = p.%s[i].ReadFrom(r)", fieldName),
+		func() string {
+			if needsParent {
+				return fmt.Sprintf("	temp, err = p.%s[i].ReadFromWithParent(r, p)", fieldName)
+			}
+			return fmt.Sprintf("	temp, err = p.%s[i].ReadFrom(r)", fieldName)
+		}(),
 		"	n += temp",
 		"	if err != nil { return n, err }",
 		"}",
@@ -933,13 +1058,18 @@ func generateStructArrayReadCode(fieldName, structName, countType string) []stri
 }
 
 // 生成结构体数组的写入代码
-func generateStructArrayWriteCode(fieldName, structName, countType string) []string {
+func generateStructArrayWriteCode(fieldName, structName, countType string, needsParent bool) []string {
 	return []string{
-		fmt.Sprintf("temp, err = pk.VarInt(len(p.%s)).WriteTo(w)", fieldName),
+		fmt.Sprintf("temp, err = pk.%s(len(p.%s)).WriteTo(w)", mapTypeToPkType(countType), fieldName),
 		"n += temp",
 		"if err != nil { return n, err }",
 		fmt.Sprintf("for i := range p.%s {", fieldName),
-		fmt.Sprintf("	temp, err = p.%s[i].WriteTo(w)", fieldName),
+		func() string {
+			if needsParent {
+				return fmt.Sprintf("	temp, err = p.%s[i].WriteToWithParent(w, &p)", fieldName)
+			}
+			return fmt.Sprintf("	temp, err = p.%s[i].WriteTo(w)", fieldName)
+		}(),
 		"	n += temp",
 		"	if err != nil { return n, err }",
 		"}",
@@ -1393,30 +1523,37 @@ func parseSwitchConfig(switchDef []interface{}) *SwitchConfig {
 }
 
 // 產生 switch 欄位
-func generateSwitchField(fieldName string, switchDef []interface{}, parentFields []PacketField) *PacketField {
+func generateSwitchField(fieldName string, switchDef []interface{}, parentFields []PacketField, parentStruct string) *PacketField {
 	cfg := parseSwitchConfig(switchDef)
 	if cfg == nil {
 		return generateFallbackSwitchField(fieldName, nil)
 	}
 
-	compareField, bitFlag := parseSwitchCompareTo(cfg.CompareTo, parentFields)
+	compareField, bitFlag, fromParent, ownerStruct := parseSwitchCompareTo(cfg.CompareTo, parentFields, parentStruct)
 	if compareField == "" {
 		return generateFallbackSwitchField(fieldName, cfg)
 	}
 	var compareFieldType string
 	var compareFieldIsPointer bool
-	if pf := findParentField(parentFields, compareField); pf != nil {
+	var compareFieldIsMapper bool
+	if pf := findStructField(ownerStruct, parentStruct, parentFields, compareField); pf != nil {
 		compareFieldIsPointer = strings.HasPrefix(pf.GoType, "*")
 		compareFieldType = strings.TrimPrefix(pf.GoType, "*")
+		compareFieldIsMapper = pf.IsMapper
 	}
-
 	// 單一條件 + default void → 可視為 optional
 	if len(cfg.Fields) == 1 && cfg.Default == "void" {
-		return generateOptionalSwitchField(fieldName, cfg, compareField, compareFieldType, bitFlag)
+		res := generateOptionalSwitchField(fieldName, cfg, compareField, compareFieldType, bitFlag, fromParent, compareFieldIsMapper)
+		res.NeedsParent = fromParent
+		return res
 	}
 
 	// 其他情況視為 union
-	return generateUnionSwitchField(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer)
+	res := generateUnionSwitchField(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer, fromParent, compareFieldIsMapper)
+	if fromParent {
+		res.NeedsParent = true
+	}
+	return res
 }
 
 // 依 compareTo 尋找父欄位
@@ -1438,26 +1575,81 @@ func parentFieldExists(parentFields []PacketField, name string) bool {
 	return false
 }
 
-// 解析 compareTo（支援 "flags/xxx" 形式）
-func parseSwitchCompareTo(compareTo string, parentFields []PacketField) (fieldName string, bitFlag int) {
+func findStructField(structName, currentStruct string, currentFields []PacketField, name string) *PacketField {
+	if structName == currentStruct {
+		return findParentField(currentFields, name)
+	}
+	if fields, ok := structFields[structName]; ok {
+		for i := range fields {
+			if fields[i].Name == name {
+				return &fields[i]
+			}
+		}
+	}
+	return nil
+}
+
+// 解析 compareTo（支援 "../action/add_player" 或 "flags/0"）
+func parseSwitchCompareTo(compareTo string, parentFields []PacketField, currentStruct string) (fieldName string, bitFlag int, fromParent bool, ownerStruct string) {
+	bitFlag = -1
+
 	parts := strings.Split(compareTo, "/")
-	fieldName = toPascalCase(parts[0])
-	if !parentFieldExists(parentFields, fieldName) {
-		return "", -1
+	var tokens []string
+	upLevels := 0
+	for _, p := range parts {
+		if p == "" {
+			continue
+		}
+		if p == ".." {
+			upLevels++
+			continue
+		}
+		tokens = append(tokens, p)
 	}
-	if len(parts) == 1 {
-		return fieldName, -1
+	if len(tokens) == 0 {
+		return "", -1, false, ""
 	}
-	// 支援 "flags/0" 這類直接指定位序
-	if pos, err := strconv.Atoi(parts[1]); err == nil && pos >= 0 {
-		return fieldName, pos
+
+	ownerStruct = currentStruct
+	for i := 0; i < upLevels; i++ {
+		if parent, ok := structParent[ownerStruct]; ok && parent != "" {
+			ownerStruct = parent
+		} else {
+			ownerStruct = ""
+			break
+		}
 	}
-	// 無法解析時回退
-	return fieldName, -1
+	fromParent = upLevels > 0
+	fieldName = toPascalCase(tokens[0])
+
+	if ownerStruct == "" {
+		return "", -1, fromParent, ownerStruct
+	}
+
+	// 確認欄位存在
+	if findStructField(ownerStruct, currentStruct, parentFields, fieldName) == nil && !fromParent {
+		return "", -1, fromParent, ownerStruct
+	}
+
+	// 若有第二段，可能是位序或旗標名稱
+	if len(tokens) > 1 {
+		if pos, err := strconv.Atoi(tokens[1]); err == nil && pos >= 0 {
+			return fieldName, pos, fromParent, ownerStruct
+		}
+		if m, ok := structFlagMaps[ownerStruct]; ok {
+			if flags, ok := m[fieldName]; ok {
+				if idx, ok := flags[tokens[1]]; ok {
+					return fieldName, idx, fromParent, ownerStruct
+				}
+			}
+		}
+	}
+
+	return fieldName, bitFlag, fromParent, ownerStruct
 }
 
 // 生成 optional switch
-func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, bitFlag int) *PacketField {
+func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, bitFlag int, fromParent bool, compareFieldIsMapper bool) *PacketField {
 	var innerType string
 	var compareVal interface{}
 	for k, v := range cfg.Fields {
@@ -1482,33 +1674,40 @@ func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareFie
 	}
 
 	field := &PacketField{
-		Name:     toPascalCase(fieldName),
-		GoType:   "*" + mapType(innerType),
-		Optional: true,
-		Comment:  fmt.Sprintf("// Optional，當 %s 符合條件時出現", compareField),
+		Name:        toPascalCase(fieldName),
+		GoType:      "*" + mapType(innerType),
+		Optional:    true,
+		NeedsParent: fromParent,
+		Comment:     fmt.Sprintf("// Optional，當 %s 符合條件時出現", compareField),
 	}
 
-	compareLiteral := buildCompareLiteral(compareVal, compareFieldType)
+	preferNumericBool := fromParent && isNumericType(compareFieldType)
+	_ = compareFieldIsMapper
+	compareLiteral := buildCompareLiteral(compareVal, compareFieldType, preferNumericBool)
 	if compareLiteral == "" {
 		return generateFallbackSwitchField(fieldName, cfg)
 	}
 	if bitFlag >= 0 {
-		field.ReadCode = generateBitFlagOptionalRead(field.Name, compareField, bitFlag, innerType)
-		field.WriteCode = generateBitFlagOptionalWrite(field.Name, compareField, bitFlag, innerType)
+		field.ReadCode = generateBitFlagOptionalRead(field.Name, compareField, bitFlag, innerType, fromParent)
+		field.WriteCode = generateBitFlagOptionalWrite(field.Name, compareField, bitFlag, innerType, fromParent)
 	} else {
-		field.ReadCode = generateDirectOptionalRead(field.Name, compareField, compareLiteral, innerType)
-		field.WriteCode = generateDirectOptionalWrite(field.Name, innerType)
+		field.ReadCode = generateDirectOptionalRead(field.Name, compareField, compareLiteral, innerType, fromParent)
+		field.WriteCode = generateDirectOptionalWrite(field.Name, innerType, fromParent)
 	}
 	return field
 }
 
 // 基於位元旗標的 optional 讀取
-func generateBitFlagOptionalRead(fieldName, flagField string, bitPos int, innerType string) []string {
+func generateBitFlagOptionalRead(fieldName, flagField string, bitPos int, innerType string, fromParent bool) []string {
 	code := []string{
 		fmt.Sprintf("// 旗標存在才讀取 %s", fieldName),
-		fmt.Sprintf("if p.%s & (1 << %d) != 0 {", flagField, bitPos),
-		fmt.Sprintf("	var val %s", mapType(innerType)),
 	}
+	if fromParent {
+		code = append(code, fmt.Sprintf("if parent != nil && parent.%s & (1 << %d) != 0 {", flagField, bitPos))
+	} else {
+		code = append(code, fmt.Sprintf("if p.%s & (1 << %d) != 0 {", flagField, bitPos))
+	}
+	code = append(code, fmt.Sprintf("	var val %s", mapType(innerType)))
 
 	code = append(code, generateValueReadLines(innerType, "val")...)
 	code = append(code,
@@ -1519,7 +1718,8 @@ func generateBitFlagOptionalRead(fieldName, flagField string, bitPos int, innerT
 }
 
 // 基於位元旗標的 optional 寫入
-func generateBitFlagOptionalWrite(fieldName, flagField string, bitPos int, innerType string) []string {
+func generateBitFlagOptionalWrite(fieldName, flagField string, bitPos int, innerType string, fromParent bool) []string {
+	_ = fromParent
 	code := []string{
 		fmt.Sprintf("// 若欄位存在則寫入 %s", fieldName),
 		fmt.Sprintf("if p.%s != nil {", fieldName),
@@ -1533,12 +1733,16 @@ func generateBitFlagOptionalWrite(fieldName, flagField string, bitPos int, inner
 }
 
 // 基於直接欄位比較的 optional 讀取
-func generateDirectOptionalRead(fieldName, compareField, compareLiteral, innerType string) []string {
+func generateDirectOptionalRead(fieldName, compareField, compareLiteral, innerType string, fromParent bool) []string {
 	code := []string{
 		fmt.Sprintf("// 當 %s == %s 時讀取 %s", compareField, compareLiteral, fieldName),
-		fmt.Sprintf("if p.%s == %s {", compareField, compareLiteral),
-		fmt.Sprintf("	var val %s", mapType(innerType)),
 	}
+	if fromParent {
+		code = append(code, fmt.Sprintf("if parent != nil && parent.%s == %s {", compareField, compareLiteral))
+	} else {
+		code = append(code, fmt.Sprintf("if p.%s == %s {", compareField, compareLiteral))
+	}
+	code = append(code, fmt.Sprintf("	var val %s", mapType(innerType)))
 	code = append(code, generateValueReadLines(innerType, "val")...)
 	code = append(code,
 		fmt.Sprintf("	p.%s = &val", fieldName),
@@ -1548,7 +1752,8 @@ func generateDirectOptionalRead(fieldName, compareField, compareLiteral, innerTy
 }
 
 // 基於直接欄位比較的 optional 寫入
-func generateDirectOptionalWrite(fieldName, innerType string) []string {
+func generateDirectOptionalWrite(fieldName, innerType string, fromParent bool) []string {
+	_ = fromParent
 	code := []string{
 		fmt.Sprintf("if p.%s != nil {", fieldName),
 	}
@@ -1560,8 +1765,52 @@ func generateDirectOptionalWrite(fieldName, innerType string) []string {
 	return code
 }
 
+// 產生 option[array] 的讀寫片段，readLines/writeLines 為單元素讀寫
+func generateOptionalArrayRW(field *PacketField, countType string, readLines, writeLines []string) {
+	field.ReadCode = []string{
+		fmt.Sprintf("var has%s pk.Boolean", field.Name),
+		fmt.Sprintf("temp, err = has%s.ReadFrom(r)", field.Name),
+		"n += temp",
+		"if err != nil { return n, err }",
+		fmt.Sprintf("if has%s {", field.Name),
+		fmt.Sprintf("	var cnt pk.%s", mapTypeToPkType(countType)),
+		"	temp, err = cnt.ReadFrom(r)",
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"	arr := make([]" + strings.TrimPrefix(field.GoType, "*[]") + ", cnt)",
+		"	for i := 0; i < int(cnt); i++ {",
+	}
+	field.ReadCode = append(field.ReadCode, readLines...)
+	field.ReadCode = append(field.ReadCode,
+		"		arr[i] = v",
+		"	}",
+		fmt.Sprintf("	p.%s = &arr", field.Name),
+		"}",
+	)
+
+	field.WriteCode = []string{
+		fmt.Sprintf("if p.%s != nil {", field.Name),
+		"	temp, err = pk.Boolean(true).WriteTo(w)",
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"	temp, err = pk." + mapTypeToPkType(countType) + "(len(*p." + field.Name + ")).WriteTo(w)",
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"	for i := range *p." + field.Name + " {",
+	}
+	field.WriteCode = append(field.WriteCode, writeLines...)
+	field.WriteCode = append(field.WriteCode,
+		"	}",
+		"} else {",
+		"	temp, err = pk.Boolean(false).WriteTo(w)",
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"}",
+	)
+}
+
 // 生成 union switch 欄位
-func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool) *PacketField {
+func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool, fromParent bool, compareFieldIsMapper bool) *PacketField {
 	comment := fmt.Sprintf("// Switch 基於 %s：\n", compareField)
 	for v, t := range cfg.Fields {
 		comment += fmt.Sprintf("//   %v -> %v\n", v, t)
@@ -1571,15 +1820,16 @@ func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField,
 	}
 
 	return &PacketField{
-		Name:      toPascalCase(fieldName),
-		GoType:    "interface{}",
-		Comment:   comment,
-		ReadCode:  generateUnionReadCode(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer),
-		WriteCode: generateUnionWriteCode(fieldName, cfg),
+		Name:        toPascalCase(fieldName),
+		GoType:      "interface{}",
+		NeedsParent: fromParent,
+		Comment:     comment,
+		ReadCode:    generateUnionReadCode(fieldName, cfg, compareField, compareFieldType, compareFieldIsPointer, fromParent, compareFieldIsMapper),
+		WriteCode:   generateUnionWriteCode(fieldName, cfg),
 	}
 }
 
-func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool) []string {
+func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, compareFieldIsPointer bool, fromParent bool, compareFieldIsMapper bool) []string {
 	targetField := toPascalCase(fieldName)
 
 	// 如果 compareField 是指针类型，需要解引用
@@ -1587,6 +1837,13 @@ func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, co
 	if compareFieldIsPointer {
 		switchExpr = fmt.Sprintf("*p.%s", compareField)
 	}
+	// 若來自父層（../），以外部變數名稱表示
+	if fromParent {
+		switchExpr = "parent." + compareField
+	}
+
+	preferNumericBool := fromParent && isNumericType(compareFieldType)
+	_ = compareFieldIsMapper
 
 	code := []string{
 		fmt.Sprintf("switch %s {", switchExpr),
@@ -1597,7 +1854,7 @@ func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, co
 		if !ok {
 			continue
 		}
-		valueLiteral := buildCompareLiteral(rawKey, compareFieldType)
+		valueLiteral := buildCompareLiteral(rawKey, compareFieldType, preferNumericBool)
 		if valueLiteral == "" {
 			continue
 		}
@@ -1668,10 +1925,26 @@ func generateUnionWriteCode(fieldName string, cfg *SwitchConfig) []string {
 	return code
 }
 
+func isNumericType(t string) bool {
+	switch t {
+	case "int", "int8", "int16", "int32", "int64",
+		"uint", "uint8", "uint16", "uint32", "uint64",
+		"float32", "float64":
+		return true
+	}
+	return false
+}
+
 // 建立比較值字面
-func buildCompareLiteral(v interface{}, compareFieldType string) string {
+func buildCompareLiteral(v interface{}, compareFieldType string, preferNumericBool bool) string {
 	switch val := v.(type) {
 	case bool:
+		if preferNumericBool {
+			if val {
+				return "1"
+			}
+			return "0"
+		}
 		return fmt.Sprintf("%t", val)
 	case float64:
 		if val == float64(int64(val)) {
@@ -2574,6 +2847,8 @@ func generatePackets(packets []PacketDef, outputDir, direction string) error {
 		"join": func(lines []string) string {
 			return strings.Join(lines, "\n\t")
 		},
+		"hasParent":  func(s StructDef) bool { return s.NeedsParent },
+		"parentType": func(s StructDef) string { return s.Parent },
 	}).Parse(`// Code generated by enhanced-generator v2 from protocol.json; DO NOT EDIT manually.
 // To regenerate: go run main_v2.go -protocol <path> -output <dir> -direction {{.Direction}}
 
@@ -2596,6 +2871,10 @@ type {{.Name}} struct {
 {{if $.GenerateCodec}}
 // ReadFrom reads the data from the reader.
 func (p *{{.Name}}) ReadFrom(r io.Reader) (n int64, err error) {
+{{- if hasParent . }}
+	// Parent context required; fallback calls ReadFromWithParent with nil (may error if accessed).
+	return p.ReadFromWithParent(r, nil)
+{{- else }}
 {{- if gt (len .Fields) 0 }}
 	var temp int64
 	_ = temp
@@ -2604,10 +2883,29 @@ func (p *{{.Name}}) ReadFrom(r io.Reader) (n int64, err error) {
 	{{join .ReadCode}}
 {{end}}
 	return n, nil
+{{- end }}
 }
+
+{{if hasParent .}}
+// ReadFromWithParent reads the data from the reader with parent context.
+func (p *{{.Name}}) ReadFromWithParent(r io.Reader, parent *{{parentType .}}) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
+	var temp int64
+	_ = temp
+{{- end }}
+	_ = parent
+{{range .Fields}}
+	{{join .ReadCode}}
+{{end}}
+	return n, nil
+}
+{{end}}
 
 // WriteTo writes the data to the writer.
 func (p {{.Name}}) WriteTo(w io.Writer) (n int64, err error) {
+{{- if hasParent . }}
+	return p.WriteToWithParent(w, nil)
+{{- else }}
 {{- if gt (len .Fields) 0 }}
 	var temp int64
 	_ = temp
@@ -2616,7 +2914,22 @@ func (p {{.Name}}) WriteTo(w io.Writer) (n int64, err error) {
 	{{join .WriteCode}}
 {{end}}
 	return n, nil
+{{- end }}
 }
+{{if hasParent .}}
+// WriteToWithParent writes the data with parent context.
+func (p {{.Name}}) WriteToWithParent(w io.Writer, parent *{{parentType .}}) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
+	var temp int64
+	_ = temp
+{{- end }}
+	_ = parent
+{{range .Fields}}
+	{{join .WriteCode}}
+{{end}}
+	return n, nil
+}
+{{end}}
 {{end}}
 {{end}}
 
