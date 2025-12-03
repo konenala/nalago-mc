@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"time"
 
+	"encoding/hex"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 
@@ -19,6 +20,9 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/server"
 )
+
+// chatDebug 用於追蹤簽名聊天/指令封包與 ack 狀態。
+const chatDebug = true
 
 type Player struct {
 	c bot.Client
@@ -446,40 +450,53 @@ func (p *Player) OpenMenu(command string) (bot.Container, error) {
 }
 
 func (p *Player) Command(msg string) error {
+	// 無簽章時送 chat_command（僅 command 字串）；有簽章時送 chat_command_signed。
+	if p.signer == nil || p.signer.IsExpired() {
+		cmd := &server.ChatCommand{Command: msg}
+		if chatDebug {
+			fmt.Printf("[CHAT-DBG] command='%s' unsigned\n", msg)
+		}
+		return p.c.WritePacket(context.Background(), cmd)
+	}
+
 	ts := time.Now().UnixMilli()
 	salt := rand.Int63()
 	if salt == 0 {
 		salt = 1
 	}
 
-	// Get acknowledgements and bitset (same as Chat)
 	_, ackBitset := p.chat.GetAcknowledgements()
 
-	commandPacket := &server.ChatCommand{
+	cmdSigned := &server.ChatCommandSigned{
 		Command:            msg,
 		Timestamp:          ts,
 		Salt:               salt,
 		ArgumentSignatures: make([]server.SignedSignatures, 0),
-		Offset:             p.chat.NextOffset(),
-		Checksum:           p.chat.Checksum(),
+		MessageCount:       p.chat.NextOffset(),
 		Acknowledged:       ackBitset,
+		Checksum:           p.chat.Checksum(),
 	}
 
-	// Sign the command if we have a signer
-	// Note: Commands in MC 1.19+ can have per-argument signatures
-	// For now we keep ArgumentSignatures as nil (server will handle unsigned commands)
-	if p.signer != nil && !p.signer.IsExpired() {
-		// Track command attempt in chain even without signature
-		p.messageIndex++
-	}
+	// Track command attempt in chain
+	p.messageIndex++
 
-	// Reset pending count after sending (same as Chat)
+	// Reset pending count after sending
 	p.chat.ResetPending()
 
-	return p.c.WritePacket(context.Background(), commandPacket)
+	if chatDebug {
+		fmt.Printf("[CHAT-DBG] command='%s' signed offset=%d checksum=%d ack=%s\n",
+			msg, cmdSigned.MessageCount, cmdSigned.Checksum, hex.EncodeToString(cmdSigned.Acknowledged))
+	}
+
+	return p.c.WritePacket(context.Background(), cmdSigned)
 }
 
 func (p *Player) Chat(msg string) error {
+	// 任何以 '/' 開頭的訊息（包含單獨 "/"）都走指令通道，對齊 mineflayer 行為
+	if len(msg) > 0 && msg[0] == '/' {
+		return p.Command(msg[1:])
+	}
+
 	ts := time.Now().UnixMilli()
 	salt := rand.Int63()
 	if salt == 0 {
@@ -510,12 +527,20 @@ func (p *Player) Chat(msg string) error {
 			// Track message in chain
 			p.messageIndex++
 			p.messageChain.AddMessage(p.messageIndex, signature)
+		} else if err != nil && chatDebug {
+			fmt.Printf("[CHAT-DBG] sign failed: %v\n", err)
 		}
 	}
 
 	// Reset pending count after sending (CRITICAL for chat acknowledgment)
 	// Mineflayer does this in chat.js:415
 	p.chat.ResetPending()
+
+	if chatDebug {
+		fmt.Printf("[CHAT-DBG] msg='%s' signed=%v offset=%d checksum=%d ack=%s siglen=%d\n",
+			msg, chatPacket.HasSignature, chatPacket.Offset, chatPacket.Checksum,
+			hex.EncodeToString(chatPacket.Acknowledged), len(chatPacket.Signature))
+	}
 
 	return p.c.WritePacket(context.Background(), chatPacket)
 }

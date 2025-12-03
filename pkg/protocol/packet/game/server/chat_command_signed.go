@@ -7,7 +7,7 @@ import (
 //codec:gen
 type SignedSignatures struct {
 	ArgumentName string
-	Signature    []byte `mc:"ByteArray"`
+	Signature    []byte
 }
 
 //codec:gen
@@ -16,9 +16,9 @@ type ChatCommandSigned struct {
 	Timestamp          int64
 	Salt               int64
 	ArgumentSignatures []SignedSignatures
-	Offset             int32 `mc:"VarInt"`
-	Checksum           int8  `mc:"Byte"`
+	MessageCount       int32 `mc:"VarInt"`
 	Acknowledged       []byte
+	Checksum           int8 `mc:"Byte"`
 }
 
 func (*ChatCommandSigned) PacketID() packetid.ServerboundPacketID {

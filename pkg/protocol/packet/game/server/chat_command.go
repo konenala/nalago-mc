@@ -6,13 +6,7 @@ import (
 
 //codec:gen
 type ChatCommand struct {
-	Command            string
-	Timestamp          int64
-	Salt               int64
-	ArgumentSignatures []SignedSignatures
-	Offset             int32 `mc:"VarInt"`
-	Checksum           int8  `mc:"Byte"`
-	Acknowledged       []byte
+	Command string
 }
 
 func (*ChatCommand) PacketID() packetid.ServerboundPacketID {

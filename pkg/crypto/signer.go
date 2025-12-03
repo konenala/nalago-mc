@@ -7,11 +7,14 @@ import (
 	"crypto/sha256"
 	"crypto/x509"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+const chatSignDebug = true
 
 // ChatSigner handles signing chat messages for Minecraft 1.19+
 type ChatSigner struct {
@@ -63,6 +66,11 @@ func (s *ChatSigner) SignChatMessage(message string, timestamp int64, salt int64
 	// Increment session index after each message (mineflayer chat.js:462)
 	s.sessionIndex++
 
+	if chatSignDebug {
+		fmt.Printf("[CHAT-SIGN] msg='%s' ts=%d salt=%d idx=%d acks=%d payload=%s siglen=%d\n",
+			message, timestamp, salt, s.sessionIndex-1, len(acknowledgements), hex.EncodeToString(encoded), len(signature))
+	}
+
 	return signature, nil
 }
 
@@ -79,14 +87,16 @@ func (s *ChatSigner) encodeMessageForSigning(message string, timestamp int64, sa
 
 	// Calculate total size
 	// Version(4) + PlayerUUID(16) + SessionUUID(16) + Index(4) + Salt(8) + Timestamp(8) +
-	// MessageLength(4) + VarIntLen(messageLen) + Message(len) + AckCount(4) + Acknowledgements(variable)
+	// MessageLength(4) + VarIntLen(messageLen) + Message(len) +
+	// AckCount(4) + VarIntLen(ackBytes) + AckBytes
 	ackDataSize := 0
 	for _, ack := range acknowledgements {
 		ackDataSize += len(ack)
 	}
 
+	ackVarLen := varIntSize(ackDataSize) // even when 0, VarInt(0) is 1 byte
 	varIntLen := varIntSize(messageLen)
-	size := 4 + 16 + 16 + 4 + 8 + 8 + 4 + varIntLen + messageLen + 4 + ackDataSize
+	size := 4 + 16 + 16 + 4 + 8 + 8 + 4 + varIntLen + messageLen + 4 + ackVarLen + ackDataSize
 	buf := make([]byte, size)
 	offset := 0
 
@@ -129,7 +139,8 @@ func (s *ChatSigner) encodeMessageForSigning(message string, timestamp int64, sa
 	binary.BigEndian.PutUint32(buf[offset:], uint32(len(acknowledgements)))
 	offset += 4
 
-	// Write concatenated acknowledgements (no length prefix per signature)
+	// Write acknowledgements total length (VarInt) then concatenated signatures
+	offset += putVarInt(buf[offset:], ackDataSize)
 	for _, ack := range acknowledgements {
 		copy(buf[offset:], ack)
 		offset += len(ack)
