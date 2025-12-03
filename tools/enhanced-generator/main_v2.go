@@ -1089,7 +1089,7 @@ func generateUnionWriteCode(fieldName string, cfg *SwitchConfig) []string {
 
 	code = append(code,
 		"default:",
-		fmt.Sprintf("	return n, fmt.Errorf(\"unsupported switch type for %s: %T\", \"%s\", p.%s)", fieldName, fieldName, fieldName),
+		fmt.Sprintf("	return n, fmt.Errorf(\"unsupported switch type for %s: %%T\", v)", fieldName),
 		"}",
 	)
 	return code
