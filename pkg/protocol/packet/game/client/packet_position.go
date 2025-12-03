@@ -21,7 +21,8 @@ type Position struct {
 	Dz         float64
 	Yaw        float32
 	Pitch      float32
-	Flags      int32
+	// Bitflags
+	Flags uint32
 }
 
 // PacketID returns the packet ID for this packet.
@@ -90,7 +91,13 @@ func (p *Position) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Read Flags (PositionUpdateRelatives)
+	var elem pk.Int
+	temp, err = elem.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Flags = uint32(elem)
 
 	return n, nil
 }
@@ -154,7 +161,11 @@ func (p Position) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Flags (PositionUpdateRelatives)
+	temp, err = pk.Int(int32(p.Flags)).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

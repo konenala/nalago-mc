@@ -85,8 +85,8 @@ func (p TrackedWaypointWaypointIcon) WriteTo(w io.Writer) (n int64, err error) {
 type TrackedWaypointWaypoint struct {
 	HasUUID bool
 	Icon    TrackedWaypointWaypointIcon
-	// TODO: Implement mapper type
-	Type interface{}
+	// Mapper to string
+	Type string
 	// Switch 基於 Type：
 	//   vec3i -> vec3i
 	//   chunk -> [container [map[name:chunkX type:varint] map[name:chunkZ type:varint]]]
@@ -114,7 +114,24 @@ func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Read Type
+	var mapperVal pk.VarInt
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 3:
+		p.Type = "azimuth"
+	case 0:
+		p.Type = "empty"
+	case 1:
+		p.Type = "vec3i"
+	case 2:
+		p.Type = "chunk"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
+	}
 
 	switch p.Type {
 	case "vec3i":
@@ -161,15 +178,36 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Type
-
-	switch v := p.Data.(type) {
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
+	switch p.Type {
+	case "azimuth":
+		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+	case "empty":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "vec3i":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "chunk":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Type value %v", p.Type)
+	}
+
+	switch v := p.Data.(type) {
 	case [3]int32:
 		for i := 0; i < 3; i++ {
 			temp, err = pk.VarInt(v[i]).WriteTo(w)
@@ -178,6 +216,12 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 				return n, err
 			}
 		}
+		if err != nil {
+			return n, err
+		}
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
 		if err != nil {
 			return n, err
 		}
@@ -191,8 +235,8 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 // TrackedWaypoint represents the Clientbound TrackedWaypoint packet.
 
 type TrackedWaypoint struct {
-	// TODO: Implement mapper type
-	Operation interface{}
+	// Mapper to string
+	Operation string
 	Waypoint  TrackedWaypointWaypoint
 }
 
@@ -206,7 +250,22 @@ func (p *TrackedWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Operation
+	var mapperVal pk.VarInt
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 0:
+		p.Operation = "track"
+	case 1:
+		p.Operation = "untrack"
+	case 2:
+		p.Operation = "update"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Operation", mapperVal)
+	}
 
 	temp, err = p.Waypoint.ReadFrom(r)
 	n += temp
@@ -222,7 +281,28 @@ func (p TrackedWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Operation
+	switch p.Operation {
+	case "track":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "untrack":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "update":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Operation value %v", p.Operation)
+	}
 
 	temp, err = p.Waypoint.WriteTo(w)
 	n += temp

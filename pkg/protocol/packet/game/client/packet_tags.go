@@ -9,10 +9,76 @@ import (
 	"io"
 )
 
+// TagsTagsEntryTagsEntry is a sub-structure used in the packet.
+type TagsTagsEntryTagsEntry struct {
+	TagName string `mc:"String"`
+	Entries []int32
+}
+
+// ReadFrom reads the data from the reader.
+func (p *TagsTagsEntryTagsEntry) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	var tagName pk.String
+	temp, err = tagName.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.TagName = string(tagName)
+
+	var entriesCount pk.VarInt
+	temp, err = entriesCount.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Entries = make([]int32, entriesCount)
+	for i := 0; i < int(entriesCount); i++ {
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Entries[i] = int32(elem)
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p TagsTagsEntryTagsEntry) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.String(p.TagName).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(len(p.Entries)).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	for i := range p.Entries {
+		temp, err = pk.VarInt(p.Entries[i]).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
+
+	return n, nil
+}
+
 // TagsTagsEntry is a sub-structure used in the packet.
 type TagsTagsEntry struct {
 	TagType string `mc:"String"`
-	Tags    interface{}
+	Tags    []TagsTagsEntryTagsEntry
 }
 
 // ReadFrom reads the data from the reader.
@@ -28,7 +94,20 @@ func (p *TagsTagsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.TagType = string(tagType)
 
-	// TODO: Read Tags (unsupported type tags)
+	var tagsCount pk.VarInt
+	temp, err = tagsCount.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Tags = make([]TagsTagsEntryTagsEntry, tagsCount)
+	for i := 0; i < int(tagsCount); i++ {
+		temp, err = p.Tags[i].ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	return n, nil
 }
@@ -44,7 +123,18 @@ func (p TagsTagsEntry) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Tags (unsupported type tags)
+	temp, err = pk.VarInt(len(p.Tags)).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	for i := range p.Tags {
+		temp, err = p.Tags[i].WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	return n, nil
 }

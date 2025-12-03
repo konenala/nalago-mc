@@ -12,7 +12,8 @@ import (
 // BlockAction represents the Clientbound BlockAction packet.
 
 type BlockAction struct {
-	Location pk.Position
+	// Bitfield - see protocol spec for bit layout
+	Location int32
 	Byte1    uint8
 	Byte2    uint8
 	BlockId  int32 `mc:"VarInt"`
@@ -28,7 +29,7 @@ func (p *BlockAction) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -66,7 +67,7 @@ func (p BlockAction) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = p.Location.WriteTo(w)
+	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

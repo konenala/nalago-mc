@@ -4,6 +4,7 @@
 package server
 
 import (
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
 )
@@ -11,8 +12,7 @@ import (
 // CustomPayload represents the Serverbound CustomPayload packet.
 
 type CustomPayload struct {
-	// TODO: Implement pstring type
-	Channel interface{}
+	Channel string `mc:"String"`
 	Data    pk.PluginMessageData
 }
 
@@ -26,9 +26,19 @@ func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Channel
+	var channel pk.String
+	temp, err = channel.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Channel = string(channel)
 
-	// TODO: Read Data (restBuffer)
+	temp, err = (*pk.PluginMessageData)(&p.Data).ReadFrom(r)
+	n += temp
+	if err != nil && err != io.EOF {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -38,9 +48,17 @@ func (p CustomPayload) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Channel
+	temp, err = pk.String(p.Channel).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Write Data (restBuffer)
+	temp, err = pk.PluginMessageData(p.Data).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

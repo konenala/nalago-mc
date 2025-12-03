@@ -4,6 +4,7 @@
 package client
 
 import (
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
 )
@@ -11,7 +12,7 @@ import (
 // CloseWindow represents the Clientbound CloseWindow packet.
 
 type CloseWindow struct {
-	WindowId int8
+	WindowId int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -24,7 +25,13 @@ func (p *CloseWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read WindowId (ContainerID)
+	var windowId pk.VarInt
+	temp, err = windowId.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.WindowId = int32(windowId)
 
 	return n, nil
 }
@@ -34,7 +41,11 @@ func (p CloseWindow) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write WindowId (ContainerID)
+	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

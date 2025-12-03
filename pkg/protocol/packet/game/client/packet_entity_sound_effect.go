@@ -4,6 +4,7 @@
 package client
 
 import (
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
@@ -12,8 +13,9 @@ import (
 // EntitySoundEffect represents the Clientbound EntitySoundEffect packet.
 
 type EntitySoundEffect struct {
-	Sound         interface{}
-	SoundCategory int32
+	Sound string `mc:"String"`
+	// Mapper to string
+	SoundCategory string
 	EntityId      int32 `mc:"VarInt"`
 	Volume        float32
 	Pitch         float32
@@ -30,9 +32,46 @@ func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Sound (unsupported type ItemSoundHolder)
+	var sound pk.String
+	temp, err = sound.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Sound = string(sound)
 
-	// TODO: Read SoundCategory (soundSource)
+	var mapperVal pk.VarInt
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 7:
+		p.SoundCategory = "player"
+	case 8:
+		p.SoundCategory = "ambient"
+	case 4:
+		p.SoundCategory = "block"
+	case 5:
+		p.SoundCategory = "hostile"
+	case 6:
+		p.SoundCategory = "neutral"
+	case 9:
+		p.SoundCategory = "voice"
+	case 10:
+		p.SoundCategory = "ui"
+	case 0:
+		p.SoundCategory = "master"
+	case 1:
+		p.SoundCategory = "music"
+	case 2:
+		p.SoundCategory = "record"
+	case 3:
+		p.SoundCategory = "weather"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for SoundCategory", mapperVal)
+	}
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -68,9 +107,82 @@ func (p EntitySoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Sound (unsupported type ItemSoundHolder)
+	temp, err = pk.String(p.Sound).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Write SoundCategory (soundSource)
+	switch p.SoundCategory {
+	case "player":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ambient":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "block":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "hostile":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "neutral":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "voice":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ui":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "master":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "music":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "record":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "weather":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown SoundCategory value %v", p.SoundCategory)
+	}
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

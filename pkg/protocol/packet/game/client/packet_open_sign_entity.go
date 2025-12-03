@@ -12,7 +12,8 @@ import (
 // OpenSignEntity represents the Clientbound OpenSignEntity packet.
 
 type OpenSignEntity struct {
-	Location    pk.Position
+	// Bitfield - see protocol spec for bit layout
+	Location    int32
 	IsFrontText bool
 }
 
@@ -26,7 +27,7 @@ func (p *OpenSignEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -48,7 +49,7 @@ func (p OpenSignEntity) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = p.Location.WriteTo(w)
+	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

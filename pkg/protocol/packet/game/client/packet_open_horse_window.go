@@ -12,7 +12,7 @@ import (
 // OpenHorseWindow represents the Clientbound OpenHorseWindow packet.
 
 type OpenHorseWindow struct {
-	WindowId int8
+	WindowId int32 `mc:"VarInt"`
 	NbSlots  int32 `mc:"VarInt"`
 	EntityId int32
 }
@@ -27,7 +27,13 @@ func (p *OpenHorseWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read WindowId (ContainerID)
+	var windowId pk.VarInt
+	temp, err = windowId.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.WindowId = int32(windowId)
 
 	var nbSlots pk.VarInt
 	temp, err = nbSlots.ReadFrom(r)
@@ -51,7 +57,11 @@ func (p OpenHorseWindow) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write WindowId (ContainerID)
+	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.VarInt(p.NbSlots).WriteTo(w)
 	n += temp

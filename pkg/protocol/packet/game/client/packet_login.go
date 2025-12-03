@@ -4,10 +4,283 @@
 package client
 
 import (
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
 )
+
+// LoginWorldStateDeath is a sub-structure used in the packet.
+type LoginWorldStateDeath struct {
+	DimensionName string `mc:"String"`
+	// Bitfield - see protocol spec for bit layout
+	Location int32
+}
+
+// ReadFrom reads the data from the reader.
+func (p *LoginWorldStateDeath) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	var dimensionName pk.String
+	temp, err = dimensionName.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.DimensionName = string(dimensionName)
+
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p LoginWorldStateDeath) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.String(p.DimensionName).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Int(p.Location).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// LoginWorldState is a sub-structure used in the packet.
+type LoginWorldState struct {
+	Dimension  int32  `mc:"VarInt"`
+	Name       string `mc:"String"`
+	HashedSeed int64
+	// Mapper to string
+	Gamemode         string
+	PreviousGamemode uint8
+	IsDebug          bool
+	IsFlat           bool
+	Death            *LoginWorldStateDeath
+	PortalCooldown   int32 `mc:"VarInt"`
+	SeaLevel         int32 `mc:"VarInt"`
+}
+
+// ReadFrom reads the data from the reader.
+func (p *LoginWorldState) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	var dimension pk.VarInt
+	temp, err = dimension.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Dimension = int32(dimension)
+
+	var name pk.String
+	temp, err = name.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Name = string(name)
+
+	temp, err = (*pk.Long)(&p.HashedSeed).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	var mapperVal pk.Byte
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 0:
+		p.Gamemode = "survival"
+	case 1:
+		p.Gamemode = "creative"
+	case 2:
+		p.Gamemode = "adventure"
+	case 3:
+		p.Gamemode = "spectator"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Gamemode", mapperVal)
+	}
+
+	var previousGamemode pk.UnsignedByte
+	temp, err = previousGamemode.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.PreviousGamemode = uint8(previousGamemode)
+
+	var isDebug pk.Boolean
+	temp, err = isDebug.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.IsDebug = bool(isDebug)
+
+	var isFlat pk.Boolean
+	temp, err = isFlat.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.IsFlat = bool(isFlat)
+
+	var hasDeath pk.Boolean
+	temp, err = hasDeath.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	if hasDeath {
+		p.Death = &LoginWorldStateDeath{}
+		temp, err = p.Death.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
+
+	var portalCooldown pk.VarInt
+	temp, err = portalCooldown.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.PortalCooldown = int32(portalCooldown)
+
+	var seaLevel pk.VarInt
+	temp, err = seaLevel.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.SeaLevel = int32(seaLevel)
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p LoginWorldState) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.VarInt(p.Dimension).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.String(p.Name).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Long(p.HashedSeed).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	switch p.Gamemode {
+	case "survival":
+		temp, err = pk.Byte(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "creative":
+		temp, err = pk.Byte(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "adventure":
+		temp, err = pk.Byte(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "spectator":
+		temp, err = pk.Byte(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Gamemode value %v", p.Gamemode)
+	}
+
+	temp, err = pk.UnsignedByte(p.PreviousGamemode).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Boolean(p.IsDebug).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Boolean(p.IsFlat).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	if p.Death != nil {
+		temp, err = pk.Boolean(true).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		temp, err = p.Death.WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	} else {
+		temp, err = pk.Boolean(false).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
+
+	temp, err = pk.VarInt(p.PortalCooldown).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(p.SeaLevel).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
 
 // Login represents the Clientbound Login packet.
 
@@ -21,7 +294,7 @@ type Login struct {
 	ReducedDebugInfo    bool
 	EnableRespawnScreen bool
 	DoLimitedCrafting   bool
-	WorldState          interface{}
+	WorldState          LoginWorldState
 	EnforcesSecureChat  bool
 }
 
@@ -114,7 +387,11 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.DoLimitedCrafting = bool(doLimitedCrafting)
 
-	// TODO: Read WorldState (unsupported type SpawnInfo)
+	temp, err = p.WorldState.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	var enforcesSecureChat pk.Boolean
 	temp, err = enforcesSecureChat.ReadFrom(r)
@@ -193,7 +470,11 @@ func (p Login) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write WorldState (unsupported type SpawnInfo)
+	temp, err = p.WorldState.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Boolean(p.EnforcesSecureChat).WriteTo(w)
 	n += temp

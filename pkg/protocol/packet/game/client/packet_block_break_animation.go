@@ -12,8 +12,9 @@ import (
 // BlockBreakAnimation represents the Clientbound BlockBreakAnimation packet.
 
 type BlockBreakAnimation struct {
-	EntityId     int32 `mc:"VarInt"`
-	Location     pk.Position
+	EntityId int32 `mc:"VarInt"`
+	// Bitfield - see protocol spec for bit layout
+	Location     int32
 	DestroyStage int8
 }
 
@@ -35,7 +36,7 @@ func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.EntityId = int32(entityId)
 
-	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -63,7 +64,7 @@ func (p BlockBreakAnimation) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = p.Location.WriteTo(w)
+	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

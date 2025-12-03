@@ -13,7 +13,7 @@ import (
 
 type ProfilelessChat struct {
 	Message pk.NBTField `mc:"NBT"`
-	Type    interface{}
+	Type    string      `mc:"String"`
 	Name    pk.NBTField `mc:"NBT"`
 	Target  *pk.NBTField
 }
@@ -34,7 +34,13 @@ func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Read Type (unsupported type ChatTypesHolder)
+	var _type pk.String
+	temp, err = _type.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Type = string(_type)
 
 	temp, err = (*pk.NBTField)(&p.Name).ReadFrom(r)
 	n += temp
@@ -72,7 +78,11 @@ func (p ProfilelessChat) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Type (unsupported type ChatTypesHolder)
+	temp, err = pk.String(p.Type).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = p.Name.WriteTo(w)
 	n += temp

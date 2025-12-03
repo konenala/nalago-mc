@@ -9,10 +9,56 @@ import (
 	"io"
 )
 
+// ChunkBiomesBiomesEntryPosition is a sub-structure used in the packet.
+type ChunkBiomesBiomesEntryPosition struct {
+	Z int32
+	X int32
+}
+
+// ReadFrom reads the data from the reader.
+func (p *ChunkBiomesBiomesEntryPosition) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = (*pk.Int)(&p.Z).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Int)(&p.X).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p ChunkBiomesBiomesEntryPosition) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.Int(p.Z).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Int(p.X).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 // ChunkBiomesBiomesEntry is a sub-structure used in the packet.
 type ChunkBiomesBiomesEntry struct {
-	Position int64
-	Data     []byte
+	Position ChunkBiomesBiomesEntryPosition
+	Data     []byte `mc:"ByteArray"`
 }
 
 // ReadFrom reads the data from the reader.
@@ -20,9 +66,17 @@ func (p *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Position (packedChunkPos)
+	temp, err = p.Position.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Read Data (ByteArray)
+	temp, err = (*pk.ByteArray)(&p.Data).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -32,9 +86,17 @@ func (p ChunkBiomesBiomesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Position (packedChunkPos)
+	temp, err = p.Position.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Write Data (ByteArray)
+	temp, err = (*pk.ByteArray)(&p.Data).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

@@ -31,8 +31,8 @@ type BossBar struct {
 	//   default -> void
 	Color interface{}
 	// Switch 基於 Action：
-	//   0 -> varint
 	//   4 -> varint
+	//   0 -> varint
 	//   default -> void
 	Dividers interface{}
 	// Switch 基於 Action：
@@ -159,7 +159,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 5:
+	case 0:
 		var val uint8
 		var elem pk.UnsignedByte
 		temp, err = elem.ReadFrom(r)
@@ -169,7 +169,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = uint8(elem)
 		p.Flags = val
-	case 0:
+	case 5:
 		var val uint8
 		var elem pk.UnsignedByte
 		temp, err = elem.ReadFrom(r)

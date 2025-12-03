@@ -12,9 +12,10 @@ import (
 // TileEntityData represents the Clientbound TileEntityData packet.
 
 type TileEntityData struct {
-	Location pk.Position
+	// Bitfield - see protocol spec for bit layout
+	Location int32
 	Action   int32 `mc:"VarInt"`
-	NbtData  *pk.NBTField
+	NbtData  pk.NBTField
 }
 
 // PacketID returns the packet ID for this packet.
@@ -27,7 +28,7 @@ func (p *TileEntityData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -41,7 +42,11 @@ func (p *TileEntityData) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.Action = int32(action)
 
-	// TODO: Read NbtData (anonOptionalNbt)
+	temp, err = (*pk.NBTField)(&p.NbtData).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -51,7 +56,7 @@ func (p TileEntityData) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	temp, err = p.Location.WriteTo(w)
+	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -63,7 +68,11 @@ func (p TileEntityData) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write NbtData (anonOptionalNbt)
+	temp, err = p.NbtData.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

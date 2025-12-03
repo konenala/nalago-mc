@@ -14,12 +14,12 @@ import (
 
 type Teams struct {
 	Team string `mc:"String"`
-	// TODO: Implement mapper type
-	Mode interface{}
+	// Mapper to string
+	Mode string
 	// Switch 基於 Mode：
-	//   add -> [array map[countType:varint type:string]]
 	//   join -> [array map[countType:varint type:string]]
 	//   leave -> [array map[countType:varint type:string]]
+	//   add -> [array map[countType:varint type:string]]
 	//   default -> void
 	Players interface{}
 }
@@ -42,7 +42,26 @@ func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.Team = string(team)
 
-	// TODO: Read Mode
+	var mapperVal pk.Byte
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 1:
+		p.Mode = "remove"
+	case 2:
+		p.Mode = "change"
+	case 3:
+		p.Mode = "join"
+	case 4:
+		p.Mode = "leave"
+	case 0:
+		p.Mode = "add"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Mode", mapperVal)
+	}
 
 	switch p.Mode {
 	default:
@@ -63,7 +82,40 @@ func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Mode
+	switch p.Mode {
+	case "remove":
+		temp, err = pk.Byte(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "change":
+		temp, err = pk.Byte(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "join":
+		temp, err = pk.Byte(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "leave":
+		temp, err = pk.Byte(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "add":
+		temp, err = pk.Byte(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Mode value %v", p.Mode)
+	}
 
 	switch v := p.Players.(type) {
 	default:

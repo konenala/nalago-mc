@@ -12,7 +12,7 @@ import (
 // CraftProgressBar represents the Clientbound CraftProgressBar packet.
 
 type CraftProgressBar struct {
-	WindowId int8
+	WindowId int32 `mc:"VarInt"`
 	Property int16
 	Value    int16
 }
@@ -27,7 +27,13 @@ func (p *CraftProgressBar) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read WindowId (ContainerID)
+	var windowId pk.VarInt
+	temp, err = windowId.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.WindowId = int32(windowId)
 
 	temp, err = (*pk.Short)(&p.Property).ReadFrom(r)
 	n += temp
@@ -49,7 +55,11 @@ func (p CraftProgressBar) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write WindowId (ContainerID)
+	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Short(p.Property).WriteTo(w)
 	n += temp

@@ -4,8 +4,10 @@
 package client
 
 import (
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
 	"io"
 )
 
@@ -75,10 +77,189 @@ func (p DeclareRecipesRecipesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+// DeclareRecipesStoneCutterRecipesEntrySlotDisplay is a sub-structure used in the packet.
+type DeclareRecipesStoneCutterRecipesEntrySlotDisplay struct {
+	// Mapper to string
+	Type string
+	// Switch 基於 Type：
+	//   smithing_trim -> [container [map[name:base type:SlotDisplay] map[name:material type:SlotDisplay] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
+	//   with_remainder -> [container [map[name:input type:SlotDisplay] map[name:remainder type:SlotDisplay]]]
+	//   composite -> [array map[countType:varint type:SlotDisplay]]
+	//   empty -> void
+	//   any_fuel -> void
+	//   item -> varint
+	//   item_stack -> Slot
+	//   tag -> string
+
+	Data interface{}
+}
+
+// ReadFrom reads the data from the reader.
+func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	var mapperVal pk.VarInt
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 5:
+		p.Type = "smithing_trim"
+	case 6:
+		p.Type = "with_remainder"
+	case 7:
+		p.Type = "composite"
+	case 0:
+		p.Type = "empty"
+	case 1:
+		p.Type = "any_fuel"
+	case 2:
+		p.Type = "item"
+	case 3:
+		p.Type = "item_stack"
+	case 4:
+		p.Type = "tag"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
+	}
+
+	switch p.Type {
+	case "empty":
+		var val interface{}
+		p.Data = val
+	case "any_fuel":
+		var val interface{}
+		p.Data = val
+	case "item":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Data = val
+	case "item_stack":
+		var val slot.Slot
+		temp, err = (*slot.Slot)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Data = val
+	case "tag":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = string(elem)
+		p.Data = val
+	default:
+		// 無對應負載
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	switch p.Type {
+	case "smithing_trim":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "with_remainder":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "composite":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "empty":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "any_fuel":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "item_stack":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "tag":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Type value %v", p.Type)
+	}
+
+	switch v := p.Data.(type) {
+	case string:
+		temp, err = pk.String(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case interface{}:
+		if err != nil {
+			return n, err
+		}
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case slot.Slot:
+		temp, err = (v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
+	}
+
+	return n, nil
+}
+
 // DeclareRecipesStoneCutterRecipesEntry is a sub-structure used in the packet.
 type DeclareRecipesStoneCutterRecipesEntry struct {
-	Input       interface{}
-	SlotDisplay interface{}
+	Input       []string
+	SlotDisplay DeclareRecipesStoneCutterRecipesEntrySlotDisplay
 }
 
 // ReadFrom reads the data from the reader.
@@ -86,9 +267,31 @@ func (p *DeclareRecipesStoneCutterRecipesEntry) ReadFrom(r io.Reader) (n int64, 
 	var temp int64
 	_ = temp
 
-	// TODO: Read Input (unsupported type IDSet)
+	var count pk.VarInt
+	temp, err = count.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	if count < 0 {
+		return n, fmt.Errorf("negative registryEntryHolderSet length")
+	}
+	p.Input = make([]string, count)
+	for i := int32(0); i < int32(count); i++ {
+		var s pk.String
+		temp, err = s.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Input[i] = string(s)
+	}
 
-	// TODO: Read SlotDisplay (unsupported type SlotDisplay)
+	temp, err = p.SlotDisplay.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -98,9 +301,24 @@ func (p DeclareRecipesStoneCutterRecipesEntry) WriteTo(w io.Writer) (n int64, er
 	var temp int64
 	_ = temp
 
-	// TODO: Write Input (unsupported type IDSet)
+	temp, err = pk.VarInt(len(p.Input)).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	for i := range p.Input {
+		temp, err = pk.String(p.Input[i]).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
-	// TODO: Write SlotDisplay (unsupported type SlotDisplay)
+	temp, err = p.SlotDisplay.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

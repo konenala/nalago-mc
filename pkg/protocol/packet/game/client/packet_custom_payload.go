@@ -34,7 +34,11 @@ func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.Channel = string(channel)
 
-	// TODO: Read Data (restBuffer)
+	temp, err = (*pk.PluginMessageData)(&p.Data).ReadFrom(r)
+	n += temp
+	if err != nil && err != io.EOF {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -50,7 +54,11 @@ func (p CustomPayload) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Data (restBuffer)
+	temp, err = pk.PluginMessageData(p.Data).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

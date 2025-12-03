@@ -13,7 +13,8 @@ import (
 
 type WorldEvent struct {
 	EffectId int32
-	Location pk.Position
+	// Bitfield - see protocol spec for bit layout
+	Location int32
 	Data     int32
 	Global   bool
 }
@@ -34,7 +35,7 @@ func (p *WorldEvent) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -68,7 +69,7 @@ func (p WorldEvent) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = p.Location.WriteTo(w)
+	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

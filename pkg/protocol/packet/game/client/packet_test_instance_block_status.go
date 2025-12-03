@@ -9,11 +9,76 @@ import (
 	"io"
 )
 
+// TestInstanceBlockStatusTemp is a sub-structure used in the packet.
+type TestInstanceBlockStatusTemp struct {
+	X int32 `mc:"VarInt"`
+	Y int32 `mc:"VarInt"`
+	Z int32 `mc:"VarInt"`
+}
+
+// ReadFrom reads the data from the reader.
+func (p *TestInstanceBlockStatusTemp) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	var x pk.VarInt
+	temp, err = x.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.X = int32(x)
+
+	var y pk.VarInt
+	temp, err = y.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Y = int32(y)
+
+	var z pk.VarInt
+	temp, err = z.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Z = int32(z)
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p TestInstanceBlockStatusTemp) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.VarInt(p.X).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(p.Y).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(p.Z).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 // TestInstanceBlockStatus represents the Clientbound TestInstanceBlockStatus packet.
 
 type TestInstanceBlockStatus struct {
 	Status pk.NBTField `mc:"NBT"`
-	Size   *[3]int32
+	Size   *TestInstanceBlockStatusTemp
 }
 
 // PacketID returns the packet ID for this packet.
@@ -39,17 +104,12 @@ func (p *TestInstanceBlockStatus) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasSize {
-		var val [3]int32
-		for i := 0; i < 3; i++ {
-			var v pk.VarInt
-			temp, err = v.ReadFrom(r)
-			n += temp
-			if err != nil {
-				return n, err
-			}
-			val[i] = int32(v)
+		p.Size = &TestInstanceBlockStatusTemp{}
+		temp, err = p.Size.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
 		}
-		p.Size = &val
 	}
 
 	return n, nil
@@ -72,12 +132,10 @@ func (p TestInstanceBlockStatus) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		for i := 0; i < 3; i++ {
-			temp, err = pk.VarInt((*p.Size)[i]).WriteTo(w)
-			n += temp
-			if err != nil {
-				return n, err
-			}
+		temp, err = p.Size.WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)

@@ -9,6 +9,65 @@ import (
 	"io"
 )
 
+// DamageEventTemp is a sub-structure used in the packet.
+type DamageEventTemp struct {
+	X float64
+	Y float64
+	Z float64
+}
+
+// ReadFrom reads the data from the reader.
+func (p *DamageEventTemp) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p DamageEventTemp) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.Double(p.X).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Double(p.Y).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Double(p.Z).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 // DamageEvent represents the Clientbound DamageEvent packet.
 
 type DamageEvent struct {
@@ -16,7 +75,7 @@ type DamageEvent struct {
 	SourceTypeId   int32 `mc:"VarInt"`
 	SourceCauseId  int32 `mc:"VarInt"`
 	SourceDirectId int32 `mc:"VarInt"`
-	SourcePosition *[3]float64
+	SourcePosition *DamageEventTemp
 }
 
 // PacketID returns the packet ID for this packet.
@@ -68,17 +127,12 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasSourcePosition {
-		var val [3]float64
-		for i := 0; i < 3; i++ {
-			var d pk.Double
-			temp, err = d.ReadFrom(r)
-			n += temp
-			if err != nil {
-				return n, err
-			}
-			val[i] = float64(d)
+		p.SourcePosition = &DamageEventTemp{}
+		temp, err = p.SourcePosition.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
 		}
-		p.SourcePosition = &val
 	}
 
 	return n, nil
@@ -119,12 +173,10 @@ func (p DamageEvent) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		for i := 0; i < 3; i++ {
-			temp, err = pk.Double(p.SourcePosition[i]).WriteTo(w)
-			n += temp
-			if err != nil {
-				return n, err
-			}
+		temp, err = p.SourcePosition.WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)

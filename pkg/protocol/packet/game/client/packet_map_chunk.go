@@ -4,6 +4,7 @@
 package client
 
 import (
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
@@ -11,8 +12,8 @@ import (
 
 // MapChunkHeightmapsEntry is a sub-structure used in the packet.
 type MapChunkHeightmapsEntry struct {
-	// TODO: Implement mapper type
-	Type interface{}
+	// Mapper to string
+	Type string
 	Data []int64
 }
 
@@ -21,7 +22,28 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Type
+	var mapperVal pk.VarInt
+	temp, err = mapperVal.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	switch mapperVal {
+	case 5:
+		p.Type = "motion_blocking_no_leaves"
+	case 0:
+		p.Type = "world_surface_wg"
+	case 1:
+		p.Type = "world_surface"
+	case 2:
+		p.Type = "ocean_floor_wg"
+	case 3:
+		p.Type = "ocean_floor"
+	case 4:
+		p.Type = "motion_blocking"
+	default:
+		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
+	}
 
 	var dataCount pk.VarInt
 	temp, err = dataCount.ReadFrom(r)
@@ -48,7 +70,46 @@ func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Type
+	switch p.Type {
+	case "motion_blocking_no_leaves":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "world_surface_wg":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "world_surface":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ocean_floor_wg":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ocean_floor":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "motion_blocking":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unknown Type value %v", p.Type)
+	}
 
 	temp, err = pk.VarInt(len(p.Data)).WriteTo(w)
 	n += temp
@@ -66,15 +127,75 @@ func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+// MapChunkTemp is a sub-structure used in the packet.
+type MapChunkTemp struct {
+	Y       int16
+	Type    int32 `mc:"VarInt"`
+	NbtData pk.NBTField
+}
+
+// ReadFrom reads the data from the reader.
+func (p *MapChunkTemp) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = (*pk.Short)(&p.Y).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	var _type pk.VarInt
+	temp, err = _type.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Type = int32(_type)
+
+	temp, err = (*pk.NBTField)(&p.NbtData).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p MapChunkTemp) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.Short(p.Y).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(p.Type).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = p.NbtData.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 // MapChunk represents the Clientbound MapChunk packet.
 
 type MapChunk struct {
-	X          int32
-	Z          int32
-	Heightmaps []MapChunkHeightmapsEntry
-	ChunkData  []byte
-	// TODO: Array element type chunkBlockEntity unsupported
-	BlockEntities       []interface{}
+	X                   int32
+	Z                   int32
+	Heightmaps          []MapChunkHeightmapsEntry
+	ChunkData           []byte `mc:"ByteArray"`
+	BlockEntities       []MapChunkTemp
 	SkyLightMask        []int64
 	BlockLightMask      []int64
 	EmptySkyLightMask   []int64
@@ -120,7 +241,26 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 	}
 
-	// TODO: Read ChunkData (ByteArray)
+	temp, err = (*pk.ByteArray)(&p.ChunkData).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	var blockEntitiesCount pk.VarInt
+	temp, err = blockEntitiesCount.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.BlockEntities = make([]MapChunkTemp, blockEntitiesCount)
+	for i := 0; i < int(blockEntitiesCount); i++ {
+		temp, err = p.BlockEntities[i].ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	var skyLightMaskCount pk.VarInt
 	temp, err = skyLightMaskCount.ReadFrom(r)
@@ -275,7 +415,24 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 
-	// TODO: Write ChunkData (ByteArray)
+	temp, err = (*pk.ByteArray)(&p.ChunkData).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.VarInt(len(p.BlockEntities)).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	for i := range p.BlockEntities {
+		temp, err = p.BlockEntities[i].WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	temp, err = pk.VarInt(len(p.SkyLightMask)).WriteTo(w)
 	n += temp

@@ -9,10 +9,128 @@ import (
 	"io"
 )
 
+// MoveMinecartStepsEntryPosition is a sub-structure used in the packet.
+type MoveMinecartStepsEntryPosition struct {
+	X float32
+	Y float32
+	Z float32
+}
+
+// ReadFrom reads the data from the reader.
+func (p *MoveMinecartStepsEntryPosition) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = (*pk.Float)(&p.X).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Float)(&p.Y).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Float)(&p.Z).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p MoveMinecartStepsEntryPosition) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.Float(p.X).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Float(p.Y).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Float(p.Z).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// MoveMinecartStepsEntryMovement is a sub-structure used in the packet.
+type MoveMinecartStepsEntryMovement struct {
+	X float32
+	Y float32
+	Z float32
+}
+
+// ReadFrom reads the data from the reader.
+func (p *MoveMinecartStepsEntryMovement) ReadFrom(r io.Reader) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = (*pk.Float)(&p.X).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Float)(&p.Y).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = (*pk.Float)(&p.Z).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
+// WriteTo writes the data to the writer.
+func (p MoveMinecartStepsEntryMovement) WriteTo(w io.Writer) (n int64, err error) {
+	var temp int64
+	_ = temp
+
+	temp, err = pk.Float(p.X).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Float(p.Y).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	temp, err = pk.Float(p.Z).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+
+	return n, nil
+}
+
 // MoveMinecartStepsEntry is a sub-structure used in the packet.
 type MoveMinecartStepsEntry struct {
-	Position [3]float32
-	Movement [3]float32
+	Position MoveMinecartStepsEntryPosition
+	Movement MoveMinecartStepsEntryMovement
 	Yaw      float32
 	Pitch    float32
 	Weight   float32
@@ -23,9 +141,17 @@ func (p *MoveMinecartStepsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Read Position (vec3f)
+	temp, err = p.Position.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Read Movement (vec3f)
+	temp, err = p.Movement.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
@@ -53,9 +179,17 @@ func (p MoveMinecartStepsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
-	// TODO: Write Position (vec3f)
+	temp, err = p.Position.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Write Movement (vec3f)
+	temp, err = p.Movement.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
