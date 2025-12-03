@@ -1254,9 +1254,9 @@ func mapType(t string) string {
 		"vec3i":                    "[3]int32",
 		"HashedSlot":               "slot.HashedSlot",
 		"MovementFlags":            "uint8",       // bitflags
-		"game_profile":             "interface{}", // TODO: 定義 game_profile 結構
-		"chat_session":             "interface{}", // TODO: 定義 chat_session 結構
-		"IDSet":                    "interface{}", // TODO: 定義 IDSet 型別
+		"game_profile":             "pk.NBTField", // 簡化：使用 NBT 讀寫
+		"chat_session":             "pk.NBTField", // 簡化：使用 NBT 讀寫
+		"IDSet":                    "[]int32",     // VarInt 長度 + VarInt 元素
 	}
 
 	if mapped, ok := mapping[t]; ok {
@@ -1429,6 +1429,12 @@ func generateReadCode(fieldName, typeName string, optional bool) []string {
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
+	case "game_profile", "chat_session":
+		code = []string{
+			fmt.Sprintf("temp, err = (*pk.%s)(&p.%s).ReadFrom(r)", mapTypeToPkType(typeName), fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
 	case "slot", "Slot":
 		code = []string{
 			fmt.Sprintf("temp, err = (*slot.Slot)(&p.%s).ReadFrom(r)", fieldName),
@@ -1483,6 +1489,8 @@ func mapTypeToPkType(t string) string {
 		"position":            "Position",
 		"component":           "Component",
 		"textComponent":       "Component",
+		"game_profile":        "NBTField",
+		"chat_session":        "NBTField",
 		"string":              "String",
 		"pstring":             "String",
 		"Key":                 "String",
@@ -1802,7 +1810,7 @@ func generateOptionalArrayRW(field *PacketField, countType string, readLines, wr
 	elemType := strings.TrimPrefix(field.GoType, "*[]")
 	needsDecl := true
 	for _, line := range readLines {
-		if strings.Contains(line, "var v ") {
+		if strings.Contains(line, "var v ") && strings.Contains(line, elemType) {
 			needsDecl = false
 			break
 		}
@@ -2118,6 +2126,42 @@ func generateValueReadLines(typeName, target string) []string {
 			"		" + target + "[i] = int32(v)",
 			"	}",
 		}
+	case "game_profile", "chat_session":
+		return []string{
+			"	temp, err = (*pk.NBTField)(&" + target + ").ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		}
+	case "IDSet":
+		return []string{
+			"	var cnt pk.VarInt",
+			"	temp, err = cnt.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	if cnt < 0 { return n, fmt.Errorf(\"negative IDSet length\") }",
+			"	" + target + " = make([]int32, cnt)",
+			"	for i := int32(0); i < int32(cnt); i++ {",
+			"		var vi pk.VarInt",
+			"		temp, err = vi.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		" + target + "[i] = int32(vi)",
+			"	}",
+		}
+	case "option":
+		return []string{
+			"	var present pk.Boolean",
+			"	temp, err = present.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	if present {",
+			"		// option payload omitted (unknown inner type)",
+			"		var dummy interface{}",
+			"		" + target + " = dummy",
+			"	} else {",
+			"		" + target + " = nil",
+			"	}",
+		}
 	case "void":
 		return []string{}
 	default:
@@ -2214,6 +2258,35 @@ func generateValueWriteLines(typeName, valueExpr string) []string {
 		return []string{
 			"	for i := 0; i < 3; i++ {",
 			"		temp, err = pk.VarInt(" + valueExpr + "[i]).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		}
+	case "game_profile", "chat_session":
+		return []string{
+			"	temp, err = pk.NBTField(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	case "IDSet":
+		return []string{
+			"	temp, err = pk.VarInt(len(" + valueExpr + ")).WriteTo(w)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	for i := range " + valueExpr + " {",
+			"		temp, err = pk.VarInt(" + valueExpr + "[i]).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		}
+	case "option":
+		return []string{
+			"	if " + valueExpr + " != nil {",
+			"		temp, err = pk.Boolean(true).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		// option payload omitted (unknown inner type)",
+			"	} else {",
+			"		temp, err = pk.Boolean(false).WriteTo(w)",
 			"		n += temp",
 			"		if err != nil { return n, err }",
 			"	}",
@@ -2365,7 +2438,7 @@ func generateWriteCode(fieldName, typeName string, optional bool) []string {
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
-	case "UUID", "position", "nbt", "anonymousNbt", "anonOptionalNbt", "optionalNbt", "component", "textComponent":
+	case "UUID", "position", "nbt", "anonymousNbt", "anonOptionalNbt", "optionalNbt", "component", "textComponent", "game_profile", "chat_session":
 		code = []string{
 			fmt.Sprintf("temp, err = p.%s.WriteTo(w)", fieldName),
 			"n += temp",
