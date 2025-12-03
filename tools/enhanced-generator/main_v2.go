@@ -726,6 +726,33 @@ func parseOptionalField(name string, t []interface{}, globalTypes map[string]int
 							field.ReadCode = generateOptionalStructReadCode(field.Name, subStructName, subStruct.NeedsParent)
 							field.WriteCode = generateOptionalStructWriteCode(field.Name, subStructName, subStruct.NeedsParent)
 						}
+					} else if innerTypeName == "option" {
+						// option[option[T]] 簡化為 *interface{}
+						field.GoType = "*interface{}"
+						field.Comment = "// TODO: nested option type"
+						field.ReadCode = []string{
+							fmt.Sprintf("var has%s pk.Boolean", field.Name),
+							fmt.Sprintf("temp, err = has%s.ReadFrom(r)", field.Name),
+							"n += temp",
+							"if err != nil { return n, err }",
+							fmt.Sprintf("if has%s {", field.Name),
+							"	var v interface{}",
+							"	// TODO: Read nested option payload",
+							fmt.Sprintf("	p.%s = &v", field.Name),
+							"}",
+						}
+						field.WriteCode = []string{
+							fmt.Sprintf("if p.%s != nil {", field.Name),
+							"	temp, err = pk.Boolean(true).WriteTo(w)",
+							"	n += temp",
+							"	if err != nil { return n, err }",
+							"	// TODO: Write nested option payload",
+							"} else {",
+							"	temp, err = pk.Boolean(false).WriteTo(w)",
+							"	n += temp",
+							"	if err != nil { return n, err }",
+							"}",
+						}
 					} else if innerTypeName == "array" {
 						// option[array] -> *[]T (支援簡單型別或 container)
 						if len(inner) > 1 {
@@ -1177,6 +1204,8 @@ func mapTypeToPk(t string) string {
 // 類型映射
 func mapType(t string) string {
 	mapping := map[string]string{
+		"void":                     "struct{}",    // 佔位型別
+		"native":                   "interface{}", // minecraft-data 標記的原生型別
 		"varint":                   "int32",
 		"varlong":                  "int64",
 		"optvarint":                "*int32",
@@ -1224,7 +1253,10 @@ func mapType(t string) string {
 		"vec3f":                    "[3]float32",
 		"vec3i":                    "[3]int32",
 		"HashedSlot":               "slot.HashedSlot",
-		"MovementFlags":            "uint8", // bitflags
+		"MovementFlags":            "uint8",       // bitflags
+		"game_profile":             "interface{}", // TODO: 定義 game_profile 結構
+		"chat_session":             "interface{}", // TODO: 定義 chat_session 結構
+		"IDSet":                    "interface{}", // TODO: 定義 IDSet 型別
 	}
 
 	if mapped, ok := mapping[t]; ok {
@@ -1791,8 +1823,6 @@ func generateOptionalArrayRW(field *PacketField, countType string, readLines, wr
 		"	arr := make([]" + strings.TrimPrefix(field.GoType, "*[]") + ", cnt)",
 		"	for i := 0; i < int(cnt); i++ {",
 	}
-	// 確保 v 已宣告，避免未知型別產生未定義變數
-	field.ReadCode = append(field.ReadCode, "		var v "+elemType)
 	field.ReadCode = append(field.ReadCode, readLines...)
 	field.ReadCode = append(field.ReadCode,
 		"		arr[i] = v",
@@ -2827,9 +2857,13 @@ func (p *PacketDef) collectImports() {
 	}
 	if needSlot {
 		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/slot\""] = true
+	} else {
+		delete(p.Imports, "\"git.konjactw.dev/patyhank/minego/pkg/protocol/slot\"")
 	}
 	if needMetadata {
 		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata\""] = true
+	} else {
+		delete(p.Imports, "\"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata\"")
 	}
 	if needFmt {
 		p.Imports["\"fmt\""] = true
