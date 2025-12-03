@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"regexp"
 	"time"
 
 	"github.com/go-gl/mathgl/mgl64"
@@ -37,6 +38,26 @@ type Player struct {
 	messageIndex int32
 
 	lastReceivedPacketTime time.Time
+}
+
+var ansiRegexp = regexp.MustCompile(`\x1b\[[0-9;]*m`)
+
+// sanitizeChatMessage 移除 ANSI/§ 顏色碼與控制字元，避免伺服器判定非法字元。
+func sanitizeChatMessage(s string) string {
+	s = ansiRegexp.ReplaceAllString(s, "")
+	rs := []rune(s)
+	out := make([]rune, 0, len(rs))
+	for i := 0; i < len(rs); i++ {
+		if rs[i] == '§' && i+1 < len(rs) {
+			i++ // skip code
+			continue
+		}
+		if rs[i] < 0x20 || rs[i] == 0x7f {
+			continue
+		}
+		out = append(out, rs[i])
+	}
+	return string(out)
 }
 
 // New 創建新的 Player 實例
@@ -449,6 +470,7 @@ func (p *Player) OpenMenu(command string) (bot.Container, error) {
 }
 
 func (p *Player) Command(msg string) error {
+	msg = sanitizeChatMessage(msg)
 	// 無簽章時送 chat_command（僅 command 字串）；有簽章時送 chat_command_signed。
 	if p.signer == nil || p.signer.IsExpired() {
 		cmd := &server.ChatCommand{Command: msg}
@@ -495,6 +517,7 @@ func (p *Player) Chat(msg string) error {
 	if len(msg) > 0 && msg[0] == '/' {
 		return p.Command(msg[1:])
 	}
+	msg = sanitizeChatMessage(msg)
 
 	ts := time.Now().UnixMilli()
 	salt := rand.Int63()
