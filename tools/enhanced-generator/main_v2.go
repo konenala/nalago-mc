@@ -57,6 +57,7 @@ type PacketDef struct {
 	Fields       []PacketField
 	PacketID     string
 	Imports      map[string]bool
+	ImportList   []string
 	SubStructs   []StructDef // 子结构体
 	GenerateInit bool        // 是否生成 init 函数
 }
@@ -73,6 +74,23 @@ var (
 // 全局变量：收集所有生成的结构体名称，避免重复
 var generatedStructs = make(map[string]bool)
 var structCounter = make(map[string]int)
+var skipPackets = map[string]bool{
+	// client manual implementations
+	"packet_player_chat": true,
+	// server manual implementations
+	"packet_chat_command_signed": true,
+	"packet_chat":                true,
+	"packet_chat_ack":            true,
+	"packet_move_player_pos":     true,
+	"packet_move_player_pos_rot": true,
+	"packet_move_player_rot":     true,
+	"packet_player_action":       true,
+	"packet_use_item_on":         true,
+	"packet_use_item":            true,
+	"packet_container_click":     true,
+	"packet_container_close":     true,
+	"packet_keep_alive":          true,
+}
 
 func main() {
 	flag.Parse()
@@ -140,6 +158,12 @@ func parsePackets(packetTypes map[string]interface{}, globalTypes map[string]int
 		if !strings.HasPrefix(name, "packet_") {
 			continue
 		}
+		if skipPackets[name] {
+			if *verbose {
+				log.Printf("⚠️  跳過 %s (在 skip list)", name)
+			}
+			continue
+		}
 
 		// 重置结构体计数器
 		generatedStructs = make(map[string]bool)
@@ -194,6 +218,7 @@ func parsePacket(name string, def interface{}, globalTypes map[string]interface{
 
 	// 收集需要的導入
 	packet.collectImports()
+	packet.buildImportList()
 
 	if *verbose {
 		log.Printf("  ✓ %s (%d 欄位, %d 子結構)", structName, len(packet.Fields), len(packet.SubStructs))
@@ -212,6 +237,12 @@ func parseFields(fields []interface{}, globalTypes map[string]interface{}, paren
 		}
 
 		name, _ := fieldMap["name"].(string)
+		if name == "" {
+			if *verbose {
+				log.Printf("⚠️  跳過無名稱欄位 in %s", parentName)
+			}
+			continue
+		}
 		fieldType := fieldMap["type"]
 
 		field := parseFieldType(name, fieldType, globalTypes, parentName, packet, result)
@@ -350,9 +381,21 @@ func parseOptionalField(name string, t []interface{}, globalTypes map[string]int
 							field.ReadCode = generateOptionalStructReadCode(field.Name, subStructName)
 							field.WriteCode = generateOptionalStructWriteCode(field.Name, subStructName)
 						}
+					} else {
+						// 其他複合型（array/switch等）暫回退 interface{}
+						field.GoType = "*interface{}"
+						field.Comment = "// TODO: Optional complex type"
+						field.ReadCode = []string{"// TODO: Read optional complex type"}
+						field.WriteCode = []string{"// TODO: Write optional complex type"}
 					}
 				}
 			}
+		default:
+			// 無法解析
+			field.GoType = "*interface{}"
+			field.Comment = "// TODO: Optional unknown type"
+			field.ReadCode = []string{"// TODO: Read optional unknown type"}
+			field.WriteCode = []string{"// TODO: Write optional unknown type"}
 		}
 	}
 
@@ -384,8 +427,12 @@ func parseArrayField(name string, t []interface{}, globalTypes map[string]interf
 				// 简单类型数组
 				field.ArrayType = elemType
 				field.GoType = "[]" + mapType(elemType)
-				field.ReadCode = generateArrayReadCode(field.Name, elemType, countType)
-				field.WriteCode = generateArrayWriteCode(field.Name, elemType, countType)
+				if mapType(elemType) == "interface{}" {
+					field.Comment = "// TODO: Array element type " + elemType + " unsupported"
+				} else {
+					field.ReadCode = generateArrayReadCode(field.Name, elemType, countType)
+					field.WriteCode = generateArrayWriteCode(field.Name, elemType, countType)
+				}
 
 			case []interface{}:
 				// 复杂类型数组
@@ -538,7 +585,7 @@ func generateOptionalStructWriteCode(fieldName, structName string) []string {
 
 // 生成结构体数组的读取代码
 func generateStructArrayReadCode(fieldName, structName, countType string) []string {
-	countVar := strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count"
+	countVar := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count")
 	return []string{
 		fmt.Sprintf("var %s pk.VarInt", countVar),
 		fmt.Sprintf("temp, err = %s.ReadFrom(r)", countVar),
@@ -569,7 +616,7 @@ func generateStructArrayWriteCode(fieldName, structName, countType string) []str
 
 // 生成嵌套数组的读取代码（array[array[T]]）
 func generateNestedArrayReadCode(fieldName, innerType, countType string) []string {
-	countVar := strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count"
+	countVar := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count")
 	innerGoType := mapType(innerType)
 
 	return []string{
@@ -594,13 +641,20 @@ func generateNestedArrayReadCode(fieldName, innerType, countType string) []strin
 }
 
 func generateInnerArrayReadLine(fieldName, innerType string) string {
+	goType := mapType(innerType)
+	pkType := mapTypeToPkType(innerType)
+
 	switch innerType {
 	case "string", "pstring":
 		return fmt.Sprintf("		var elem pk.String\n		temp, err = elem.ReadFrom(r)\n		p.%s[i][j] = string(elem)", fieldName)
 	case "varint", "varlong":
-		return fmt.Sprintf("		var elem pk.VarInt\n		temp, err = elem.ReadFrom(r)\n		p.%s[i][j] = int32(elem)", fieldName)
+		return fmt.Sprintf("		var elem pk.VarInt\n		temp, err = elem.ReadFrom(r)\n		p.%s[i][j] = %s(elem)", fieldName, goType)
 	default:
-		return fmt.Sprintf("		temp, err = (*pk.%s)(&p.%s[i][j]).ReadFrom(r)", mapTypeToPk(innerType), fieldName)
+		// 使用 pk type 读取
+		if pkType != innerType {
+			return fmt.Sprintf("		var elem pk.%s\n		temp, err = elem.ReadFrom(r)\n		p.%s[i][j] = %s(elem)", pkType, fieldName, goType)
+		}
+		return fmt.Sprintf("		temp, err = p.%s[i][j].ReadFrom(r)", fieldName)
 	}
 }
 
@@ -624,20 +678,28 @@ func generateNestedArrayWriteCode(fieldName, innerType, countType string) []stri
 }
 
 func generateInnerArrayWriteLine(fieldName, innerType string) string {
+	pkType := mapTypeToPkType(innerType)
+
 	switch innerType {
 	case "string", "pstring":
 		return fmt.Sprintf("		temp, err = pk.String(p.%s[i][j]).WriteTo(w)", fieldName)
 	case "varint", "varlong":
 		return fmt.Sprintf("		temp, err = pk.VarInt(p.%s[i][j]).WriteTo(w)", fieldName)
 	default:
-		return fmt.Sprintf("		temp, err = pk.%s(p.%s[i][j]).WriteTo(w)", mapTypeToPk(innerType), fieldName)
+		// 使用 pk type 写入
+		if pkType != innerType {
+			return fmt.Sprintf("		temp, err = pk.%s(p.%s[i][j]).WriteTo(w)", pkType, fieldName)
+		}
+		return fmt.Sprintf("		temp, err = p.%s[i][j].WriteTo(w)", fieldName)
 	}
 }
 
 func mapTypeToPk(t string) string {
 	mapping := map[string]string{
 		"i8":   "Byte",
+		"u8":   "UnsignedByte",
 		"i16":  "Short",
+		"u16":  "UnsignedShort",
 		"i32":  "Int",
 		"i64":  "Long",
 		"f32":  "Float",
@@ -674,7 +736,6 @@ func mapType(t string) string {
 		"chunkBlockEntity":        "interface{}",
 		"PositionUpdateRelatives": "int32",
 		"soundSource":             "int32",
-		"vec3f64":                 "pk.Vec3d",
 		"u16":                     "uint16",
 		"u32":                     "uint32",
 		"u64":                     "uint64",
@@ -687,17 +748,20 @@ func mapType(t string) string {
 		"buffer":                  "[]byte",
 		"ByteArray":               "[]byte",
 		"restBuffer":              "pk.PluginMessageData",
-		"entityMetadataLoop":      "pk.Metadata",
-		"entityMetadata":          "pk.Metadata",
-		"nbt":                     "pk.NBT",
-		"anonymousNbt":            "pk.NBT",
-		"anonOptionalNbt":         "*pk.NBT",
-		"optionalNbt":             "*pk.NBT",
+		"nbt":                     "pk.NBTField",
+		"anonymousNbt":            "pk.NBTField",
+		"anonOptionalNbt":         "*pk.NBTField",
+		"optionalNbt":             "*pk.NBTField",
 		"position":                "pk.Position",
-		"slot":                    "pk.Slot",
-		"Slot":                    "pk.Slot",
+		"slot":                    "slot.Slot",
+		"Slot":                    "slot.Slot",
 		"component":               "pk.Component",
 		"textComponent":           "pk.Component",
+		"entityMetadata":          "metadata.EntityMetadata",
+		"entityMetadataLoop":      "metadata.EntityMetadata",
+		"vec3f64":                 "[3]float64",
+		"vec3f":                   "[3]float32",
+		"vec3i":                   "[3]int32",
 	}
 
 	if mapped, ok := mapping[t]; ok {
@@ -727,7 +791,10 @@ func getMCTag(t string) string {
 
 // 生成讀取代碼
 func generateReadCode(fieldName, typeName string, optional bool) []string {
-	varName := strings.ToLower(fieldName[:1]) + fieldName[1:]
+	if mapType(typeName) == "interface{}" {
+		return []string{"// TODO: Read " + fieldName + " (unsupported type " + typeName + ")"}
+	}
+	varName := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:])
 	var code []string
 
 	switch typeName {
@@ -747,9 +814,17 @@ func generateReadCode(fieldName, typeName string, optional bool) []string {
 			"if err != nil { return n, err }",
 			fmt.Sprintf("p.%s = %s", fieldName, varName),
 		}
+	case "u8":
+		code = []string{
+			fmt.Sprintf("var %s pk.UnsignedByte", varName),
+			fmt.Sprintf("temp, err = %s.ReadFrom(r)", varName),
+			"n += temp",
+			"if err != nil { return n, err }",
+			fmt.Sprintf("p.%s = uint8(%s)", fieldName, varName),
+		}
 	case "i16", "u16":
 		code = []string{
-			fmt.Sprintf("temp, err = (*pk.Short)(&p.%s).ReadFrom(r)", fieldName),
+			fmt.Sprintf("temp, err = (*pk.%s)(&p.%s).ReadFrom(r)", mapTypeToPkType(typeName), fieldName),
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
@@ -793,11 +868,35 @@ func generateReadCode(fieldName, typeName string, optional bool) []string {
 			"if err != nil { return n, err }",
 			fmt.Sprintf("p.%s = string(%s)", fieldName, varName),
 		}
-	case "UUID", "position", "slot", "Slot", "nbt", "anonymousNbt", "component", "textComponent":
+	case "UUID", "position", "nbt", "anonymousNbt", "component", "textComponent":
 		code = []string{
 			fmt.Sprintf("temp, err = (*pk.%s)(&p.%s).ReadFrom(r)", mapTypeToPkType(typeName), fieldName),
 			"n += temp",
 			"if err != nil { return n, err }",
+		}
+	case "slot", "Slot":
+		code = []string{
+			fmt.Sprintf("temp, err = (*slot.Slot)(&p.%s).ReadFrom(r)", fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
+	case "entityMetadata", "entityMetadataLoop":
+		code = []string{
+			fmt.Sprintf("temp, err = (*metadata.EntityMetadata)(&p.%s).ReadFrom(r)", fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
+	case "vec3f64":
+		code = []string{
+			fmt.Sprintf("var _%s [3]float64", varName),
+			"	for i := 0; i < 3; i++ {",
+			"		var d pk.Double",
+			"		temp, err = d.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		_" + varName + "[i] = float64(d)",
+			"	}",
+			fmt.Sprintf("p.%s = _%s", fieldName, varName),
 		}
 	default:
 		code = []string{fmt.Sprintf("// TODO: Read %s (%s)", fieldName, typeName)}
@@ -808,19 +907,59 @@ func generateReadCode(fieldName, typeName string, optional bool) []string {
 
 func mapTypeToPkType(t string) string {
 	mapping := map[string]string{
-		"UUID":          "UUID",
-		"position":      "Position",
-		"slot":          "Slot",
-		"Slot":          "Slot",
-		"nbt":           "NBT",
-		"anonymousNbt":  "NBT",
-		"component":     "Component",
-		"textComponent": "Component",
+		"nbt":             "NBTField",
+		"anonymousNbt":    "NBTField",
+		"anonOptionalNbt": "NBTField",
+		"optionalNbt":     "NBTField",
+		"varint":          "VarInt",
+		"varlong":         "VarLong",
+		"i8":              "Byte",
+		"u8":              "UnsignedByte",
+		"i16":             "Short",
+		"u16":             "UnsignedShort",
+		"i32":             "Int",
+		"u32":             "Int",
+		"i64":             "Long",
+		"u64":             "Long",
+		"f32":             "Float",
+		"f64":             "Double",
+		"bool":            "Boolean",
+		"UUID":            "UUID",
+		"position":        "Position",
+		"component":       "Component",
+		"textComponent":   "Component",
 	}
 	if mapped, ok := mapping[t]; ok {
 		return mapped
 	}
 	return t
+}
+
+var goKeywords = map[string]bool{
+	"break": true, "default": true, "func": true, "interface": true, "select": true,
+	"case": true, "defer": true, "go": true, "map": true, "struct": true,
+	"chan": true, "else": true, "goto": true, "package": true, "switch": true,
+	"const": true, "fallthrough": true, "if": true, "range": true, "type": true,
+	"continue": true, "for": true, "import": true, "return": true, "var": true,
+}
+
+// safeIdent 避免與關鍵字或保留名衝突的區域變數名稱
+func safeIdent(name string) string {
+	if name == "" {
+		return "v"
+	}
+	name = strings.ReplaceAll(name, "-", "_")
+	name = strings.ReplaceAll(name, " ", "_")
+	name = strings.ReplaceAll(name, ".", "_")
+	name = strings.ReplaceAll(name, "/", "_")
+	lower := strings.ToLower(name)
+	if goKeywords[name] || goKeywords[lower] {
+		name = "_" + name
+	}
+	if name == "p" || name == "s" || name == "v" {
+		name = name + "Var"
+	}
+	return name
 }
 
 // SwitchConfig Switch 類型的配置
@@ -889,14 +1028,25 @@ func findParentField(parentFields []PacketField, name string) *PacketField {
 	return nil
 }
 
+func parentFieldExists(parentFields []PacketField, name string) bool {
+	for _, f := range parentFields {
+		if f.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
 // 解析 compareTo（支援 "flags/xxx" 形式）
 func parseSwitchCompareTo(compareTo string, parentFields []PacketField) (fieldName string, bitFlag int) {
 	parts := strings.Split(compareTo, "/")
-	if len(parts) == 1 {
-		return toPascalCase(parts[0]), -1
-	}
-
 	fieldName = toPascalCase(parts[0])
+	if !parentFieldExists(parentFields, fieldName) {
+		return "", -1
+	}
+	if len(parts) == 1 {
+		return fieldName, -1
+	}
 	// 支援 "flags/0" 這類直接指定位序
 	if pos, err := strconv.Atoi(parts[1]); err == nil && pos >= 0 {
 		return fieldName, pos
@@ -916,7 +1066,7 @@ func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareFie
 			break
 		}
 	}
-	if innerType == "" {
+	if innerType == "" || compareField == "" {
 		return generateFallbackSwitchField(fieldName, cfg)
 	}
 
@@ -928,6 +1078,9 @@ func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareFie
 	}
 
 	compareLiteral := buildCompareLiteral(compareVal, compareFieldType)
+	if compareLiteral == "" {
+		return generateFallbackSwitchField(fieldName, cfg)
+	}
 	if bitFlag >= 0 {
 		field.ReadCode = generateBitFlagOptionalRead(field.Name, compareField, bitFlag, innerType)
 		field.WriteCode = generateBitFlagOptionalWrite(field.Name, compareField, bitFlag, innerType)
@@ -1016,6 +1169,7 @@ func generateUnionSwitchField(fieldName string, cfg *SwitchConfig, compareField,
 }
 
 func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string) []string {
+	targetField := toPascalCase(fieldName)
 	code := []string{
 		fmt.Sprintf("switch p.%s {", compareField),
 	}
@@ -1035,7 +1189,7 @@ func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, co
 			fmt.Sprintf("	var val %s", mapType(typeStr)),
 		)
 		code = append(code, generateValueReadLines(typeStr, "val")...)
-		code = append(code, fmt.Sprintf("	p.%s = val", fieldName))
+		code = append(code, fmt.Sprintf("	p.%s = val", targetField))
 	}
 
 	if cfg.Default != "" && cfg.Default != "void" {
@@ -1044,7 +1198,7 @@ func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, co
 			fmt.Sprintf("	var val %s", mapType(cfg.Default)),
 		)
 		code = append(code, generateValueReadLines(cfg.Default, "val")...)
-		code = append(code, fmt.Sprintf("	p.%s = val", fieldName))
+		code = append(code, fmt.Sprintf("	p.%s = val", targetField))
 	} else {
 		code = append(code,
 			"default:",
@@ -1057,8 +1211,9 @@ func generateUnionReadCode(fieldName string, cfg *SwitchConfig, compareField, co
 }
 
 func generateUnionWriteCode(fieldName string, cfg *SwitchConfig) []string {
+	targetField := toPascalCase(fieldName)
 	code := []string{
-		fmt.Sprintf("switch v := p.%s.(type) {", fieldName),
+		fmt.Sprintf("switch v := p.%s.(type) {", targetField),
 	}
 
 	seen := map[string]bool{}
@@ -1089,7 +1244,7 @@ func generateUnionWriteCode(fieldName string, cfg *SwitchConfig) []string {
 
 	code = append(code,
 		"default:",
-		fmt.Sprintf("	return n, fmt.Errorf(\"unsupported switch type for %s: %%T\", v)", fieldName),
+		fmt.Sprintf("	return n, fmt.Errorf(\"unsupported switch type for %s: %%T\", v)", targetField),
 		"}",
 	)
 	return code
@@ -1135,6 +1290,14 @@ func generateValueReadLines(typeName, target string) []string {
 			"	if err != nil { return n, err }",
 			"	" + target + " = int32(elem)",
 		}
+	case "u8":
+		return []string{
+			"	var elem pk.UnsignedByte",
+			"	temp, err = elem.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	" + target + " = uint8(elem)",
+		}
 	case "bool":
 		return []string{
 			"	var elem pk.Boolean",
@@ -1143,6 +1306,40 @@ func generateValueReadLines(typeName, target string) []string {
 			"	if err != nil { return n, err }",
 			"	" + target + " = bool(elem)",
 		}
+	case "slot", "Slot":
+		return []string{
+			"	temp, err = (*slot.Slot)(&" + target + ").ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		}
+	case "entityMetadata", "entityMetadataLoop":
+		return []string{
+			"	temp, err = (*metadata.EntityMetadata)(&" + target + ").ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		}
+	case "vec3f64":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		var d pk.Double",
+			"		temp, err = d.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		" + target + "[i] = float64(d)",
+			"	}",
+		}
+	case "vec3f":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		var f pk.Float",
+			"		temp, err = f.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		" + target + "[i] = float32(f)",
+			"	}",
+		}
+	case "void":
+		return []string{}
 	default:
 		return []string{
 			"	temp, err = (*pk." + mapTypeToPkType(typeName) + ")(&" + target + ").ReadFrom(r)",
@@ -1165,11 +1362,44 @@ func generateValueWriteLines(typeName, valueExpr string) []string {
 			"	temp, err = pk.VarInt(" + valueExpr + ").WriteTo(w)",
 			"	n += temp",
 		}
+	case "u8":
+		return []string{
+			"	temp, err = pk.UnsignedByte(" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
 	case "bool":
 		return []string{
 			"	temp, err = pk.Boolean(" + valueExpr + ").WriteTo(w)",
 			"	n += temp",
 		}
+	case "slot", "Slot":
+		return []string{
+			"	temp, err = (" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	case "entityMetadata", "entityMetadataLoop":
+		return []string{
+			"	temp, err = (" + valueExpr + ").WriteTo(w)",
+			"	n += temp",
+		}
+	case "vec3f64":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		temp, err = pk.Double(" + valueExpr + "[i]).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		}
+	case "vec3f":
+		return []string{
+			"	for i := 0; i < 3; i++ {",
+			"		temp, err = pk.Float(" + valueExpr + "[i]).WriteTo(w)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		}
+	case "void":
+		return []string{}
 	default:
 		return []string{
 			"	temp, err = pk." + mapTypeToPkType(typeName) + "(" + valueExpr + ").WriteTo(w)",
@@ -1191,6 +1421,9 @@ func generateFallbackSwitchField(fieldName string, cfg *SwitchConfig) *PacketFie
 
 // 生成寫入代碼
 func generateWriteCode(fieldName, typeName string, optional bool) []string {
+	if mapType(typeName) == "interface{}" {
+		return []string{fmt.Sprintf("// TODO: Write %s (unsupported type %s)", fieldName, typeName)}
+	}
 	var code []string
 
 	switch typeName {
@@ -1206,9 +1439,15 @@ func generateWriteCode(fieldName, typeName string, optional bool) []string {
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
+	case "u8":
+		code = []string{
+			fmt.Sprintf("temp, err = pk.UnsignedByte(p.%s).WriteTo(w)", fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
 	case "i16", "u16":
 		code = []string{
-			fmt.Sprintf("temp, err = pk.Short(p.%s).WriteTo(w)", fieldName),
+			fmt.Sprintf("temp, err = pk.%s(p.%s).WriteTo(w)", mapTypeToPkType(typeName), fieldName),
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
@@ -1248,11 +1487,31 @@ func generateWriteCode(fieldName, typeName string, optional bool) []string {
 			"n += temp",
 			"if err != nil { return n, err }",
 		}
-	case "UUID", "position", "slot", "Slot", "nbt", "anonymousNbt", "component", "textComponent":
+	case "UUID", "position", "nbt", "anonymousNbt", "component", "textComponent":
 		code = []string{
 			fmt.Sprintf("temp, err = p.%s.WriteTo(w)", fieldName),
 			"n += temp",
 			"if err != nil { return n, err }",
+		}
+	case "slot", "Slot":
+		code = []string{
+			fmt.Sprintf("temp, err = p.%s.WriteTo(w)", fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
+	case "entityMetadata", "entityMetadataLoop":
+		code = []string{
+			fmt.Sprintf("temp, err = p.%s.WriteTo(w)", fieldName),
+			"n += temp",
+			"if err != nil { return n, err }",
+		}
+	case "vec3f64":
+		code = []string{
+			fmt.Sprintf("for i := 0; i < 3; i++ {"),
+			fmt.Sprintf("	temp, err = pk.Double(p.%s[i]).WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"}",
 		}
 	default:
 		code = []string{fmt.Sprintf("// TODO: Write %s (%s)", fieldName, typeName)}
@@ -1289,6 +1548,56 @@ func generateOptionalReadCode(fieldName, innerType string) []string {
 			"	n += temp",
 			"	if err != nil { return n, err }",
 			"	val = string(elem)",
+		)
+	case "u8":
+		code = append(code,
+			"	var elem pk.UnsignedByte",
+			"	temp, err = elem.ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+			"	val = uint8(elem)",
+		)
+	case "slot", "Slot":
+		code = append(code,
+			"	temp, err = (*slot.Slot)(&val).ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "entityMetadata", "entityMetadataLoop":
+		code = append(code,
+			"	temp, err = (*metadata.EntityMetadata)(&val).ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "vec3f64":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			"		var d pk.Double",
+			"		temp, err = d.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		val[i] = float64(d)",
+			"	}",
+		)
+	case "vec3f":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			"		var f pk.Float",
+			"		temp, err = f.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		val[i] = float32(f)",
+			"	}",
+		)
+	case "vec3i":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			"		var v pk.VarInt",
+			"		temp, err = v.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"		val[i] = int32(v)",
+			"	}",
 		)
 	default:
 		code = append(code,
@@ -1327,9 +1636,51 @@ func generateOptionalWriteCode(fieldName, innerType string) []string {
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
-	default:
+	case "u8":
+		code = append(code,
+			fmt.Sprintf("	temp, err = pk.UnsignedByte(*p.%s).WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "slot", "Slot":
 		code = append(code,
 			fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "entityMetadata", "entityMetadataLoop":
+		code = append(code,
+			fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "vec3f64":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			fmt.Sprintf("		temp, err = pk.Double(p.%s[i]).WriteTo(w)", fieldName),
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		)
+	case "vec3f":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			fmt.Sprintf("		temp, err = pk.Float((*p.%s)[i]).WriteTo(w)", fieldName),
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		)
+	case "vec3i":
+		code = append(code,
+			"	for i := 0; i < 3; i++ {",
+			fmt.Sprintf("		temp, err = pk.VarInt((*p.%s)[i]).WriteTo(w)", fieldName),
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		)
+	default:
+		code = append(code,
+			fmt.Sprintf("	temp, err = pk.%s(*p.%s).WriteTo(w)", mapTypeToPkType(innerType), fieldName),
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
@@ -1347,7 +1698,7 @@ func generateOptionalWriteCode(fieldName, innerType string) []string {
 
 // 生成 Array 讀取代碼
 func generateArrayReadCode(fieldName, arrayType, countType string) []string {
-	countVar := strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count"
+	countVar := safeIdent(strings.ToLower(fieldName[:1]) + fieldName[1:] + "Count")
 	goType := mapType(arrayType)
 
 	code := []string{
@@ -1376,12 +1727,48 @@ func generateArrayReadCode(fieldName, arrayType, countType string) []string {
 			"	if err != nil { return n, err }",
 			fmt.Sprintf("	p.%s[i] = string(elem)", fieldName),
 		)
-	default:
+	case "slot", "Slot":
 		code = append(code,
-			fmt.Sprintf("	temp, err = (*pk.%s)(&p.%s[i]).ReadFrom(r)", mapTypeToPkType(arrayType), fieldName),
+			fmt.Sprintf("	temp, err = (*slot.Slot)(&p.%s[i]).ReadFrom(r)", fieldName),
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
+	case "entityMetadata", "entityMetadataLoop":
+		code = append(code,
+			fmt.Sprintf("	temp, err = (*metadata.EntityMetadata)(&p.%s[i]).ReadFrom(r)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "vec3f64":
+		code = append(code,
+			"	for j := 0; j < 3; j++ {",
+			"		var d pk.Double",
+			"		temp, err = d.ReadFrom(r)",
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			fmt.Sprintf("		p.%s[i][j] = float64(d)", fieldName),
+			"	}",
+		)
+	default:
+		// 对于基础类型，使用 pk.Type 读取
+		pkType := mapTypeToPkType(arrayType)
+		if pkType != arrayType {
+			// 已知的基础类型
+			code = append(code,
+				fmt.Sprintf("	var elem pk.%s", pkType),
+				"	temp, err = elem.ReadFrom(r)",
+				"	n += temp",
+				"	if err != nil { return n, err }",
+				fmt.Sprintf("	p.%s[i] = %s(elem)", fieldName, goType),
+			)
+		} else {
+			// 复杂类型，假设有 ReadFrom 方法
+			code = append(code,
+				fmt.Sprintf("	temp, err = p.%s[i].ReadFrom(r)", fieldName),
+				"	n += temp",
+				"	if err != nil { return n, err }",
+			)
+		}
 	}
 
 	code = append(code, "}")
@@ -1410,12 +1797,44 @@ func generateArrayWriteCode(fieldName, arrayType, countType string) []string {
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
-	default:
+	case "slot", "Slot":
 		code = append(code,
 			fmt.Sprintf("	temp, err = p.%s[i].WriteTo(w)", fieldName),
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
+	case "entityMetadata", "entityMetadataLoop":
+		code = append(code,
+			fmt.Sprintf("	temp, err = p.%s[i].WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "vec3f64":
+		code = append(code,
+			"	for j := 0; j < 3; j++ {",
+			fmt.Sprintf("		temp, err = pk.Double(p.%s[i][j]).WriteTo(w)", fieldName),
+			"		n += temp",
+			"		if err != nil { return n, err }",
+			"	}",
+		)
+	default:
+		// 对于基础类型，使用 pk.Type 包装
+		pkType := mapTypeToPkType(arrayType)
+		if pkType != arrayType {
+			// 已知的基础类型
+			code = append(code,
+				fmt.Sprintf("	temp, err = pk.%s(p.%s[i]).WriteTo(w)", pkType, fieldName),
+				"	n += temp",
+				"	if err != nil { return n, err }",
+			)
+		} else {
+			// 复杂类型，假设有 WriteTo 方法
+			code = append(code,
+				fmt.Sprintf("	temp, err = p.%s[i].WriteTo(w)", fieldName),
+				"	n += temp",
+				"	if err != nil { return n, err }",
+			)
+		}
 	}
 
 	code = append(code, "}")
@@ -1435,9 +1854,44 @@ func toPascalCase(s string) string {
 
 // 收集需要的導入
 func (p *PacketDef) collectImports() {
-	p.Imports["io"] = true
-	p.Imports["git.konjactw.dev/falloutBot/go-mc/data/packetid"] = true
+	p.Imports["\"io\""] = true
+	p.Imports["\"fmt\""] = true
+	p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid\""] = true
 	p.Imports["pk \"git.konjactw.dev/falloutBot/go-mc/net/packet\""] = true
+
+	needSlot := false
+	needMetadata := false
+
+	addFieldImports := func(fields []PacketField) {
+		for _, f := range fields {
+			if strings.Contains(f.GoType, "slot.") {
+				needSlot = true
+			}
+			if strings.Contains(f.GoType, "metadata.") {
+				needMetadata = true
+			}
+		}
+	}
+
+	addFieldImports(p.Fields)
+	for _, s := range p.SubStructs {
+		addFieldImports(s.Fields)
+	}
+
+	if needSlot {
+		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/slot\""] = true
+	}
+	if needMetadata {
+		p.Imports["\"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata\""] = true
+	}
+}
+
+func (p *PacketDef) buildImportList() {
+	p.ImportList = p.ImportList[:0]
+	for k := range p.Imports {
+		p.ImportList = append(p.ImportList, k)
+	}
+	sort.Strings(p.ImportList)
 }
 
 // 生成代碼
@@ -1463,10 +1917,9 @@ func generatePackets(packets []PacketDef, outputDir, direction string) error {
 package {{.Package}}
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+{{- range .ImportList }}
+	{{.}}
+{{- end }}
 )
 {{range .SubStructs}}
 // {{.Name}} is a sub-structure used in the packet.
@@ -1479,8 +1932,11 @@ type {{.Name}} struct {
 
 {{if $.GenerateCodec}}
 // ReadFrom reads the data from the reader.
-func (s *{{.Name}}) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *{{.Name}}) ReadFrom(r io.Reader) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
 	var temp int64
+	_ = temp
+{{- end }}
 {{range .Fields}}
 	{{join .ReadCode}}
 {{end}}
@@ -1488,8 +1944,11 @@ func (s *{{.Name}}) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // WriteTo writes the data to the writer.
-func (s {{.Name}}) WriteTo(w io.Writer) (n int64, err error) {
+func (p {{.Name}}) WriteTo(w io.Writer) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
 	var temp int64
+	_ = temp
+{{- end }}
 {{range .Fields}}
 	{{join .WriteCode}}
 {{end}}
@@ -1515,7 +1974,10 @@ func (*{{.StructName}}) PacketID() packetid.{{.PacketIDType}}PacketID {
 {{if .GenerateCodec}}
 // ReadFrom reads the packet data from the reader.
 func (p *{{.StructName}}) ReadFrom(r io.Reader) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
 	var temp int64
+	_ = temp
+{{- end }}
 {{range .Fields}}
 	{{join .ReadCode}}
 {{end}}
@@ -1524,7 +1986,10 @@ func (p *{{.StructName}}) ReadFrom(r io.Reader) (n int64, err error) {
 
 // WriteTo writes the packet data to the writer.
 func (p {{.StructName}}) WriteTo(w io.Writer) (n int64, err error) {
+{{- if gt (len .Fields) 0 }}
 	var temp int64
+	_ = temp
+{{- end }}
 {{range .Fields}}
 	{{join .WriteCode}}
 {{end}}
@@ -1555,6 +2020,7 @@ func init() {
 			Fields        []PacketField
 			PacketIDType  string
 			Comment       string
+			ImportList    []string
 			GenerateCodec bool
 			SubStructs    []StructDef
 			GenerateInit  bool
@@ -1564,6 +2030,7 @@ func init() {
 			StructName:    packet.StructName,
 			Fields:        packet.Fields,
 			PacketIDType:  packetIDType,
+			ImportList:    packet.ImportList,
 			GenerateCodec: *genCodec,
 			SubStructs:    packet.SubStructs,
 			GenerateInit:  packet.GenerateInit,

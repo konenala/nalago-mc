@@ -39,15 +39,6 @@ if errorlevel 1 (
 )
 echo.
 
-REM 修复变量名
-echo ========================================
-echo 🔧 修复子结构体变量名
-echo ========================================
-powershell -Command "Get-ChildItem -Path '%OUTPUT_BASE%\client\packet_*.go' | ForEach-Object { (Get-Content $_.FullName) -replace '(\s+)(temp, err = \(\*pk\.\w+\)\(&)p\.', '$1$2s.' -replace '(\s+)p\.(\w+) = ', '$1s.$2 = ' -replace '(\s+)(temp, err = )p\.', '$1$2s.' | Set-Content $_.FullName }"
-powershell -Command "Get-ChildItem -Path '%OUTPUT_BASE%\server\packet_*.go' | ForEach-Object { (Get-Content $_.FullName) -replace '(\s+)(temp, err = \(\*pk\.\w+\)\(&)p\.', '$1$2s.' -replace '(\s+)p\.(\w+) = ', '$1s.$2 = ' -replace '(\s+)(temp, err = )p\.', '$1$2s.' | Set-Content $_.FullName }"
-echo ✅ 修复完成
-echo.
-
 REM 统计
 echo ========================================
 echo 📊 生成统计
