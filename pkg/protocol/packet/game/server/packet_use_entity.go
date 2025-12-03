@@ -22,8 +22,8 @@ type UseEntity struct {
 	// Optional，當 Mouse 符合條件時出現
 	Z *float32
 	// Switch 基於 Mouse：
-	//   2 -> varint
 	//   0 -> varint
+	//   2 -> varint
 	//   default -> void
 	Hand     interface{}
 	Sneaking bool

@@ -15,11 +15,11 @@ type CraftRecipeResponseRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
 	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 
 	Data interface{}
 }

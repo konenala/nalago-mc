@@ -26,8 +26,8 @@ type ScoreboardObjective struct {
 	//   default -> void
 	Type interface{}
 	// Switch 基於 Action：
-	//   2 -> [option varint]
 	//   0 -> [option varint]
+	//   2 -> [option varint]
 	//   default -> void
 	NumberFormat interface{}
 	// Switch 基於 Action：

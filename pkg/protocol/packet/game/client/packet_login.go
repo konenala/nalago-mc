@@ -108,14 +108,14 @@ func (p *LoginWorldState) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 0:
-		p.Gamemode = "survival"
 	case 1:
 		p.Gamemode = "creative"
 	case 2:
 		p.Gamemode = "adventure"
 	case 3:
 		p.Gamemode = "spectator"
+	case 0:
+		p.Gamemode = "survival"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Gamemode", mapperVal)
 	}
@@ -202,12 +202,6 @@ func (p LoginWorldState) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.Gamemode {
-	case "survival":
-		temp, err = pk.Byte(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "creative":
 		temp, err = pk.Byte(1).WriteTo(w)
 		n += temp
@@ -222,6 +216,12 @@ func (p LoginWorldState) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "spectator":
 		temp, err = pk.Byte(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "survival":
+		temp, err = pk.Byte(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

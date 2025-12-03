@@ -93,68 +93,68 @@ func (p *EntityUpdateAttributesPropertiesEntry) ReadFrom(r io.Reader) (n int64, 
 		return n, err
 	}
 	switch mapperVal {
-	case 3:
-		p.Key = "generic.attack_knockback"
-	case 28:
-		p.Key = "water_movement_efficiency"
-	case 5:
-		p.Key = "player.block_break_speed"
-	case 6:
-		p.Key = "player.block_interaction_range"
-	case 16:
-		p.Key = "generic.knockback_resistance"
-	case 21:
-		p.Key = "generic.safe_fall_distance"
-	case 30:
-		p.Key = "waypoint_receive_range"
-	case 17:
-		p.Key = "generic.luck"
-	case 27:
-		p.Key = "tempt_range"
-	case 4:
-		p.Key = "generic.attack_speed"
-	case 10:
-		p.Key = "player.entity_interaction_range"
-	case 11:
-		p.Key = "generic.fall_damage_multiplier"
-	case 8:
-		p.Key = "camera_distance"
-	case 18:
-		p.Key = "generic.max_absorption"
-	case 26:
-		p.Key = "sweeping_damage_ratio"
-	case 9:
-		p.Key = "explosion_knockback_resistance"
-	case 14:
-		p.Key = "generic.gravity"
-	case 15:
-		p.Key = "generic.jump_strength"
-	case 19:
-		p.Key = "generic.max_health"
-	case 29:
-		p.Key = "waypoint_transmit_range"
-	case 13:
-		p.Key = "generic.follow_range"
-	case 20:
-		p.Key = "generic.movement_speed"
 	case 23:
 		p.Key = "zombie.spawn_reinforcements"
-	case 25:
-		p.Key = "submerged_mining_speed"
-	case 22:
-		p.Key = "generic.scale"
 	case 24:
 		p.Key = "generic.step_height"
-	case 12:
-		p.Key = "generic.flying_speed"
+	case 29:
+		p.Key = "waypoint_transmit_range"
+	case 6:
+		p.Key = "player.block_interaction_range"
+	case 13:
+		p.Key = "generic.follow_range"
+	case 14:
+		p.Key = "generic.gravity"
+	case 25:
+		p.Key = "submerged_mining_speed"
+	case 7:
+		p.Key = "burning_time"
+	case 18:
+		p.Key = "generic.max_absorption"
+	case 4:
+		p.Key = "generic.attack_speed"
+	case 5:
+		p.Key = "player.block_break_speed"
+	case 27:
+		p.Key = "tempt_range"
+	case 26:
+		p.Key = "sweeping_damage_ratio"
 	case 0:
 		p.Key = "generic.armor"
 	case 1:
 		p.Key = "generic.armor_toughness"
 	case 2:
 		p.Key = "generic.attack_damage"
-	case 7:
-		p.Key = "burning_time"
+	case 3:
+		p.Key = "generic.attack_knockback"
+	case 12:
+		p.Key = "generic.flying_speed"
+	case 17:
+		p.Key = "generic.luck"
+	case 20:
+		p.Key = "generic.movement_speed"
+	case 9:
+		p.Key = "explosion_knockback_resistance"
+	case 10:
+		p.Key = "player.entity_interaction_range"
+	case 15:
+		p.Key = "generic.jump_strength"
+	case 22:
+		p.Key = "generic.scale"
+	case 28:
+		p.Key = "water_movement_efficiency"
+	case 30:
+		p.Key = "waypoint_receive_range"
+	case 8:
+		p.Key = "camera_distance"
+	case 11:
+		p.Key = "generic.fall_damage_multiplier"
+	case 16:
+		p.Key = "generic.knockback_resistance"
+	case 19:
+		p.Key = "generic.max_health"
+	case 21:
+		p.Key = "generic.safe_fall_distance"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Key", mapperVal)
 	}
@@ -189,152 +189,8 @@ func (p EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, er
 	_ = temp
 
 	switch p.Key {
-	case "generic.attack_knockback":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "water_movement_efficiency":
-		temp, err = pk.VarInt(28).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "player.block_break_speed":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "player.block_interaction_range":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.knockback_resistance":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.safe_fall_distance":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "waypoint_receive_range":
-		temp, err = pk.VarInt(30).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.luck":
-		temp, err = pk.VarInt(17).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tempt_range":
-		temp, err = pk.VarInt(27).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.attack_speed":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "player.entity_interaction_range":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.fall_damage_multiplier":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "camera_distance":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.max_absorption":
-		temp, err = pk.VarInt(18).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sweeping_damage_ratio":
-		temp, err = pk.VarInt(26).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "explosion_knockback_resistance":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.gravity":
-		temp, err = pk.VarInt(14).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.jump_strength":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.max_health":
-		temp, err = pk.VarInt(19).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "waypoint_transmit_range":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.follow_range":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.movement_speed":
-		temp, err = pk.VarInt(20).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "zombie.spawn_reinforcements":
 		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "submerged_mining_speed":
-		temp, err = pk.VarInt(25).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "generic.scale":
-		temp, err = pk.VarInt(22).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -345,8 +201,68 @@ func (p EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, er
 		if err != nil {
 			return n, err
 		}
-	case "generic.flying_speed":
-		temp, err = pk.VarInt(12).WriteTo(w)
+	case "waypoint_transmit_range":
+		temp, err = pk.VarInt(29).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "player.block_interaction_range":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.follow_range":
+		temp, err = pk.VarInt(13).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.gravity":
+		temp, err = pk.VarInt(14).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "submerged_mining_speed":
+		temp, err = pk.VarInt(25).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "burning_time":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.max_absorption":
+		temp, err = pk.VarInt(18).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.attack_speed":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "player.block_break_speed":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "tempt_range":
+		temp, err = pk.VarInt(27).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "sweeping_damage_ratio":
+		temp, err = pk.VarInt(26).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -369,8 +285,92 @@ func (p EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, er
 		if err != nil {
 			return n, err
 		}
-	case "burning_time":
-		temp, err = pk.VarInt(7).WriteTo(w)
+	case "generic.attack_knockback":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.flying_speed":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.luck":
+		temp, err = pk.VarInt(17).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.movement_speed":
+		temp, err = pk.VarInt(20).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "explosion_knockback_resistance":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "player.entity_interaction_range":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.jump_strength":
+		temp, err = pk.VarInt(15).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.scale":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "water_movement_efficiency":
+		temp, err = pk.VarInt(28).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "waypoint_receive_range":
+		temp, err = pk.VarInt(30).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "camera_distance":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.fall_damage_multiplier":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.knockback_resistance":
+		temp, err = pk.VarInt(16).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.max_health":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "generic.safe_fall_distance":
+		temp, err = pk.VarInt(21).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

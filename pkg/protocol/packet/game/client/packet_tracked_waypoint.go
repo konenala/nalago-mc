@@ -88,9 +88,9 @@ type TrackedWaypointWaypoint struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
+	//   vec3i -> vec3i
 	//   chunk -> [container [map[name:chunkX type:varint] map[name:chunkZ type:varint]]]
 	//   azimuth -> f32
-	//   vec3i -> vec3i
 
 	Data interface{}
 }
@@ -121,14 +121,14 @@ func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
+	case 0:
+		p.Type = "empty"
 	case 1:
 		p.Type = "vec3i"
 	case 2:
 		p.Type = "chunk"
 	case 3:
 		p.Type = "azimuth"
-	case 0:
-		p.Type = "empty"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -179,6 +179,12 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.Type {
+	case "empty":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "vec3i":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
@@ -197,17 +203,17 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "empty":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	switch v := p.Data.(type) {
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case [3]int32:
 		for i := 0; i < 3; i++ {
 			temp, err = pk.VarInt(v[i]).WriteTo(w)
@@ -216,12 +222,6 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 				return n, err
 			}
 		}
-		if err != nil {
-			return n, err
-		}
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
-		n += temp
 		if err != nil {
 			return n, err
 		}

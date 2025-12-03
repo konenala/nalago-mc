@@ -82,7 +82,6 @@ type DeclareRecipesStoneCutterRecipesEntrySlotDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   composite -> [array map[countType:varint type:SlotDisplay]]
 	//   empty -> void
 	//   any_fuel -> void
 	//   item -> varint
@@ -90,6 +89,7 @@ type DeclareRecipesStoneCutterRecipesEntrySlotDisplay struct {
 	//   tag -> string
 	//   smithing_trim -> [container [map[name:base type:SlotDisplay] map[name:material type:SlotDisplay] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
 	//   with_remainder -> [container [map[name:input type:SlotDisplay] map[name:remainder type:SlotDisplay]]]
+	//   composite -> [array map[countType:varint type:SlotDisplay]]
 
 	Data interface{}
 }
@@ -106,8 +106,6 @@ func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader)
 		return n, err
 	}
 	switch mapperVal {
-	case 0:
-		p.Type = "empty"
 	case 1:
 		p.Type = "any_fuel"
 	case 2:
@@ -122,6 +120,8 @@ func (p *DeclareRecipesStoneCutterRecipesEntrySlotDisplay) ReadFrom(r io.Reader)
 		p.Type = "with_remainder"
 	case 7:
 		p.Type = "composite"
+	case 0:
+		p.Type = "empty"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -174,12 +174,6 @@ func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (
 	_ = temp
 
 	switch p.Type {
-	case "empty":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "any_fuel":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
@@ -222,11 +216,21 @@ func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (
 		if err != nil {
 			return n, err
 		}
+	case "empty":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	switch v := p.Data.(type) {
+	case struct{}:
+		if err != nil {
+			return n, err
+		}
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
@@ -242,10 +246,6 @@ func (p DeclareRecipesStoneCutterRecipesEntrySlotDisplay) WriteTo(w io.Writer) (
 	case string:
 		temp, err = pk.String(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case struct{}:
 		if err != nil {
 			return n, err
 		}

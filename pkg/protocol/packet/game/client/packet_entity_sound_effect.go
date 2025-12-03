@@ -47,28 +47,28 @@ func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 1:
-		p.SoundCategory = "music"
-	case 4:
-		p.SoundCategory = "block"
-	case 5:
-		p.SoundCategory = "hostile"
-	case 7:
-		p.SoundCategory = "player"
-	case 8:
-		p.SoundCategory = "ambient"
-	case 2:
-		p.SoundCategory = "record"
-	case 3:
-		p.SoundCategory = "weather"
-	case 6:
-		p.SoundCategory = "neutral"
-	case 9:
-		p.SoundCategory = "voice"
-	case 10:
-		p.SoundCategory = "ui"
 	case 0:
 		p.SoundCategory = "master"
+	case 1:
+		p.SoundCategory = "music"
+	case 3:
+		p.SoundCategory = "weather"
+	case 5:
+		p.SoundCategory = "hostile"
+	case 6:
+		p.SoundCategory = "neutral"
+	case 7:
+		p.SoundCategory = "player"
+	case 10:
+		p.SoundCategory = "ui"
+	case 2:
+		p.SoundCategory = "record"
+	case 4:
+		p.SoundCategory = "block"
+	case 8:
+		p.SoundCategory = "ambient"
+	case 9:
+		p.SoundCategory = "voice"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for SoundCategory", mapperVal)
 	}
@@ -114,38 +114,14 @@ func (p EntitySoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.SoundCategory {
+	case "master":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "music":
 		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "hostile":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "player":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ambient":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "record":
-		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -156,14 +132,20 @@ func (p EntitySoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
+	case "hostile":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "neutral":
 		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "voice":
-		temp, err = pk.VarInt(9).WriteTo(w)
+	case "player":
+		temp, err = pk.VarInt(7).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -174,8 +156,26 @@ func (p EntitySoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "master":
-		temp, err = pk.VarInt(0).WriteTo(w)
+	case "record":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "block":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ambient":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "voice":
+		temp, err = pk.VarInt(9).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

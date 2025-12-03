@@ -19,8 +19,8 @@ type ScoreboardScore struct {
 	DisplayName  *pk.NBTField
 	NumberFormat *int32
 	// Switch 基於 NumberFormat：
-	//   2 -> anonymousNbt
 	//   1 -> anonymousNbt
+	//   2 -> anonymousNbt
 	//   default -> void
 	Styling interface{}
 }
@@ -94,7 +94,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch *p.NumberFormat {
-	case 2:
+	case 1:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
@@ -102,7 +102,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		p.Styling = val
-	case 1:
+	case 2:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp

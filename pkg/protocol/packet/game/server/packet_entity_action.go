@@ -44,8 +44,6 @@ func (p *EntityAction) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 5:
-		p.ActionId = "open_vehicle_inventory"
 	case 6:
 		p.ActionId = "start_elytra_flying"
 	case 0:
@@ -58,6 +56,8 @@ func (p *EntityAction) ReadFrom(r io.Reader) (n int64, err error) {
 		p.ActionId = "start_horse_jump"
 	case 4:
 		p.ActionId = "stop_horse_jump"
+	case 5:
+		p.ActionId = "open_vehicle_inventory"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for ActionId", mapperVal)
 	}
@@ -85,12 +85,6 @@ func (p EntityAction) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.ActionId {
-	case "open_vehicle_inventory":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "start_elytra_flying":
 		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
@@ -123,6 +117,12 @@ func (p EntityAction) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "stop_horse_jump":
 		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "open_vehicle_inventory":
+		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
