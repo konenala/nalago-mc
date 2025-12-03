@@ -4,8 +4,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"go/ast"
+	"go/constant"
+	"go/importer"
+	"go/parser"
+	"go/token"
+	"go/types"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -31,6 +38,7 @@ var (
 	protocolFile = flag.String("protocol", "", "path to protocol.json")
 	outputDir    = flag.String("output", "", "output directory")
 	direction    = flag.String("direction", "client", "client or server")
+	packetidPkg  = flag.String("packetid", "git.konjactw.dev/falloutBot/go-mc/data/packetid", "packetid import path")
 )
 
 func main() {
@@ -59,7 +67,9 @@ func main() {
 		packets = p.Play.ToClient.Types
 	}
 
-	defs := collect(packets)
+	pidMap := loadPacketIDs(*packetidPkg)
+
+	defs := collect(packets, *direction, pidMap)
 	sort.Slice(defs, func(i, j int) bool { return defs[i].Name < defs[j].Name })
 
 	if err := os.MkdirAll(*outputDir, 0o755); err != nil {
@@ -75,6 +85,9 @@ import (
     pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
+// keep pk import used even when no pk.* fields are present
+var _ = pk.Angle(0)
+
 type {{.StructName}} struct {
 {{- range .Fields}}
     {{.Name}} {{.Type}}{{if .Tag}} {{.Tag}}{{end}}
@@ -82,7 +95,7 @@ type {{.StructName}} struct {
 }
 
 func (*{{.StructName}}) PacketID() packetid.{{.PIDType}}PacketID {
-    return packetid.{{.PIDType}}{{.StructName}}
+    return packetid.{{.PIDType}}PacketID({{.PIDLit}})
 }
 
 // ReadFrom is a stub (not implemented)
@@ -92,7 +105,7 @@ func (p *{{.StructName}}) ReadFrom(r io.Reader) (n int64, err error) { return 0,
 func (p {{.StructName}}) WriteTo(w io.Writer) (n int64, err error) { return 0, nil }
 
 func init() {
-    registerPacket(packetid.{{.PIDType}}{{.StructName}}, func() {{.PIDType}}Packet { return &{{.StructName}}{} })
+    registerPacket(packetid.{{.PIDType}}PacketID({{.PIDLit}}), func() {{.PIDType}}Packet { return &{{.StructName}}{} })
 }
 `))
 
@@ -107,6 +120,7 @@ func init() {
 			"StructName": d.Struct,
 			"Fields":     d.Fields,
 			"PIDType":    pidType,
+			"PIDLit":     d.PIDLit,
 		})
 		f.Close()
 		if err != nil {
@@ -123,17 +137,16 @@ type field struct {
 }
 
 type def struct {
-	Name   string
-	Struct string
-	Fields []field
+	Name    string
+	Struct  string
+	Fields  []field
+	PIDLit  string
+	Package string
 }
 
-func collect(m map[string]any) []def {
+func collect(m map[string]any, dir string, pidMap map[string]int64) []def {
 	var out []def
 	for name, v := range m {
-		if !strings.HasPrefix(name, "packet_") {
-			continue
-		}
 		container, ok := v.([]any)
 		if !ok || len(container) < 2 || container[0] != "container" {
 			continue
@@ -150,7 +163,17 @@ func collect(m map[string]any) []def {
 			rt := resolveType(fm["type"])
 			fields = append(fields, field{Name: goName, Type: rt.goType, Tag: rt.tag})
 		}
-		out = append(out, def{Name: name, Struct: toPascal(strings.TrimPrefix(name, "packet_")), Fields: fields})
+		structName := toPascal(strings.TrimPrefix(name, "packet_"))
+		key := "Clientbound" + structName
+		if strings.ToLower(dir) == "server" {
+			key = "Serverbound" + structName
+		}
+		pidLit := "0"
+		if val, ok := pidMap[key]; ok {
+			pidLit = fmt.Sprintf("%d", val)
+		}
+
+		out = append(out, def{Name: name, Struct: structName, Fields: fields, PIDLit: pidLit})
 	}
 	return out
 }
@@ -196,16 +219,60 @@ func simpleType(t string) resolved {
 	case "string", "pstring":
 		return resolved{goType: "string", tag: "`mc:\"String\"`"}
 	case "UUID":
-		return resolved{goType: "pk.UUID"}
+		return resolved{goType: "interface{}"}
 	case "angle":
 		return resolved{goType: "pk.Angle", tag: "`mc:\"Angle\"`"}
 	case "buffer":
 		return resolved{goType: "[]byte", tag: "`mc:\"ByteArray\"`"}
 	case "nbt", "anonymousNbt":
-		return resolved{goType: "pk.NBT", tag: "`mc:\"NBT\"`"}
+		return resolved{goType: "pk.NBTField"}
 	default:
 		return resolved{goType: "interface{}"}
 	}
+}
+
+// loadPacketIDs 解析 packetid 包，取得常數名稱 -> 整數值對應。
+func loadPacketIDs(pkgPath string) map[string]int64 {
+	out := make(map[string]int64)
+
+	cmd := exec.Command("go", "list", "-f", "{{.Dir}}", pkgPath)
+	dirBytes, err := cmd.Output()
+	if err != nil {
+		return out
+	}
+	dir := strings.TrimSpace(string(dirBytes))
+
+	fset := token.NewFileSet()
+	pkgs, err := parser.ParseDir(fset, dir, nil, 0)
+	if err != nil {
+		return out
+	}
+
+	var files []*ast.File
+	for _, p := range pkgs {
+		for _, f := range p.Files {
+			files = append(files, f)
+		}
+	}
+
+	info := &types.Info{Defs: make(map[*ast.Ident]types.Object)}
+	conf := types.Config{Importer: importer.Default()}
+	if _, err := conf.Check(pkgPath, fset, files, info); err != nil {
+		return out
+	}
+
+	for ident, obj := range info.Defs {
+		if c, ok := obj.(*types.Const); ok {
+			if c.Val().Kind() != constant.Int {
+				continue
+			}
+			if val, ok := constant.Int64Val(c.Val()); ok {
+				out[ident.Name] = val
+			}
+		}
+	}
+
+	return out
 }
 
 func toPascal(s string) string {

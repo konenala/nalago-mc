@@ -1,20 +1,20 @@
 package client
 
 import (
+	"io"
+
 	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 )
 
-var _ ClientboundPacket = (*PlayerPosition)(nil)
-
-//codec:gen
+// PlayerPosition stub used by player.go
 type PlayerPosition struct {
-	ID                              int32 `mc:"VarInt"`
-	X, Y, Z                         float64
-	VelocityX, VelocityY, VelocityZ float64
-	YRot, XRot                      float32
-	Flags                           int32
+	X, Y, Z float64
+	YRot    float32
+	XRot    float32
+	Flags   byte
+	ID      int32
 }
 
-func (PlayerPosition) ClientboundPacketID() packetid.ClientboundPacketID {
-	return packetid.ClientboundPlayerPosition
-}
+func (*PlayerPosition) PacketID() packetid.ClientboundPacketID { return 0 }
+func (*PlayerPosition) ReadFrom(io.Reader) (int64, error)      { return 0, nil }
+func (PlayerPosition) WriteTo(io.Writer) (int64, error)        { return 0, nil }
