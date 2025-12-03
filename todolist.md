@@ -8,3 +8,5 @@
 - [x] 測試驗證：執行 `go test ./pkg/protocol/packet/game/{client,server}`，必要時進行對真服連線檢查。
 - [ ] 清除生成封包程式中的 TODO：補齊未映射型別（ItemFireworkExplosion、ItemSoundHolder、pstring/Key/CriterionIdentifier 等），讓生成程式輸出無 TODO。
 - [ ] 重新生成 client/server 封包並驗證編譯：`go test ./pkg/protocol/packet/game/{client,server}`。
+- [ ] 完善生成器父層 bitflag/switch 邏輯（enhanced-generator WithParent，進行中）。
+- [x] 建立 task.yml 以封裝封包生成指令（完成）。

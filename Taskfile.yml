@@ -7,25 +7,21 @@ vars:
 
 tasks:
   build:gen:
-    desc: 編譯 enhanced-generator.exe（固定輸出，避免 go run 觸發防毒）
-    env:
-      GOCACHE: '{{.PWD}}/.gocache'
-      GOMODCACHE: '{{.PWD}}/.gomodcache'
-      TEMP: '{{.PWD}}/.tmp'
-      TMP: '{{.PWD}}/.tmp'
+    desc: 編譯 enhanced-generator.exe（本機用，先不要玩 cache 花招）
     cmds:
-      - powershell -NoLogo -Command "mkdir '{{.PWD}}/.gocache','{{.PWD}}/.gomodcache','{{.PWD}}/.tmp' -Force | Out-Null; go build -o tools/enhanced-generator/enhanced-generator.exe {{.GENERATOR}}"
+      - go build -o tools/enhanced-generator/enhanced-generator.exe {{.GENERATOR}}
+
   gen:client:
     desc: 使用編譯好的 enhanced-generator.exe 產生 Client 封包
-    deps: [build:gen]
+    deps: [ build:gen ]
     cmds:
-      - powershell -NoLogo -Command "tools/enhanced-generator/enhanced-generator.exe -protocol \"{{.PROTOCOL_JSON}}\" -output \"{{.OUTPUT_BASE}}/client\" -direction client -codec=true -v"
+      - tools/enhanced-generator/enhanced-generator.exe -protocol "{{.PROTOCOL_JSON}}" -output "{{.OUTPUT_BASE}}/client" -direction client -codec=true -v
 
   gen:server:
     desc: 使用編譯好的 enhanced-generator.exe 產生 Server 封包
-    deps: [build:gen]
+    deps: [ build:gen ]
     cmds:
-      - powershell -NoLogo -Command "tools/enhanced-generator/enhanced-generator.exe -protocol \"{{.PROTOCOL_JSON}}\" -output \"{{.OUTPUT_BASE}}/server\" -direction server -codec=true -v"
+      - tools/enhanced-generator/enhanced-generator.exe -protocol "{{.PROTOCOL_JSON}}" -output "{{.OUTPUT_BASE}}/server" -direction server -codec=true -v
 
   gen:all:
     desc: 一次產生 Client/Server 封包
