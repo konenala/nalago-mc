@@ -6,7 +6,6 @@ package server
 import (
 	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
-	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
 )
@@ -138,13 +137,13 @@ func (p *UpdateStructureBlock) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	p.Rotation = int32(rotation)
 
-	var metadata pk.String
-	temp, err = metadata.ReadFrom(r)
+	var metadataVal pk.String
+	temp, err = metadataVal.ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	p.Metadata = string(metadata)
+	p.Metadata = string(metadataVal)
 
 	temp, err = (*pk.Float)(&p.Integrity).ReadFrom(r)
 	n += temp

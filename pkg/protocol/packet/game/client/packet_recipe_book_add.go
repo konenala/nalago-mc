@@ -15,11 +15,11 @@ type RecipeBookAddEntriesEntryRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
+	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
 	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
 
 	Data interface{}
 }
@@ -150,32 +150,32 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 		return n, err
 	}
 	switch mapperVal {
-	case 6:
-		p.Category = "furnace_misc"
-	case 10:
-		p.Category = "stonecutter"
+	case 5:
+		p.Category = "furnace_blocks"
+	case 7:
+		p.Category = "blast_furnace_blocks"
 	case 11:
 		p.Category = "smithing"
 	case 12:
 		p.Category = "campfire"
-	case 1:
-		p.Category = "crafting_redstone"
-	case 2:
-		p.Category = "crafting_equipment"
+	case 0:
+		p.Category = "crafting_building_blocks"
 	case 3:
 		p.Category = "crafting_misc"
-	case 7:
-		p.Category = "blast_furnace_blocks"
+	case 6:
+		p.Category = "furnace_misc"
 	case 8:
 		p.Category = "blast_furnace_misc"
 	case 9:
 		p.Category = "smoker_food"
-	case 0:
-		p.Category = "crafting_building_blocks"
+	case 10:
+		p.Category = "stonecutter"
+	case 1:
+		p.Category = "crafting_redstone"
+	case 2:
+		p.Category = "crafting_equipment"
 	case 4:
 		p.Category = "furnace_food"
-	case 5:
-		p.Category = "furnace_blocks"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Category", mapperVal)
 	}
@@ -247,14 +247,14 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 	}
 
 	switch p.Category {
-	case "furnace_misc":
-		temp, err = pk.VarInt(6).WriteTo(w)
+	case "furnace_blocks":
+		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "stonecutter":
-		temp, err = pk.VarInt(10).WriteTo(w)
+	case "blast_furnace_blocks":
+		temp, err = pk.VarInt(7).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -271,14 +271,8 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		if err != nil {
 			return n, err
 		}
-	case "crafting_redstone":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crafting_equipment":
-		temp, err = pk.VarInt(2).WriteTo(w)
+	case "crafting_building_blocks":
+		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -289,8 +283,8 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		if err != nil {
 			return n, err
 		}
-	case "blast_furnace_blocks":
-		temp, err = pk.VarInt(7).WriteTo(w)
+	case "furnace_misc":
+		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -307,20 +301,26 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		if err != nil {
 			return n, err
 		}
-	case "crafting_building_blocks":
-		temp, err = pk.VarInt(0).WriteTo(w)
+	case "stonecutter":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crafting_redstone":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "crafting_equipment":
+		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	case "furnace_food":
 		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "furnace_blocks":
-		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

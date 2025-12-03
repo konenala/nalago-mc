@@ -22,8 +22,8 @@ type UseEntity struct {
 	// Optional，當 Mouse 符合條件時出現
 	Z *float32
 	// Switch 基於 Mouse：
-	//   0 -> varint
 	//   2 -> varint
+	//   0 -> varint
 	//   default -> void
 	Hand     interface{}
 	Sneaking bool
@@ -89,7 +89,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Mouse {
-	case 2:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -99,7 +99,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Hand = val
-	case 0:
+	case 2:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)

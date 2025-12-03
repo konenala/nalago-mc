@@ -26,8 +26,8 @@ type ScoreboardObjective struct {
 	//   default -> void
 	Type interface{}
 	// Switch 基於 Action：
-	//   0 -> [option varint]
 	//   2 -> [option varint]
+	//   0 -> [option varint]
 	//   default -> void
 	NumberFormat interface{}
 	// Switch 基於 Action：
@@ -64,7 +64,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	p.Action = action
 
 	switch p.Action {
-	case 2:
+	case 0:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
@@ -72,7 +72,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		p.DisplayText = val
-	case 0:
+	case 2:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
@@ -85,7 +85,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 2:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -95,7 +95,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Type = val
-	case 0:
+	case 2:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)

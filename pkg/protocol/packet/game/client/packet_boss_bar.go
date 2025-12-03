@@ -26,8 +26,8 @@ type BossBar struct {
 	//   default -> void
 	Health interface{}
 	// Switch 基於 Action：
-	//   4 -> varint
 	//   0 -> varint
+	//   4 -> varint
 	//   default -> void
 	Color interface{}
 	// Switch 基於 Action：
@@ -88,7 +88,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 0:
+	case 2:
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
@@ -96,7 +96,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		p.Health = val
-	case 2:
+	case 0:
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
