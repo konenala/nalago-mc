@@ -306,10 +306,10 @@ func mapType(t string) string {
 		// 特殊類型
 		"entityMetadataLoop": "pk.Metadata",
 		"entityMetadata":     "pk.Metadata",
-		"nbt":                "pk.NBT",
-		"anonymousNbt":       "pk.NBT",
-		"anonOptionalNbt":    "*pk.NBT",
-		"optionalNbt":        "*pk.NBT",
+		"nbt":                "pk.NBTField",
+		"anonymousNbt":       "pk.NBTField",
+		"anonOptionalNbt":    "*pk.NBTField",
+		"optionalNbt":        "*pk.NBTField",
 		// 位置相關
 		"position": "pk.Position",
 		// 向量
