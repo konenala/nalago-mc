@@ -2153,6 +2153,9 @@ func (p *PacketDef) collectImports() {
 			if strings.Contains(f.GoType, "metadata.") {
 				needMetadata = true
 			}
+			if strings.Contains(f.GoType, "pk.") {
+				needPk = true
+			}
 		}
 	}
 
