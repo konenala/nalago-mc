@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const chatSignDebug = true
+// chatSignDebug 定義於 debug.go，可由 SetChatSignDebug 設定
 
 // ChatSigner handles signing chat messages for Minecraft 1.19+
 type ChatSigner struct {

@@ -2,12 +2,13 @@ package player
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"time"
 
-	"encoding/hex"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 
@@ -21,8 +22,7 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/server"
 )
 
-// chatDebug 用於追蹤簽名聊天/指令封包與 ack 狀態。
-const chatDebug = true
+// chatDebug 定義於 debug.go，可由 SetChatDebug 設定
 
 type Player struct {
 	c bot.Client
