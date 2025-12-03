@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // RecipeBookRemove represents the Clientbound RecipeBookRemove packet.
@@ -24,6 +23,7 @@ func (*RecipeBookRemove) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBookRemove) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var recipeIdsCount pk.VarInt
 	temp, err = recipeIdsCount.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *RecipeBookRemove) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.RecipeIds = make([]int32, recipeIdsCount)
+	p.RecipeIds = make([]int32, recipeIdsCount)
 	for i := 0; i < int(recipeIdsCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -48,6 +48,7 @@ func (p *RecipeBookRemove) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p RecipeBookRemove) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.RecipeIds)).WriteTo(w)
 	n += temp

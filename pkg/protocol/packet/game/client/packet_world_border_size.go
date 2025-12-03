@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // WorldBorderSize represents the Clientbound WorldBorderSize packet.
@@ -24,8 +23,9 @@ func (*WorldBorderSize) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *WorldBorderSize) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Double)(&s.Diameter).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Diameter).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -37,6 +37,7 @@ func (p *WorldBorderSize) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p WorldBorderSize) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Double(p.Diameter).WriteTo(w)
 	n += temp

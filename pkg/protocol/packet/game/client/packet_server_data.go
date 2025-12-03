@@ -4,16 +4,15 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ServerData represents the Clientbound ServerData packet.
 
 type ServerData struct {
-	Motd      pk.NBT `mc:"NBT"`
+	Motd      pk.NBTField `mc:"NBT"`
 	IconBytes *[]byte
 }
 
@@ -25,8 +24,9 @@ func (*ServerData) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ServerData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Motd).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Motd).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -45,7 +45,7 @@ func (p *ServerData) ReadFrom(r io.Reader) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		s.IconBytes = &val
+		p.IconBytes = &val
 	}
 
 	return n, nil
@@ -54,8 +54,9 @@ func (p *ServerData) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ServerData) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Motd.WriteTo(w)
+	temp, err = p.Motd.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -67,7 +68,7 @@ func (p ServerData) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.IconBytes.WriteTo(w)
+		temp, err = pk.ByteArray(*p.IconBytes).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

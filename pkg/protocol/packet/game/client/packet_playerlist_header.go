@@ -4,17 +4,16 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // PlayerlistHeader represents the Clientbound PlayerlistHeader packet.
 
 type PlayerlistHeader struct {
-	Header pk.NBT `mc:"NBT"`
-	Footer pk.NBT `mc:"NBT"`
+	Header pk.NBTField `mc:"NBT"`
+	Footer pk.NBTField `mc:"NBT"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -25,14 +24,15 @@ func (*PlayerlistHeader) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerlistHeader) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Header).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Header).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.NBT)(&s.Footer).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Footer).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -44,14 +44,15 @@ func (p *PlayerlistHeader) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p PlayerlistHeader) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Header.WriteTo(w)
+	temp, err = p.Header.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = s.Footer.WriteTo(w)
+	temp, err = p.Footer.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

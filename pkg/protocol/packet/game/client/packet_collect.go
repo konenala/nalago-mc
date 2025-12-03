@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Collect represents the Clientbound Collect packet.
@@ -26,6 +25,7 @@ func (*Collect) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Collect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var collectedEntityId pk.VarInt
 	temp, err = collectedEntityId.ReadFrom(r)
@@ -33,7 +33,7 @@ func (p *Collect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CollectedEntityId = int32(collectedEntityId)
+	p.CollectedEntityId = int32(collectedEntityId)
 
 	var collectorEntityId pk.VarInt
 	temp, err = collectorEntityId.ReadFrom(r)
@@ -41,7 +41,7 @@ func (p *Collect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CollectorEntityId = int32(collectorEntityId)
+	p.CollectorEntityId = int32(collectorEntityId)
 
 	var pickupItemCount pk.VarInt
 	temp, err = pickupItemCount.ReadFrom(r)
@@ -49,7 +49,7 @@ func (p *Collect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.PickupItemCount = int32(pickupItemCount)
+	p.PickupItemCount = int32(pickupItemCount)
 
 	return n, nil
 }
@@ -57,6 +57,7 @@ func (p *Collect) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Collect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.CollectedEntityId).WriteTo(w)
 	n += temp

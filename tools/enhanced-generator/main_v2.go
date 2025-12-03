@@ -28,20 +28,22 @@ type Protocol struct {
 
 // PacketField 封包欄位
 type PacketField struct {
-	Name         string
-	Type         string
-	GoType       string
-	MCTag        string
-	Optional     bool
-	IsArray      bool
-	ArrayType    string
-	ArrayCount   string
-	Comment      string
-	ReadCode     []string
-	WriteCode    []string
-	NeedsPointer bool
-	IsStruct     bool   // 是否是子结构体
-	StructName   string // 子结构体名称
+	Name             string
+	Type             string
+	GoType           string
+	MCTag            string
+	Optional         bool
+	IsArray          bool
+	ArrayType        string
+	ArrayCount       string
+	Comment          string
+	ReadCode         []string
+	WriteCode        []string
+	NeedsPointer     bool
+	IsStruct         bool   // 是否是子结构体
+	StructName       string // 子结构体名称
+	ConditionalField string // 條件字段（匿名 switch 展平）
+	ConditionalValue string // 條件值
 }
 
 // StructDef 结构体定义（包括嵌套的子结构体）
@@ -116,20 +118,33 @@ func main() {
 
 	// 根據方向選擇封包類型
 	var packetTypes map[string]interface{}
+	var playTypes map[string]interface{}
 	dirName := "Client"
 	if *direction == "client" {
 		packetTypes = protocol.Play.ToClient.Types
+		playTypes = protocol.Play.ToClient.Types
 	} else {
 		packetTypes = protocol.Play.ToServer.Types
+		playTypes = protocol.Play.ToServer.Types
 		dirName = "Server"
+	}
+
+	// 合併 globalTypes: protocol.Types + play.toClient/toServer.types
+	globalTypes := make(map[string]interface{})
+	for k, v := range protocol.Types {
+		globalTypes[k] = v
+	}
+	for k, v := range playTypes {
+		globalTypes[k] = v
 	}
 
 	if *verbose {
 		log.Printf("🔄 解析 %s 封包定義...", dirName)
+		log.Printf("📚 加載了 %d 個全局類型定義", len(globalTypes))
 	}
 
 	// 解析所有封包
-	packets := parsePackets(packetTypes, protocol.Types)
+	packets := parsePackets(packetTypes, globalTypes)
 
 	if *verbose {
 		log.Printf("📊 解析統計:")
@@ -222,9 +237,153 @@ func parsePacket(name string, def interface{}, globalTypes map[string]interface{
 
 	if *verbose {
 		log.Printf("  ✓ %s (%d 欄位, %d 子結構)", structName, len(packet.Fields), len(packet.SubStructs))
+		if structName == "SetCreativeSlot" {
+			log.Printf("  🔍 SetCreativeSlot SubStructs:")
+			for i, s := range packet.SubStructs {
+				log.Printf("    [%d] %s with %d fields", i, s.Name, len(s.Fields))
+			}
+			log.Printf("  🔍 SetCreativeSlot Fields:")
+			for i, f := range packet.Fields {
+				log.Printf("    [%d] %s: %s (IsStruct=%v)", i, f.Name, f.GoType, f.IsStruct)
+			}
+		}
 	}
 
 	return packet
+}
+
+// parseAnonymousField 處理匿名字段（anon: true），將其展平到父結構
+func parseAnonymousField(fieldType interface{}, globalTypes map[string]interface{}, parentName string, packet *PacketDef, parentFields []PacketField) []PacketField {
+	var result []PacketField
+
+	switch t := fieldType.(type) {
+	case []interface{}:
+		if len(t) > 0 {
+			typeName, ok := t[0].(string)
+			if !ok {
+				if *verbose {
+					log.Printf("    ❌ 匿名字段類型名稱不是字符串")
+				}
+				return result
+			}
+
+			if *verbose {
+				log.Printf("    📝 匿名字段類型: %s", typeName)
+			}
+
+			switch typeName {
+			case "switch":
+				// 匿名 switch：展平所有分支的字段
+				if len(t) > 1 {
+					if switchConfig, ok := t[1].(map[string]interface{}); ok {
+						compareField, _ := switchConfig["compareTo"].(string)
+
+						if *verbose {
+							log.Printf("    📝 switch compareTo: %s", compareField)
+						}
+
+						// 收集所有可能的字段（從 default 分支）
+						// 注意：default 是 switchConfig 的鍵，不是 fields 的鍵
+						if defaultBranch, exists := switchConfig["default"]; exists {
+							if *verbose {
+								log.Printf("    📝 找到 default 分支")
+							}
+							if branchDef, ok := defaultBranch.([]interface{}); ok && len(branchDef) > 0 {
+								if branchType, ok := branchDef[0].(string); ok && branchType == "container" {
+									if *verbose {
+										log.Printf("    📝 default 分支是 container")
+									}
+									if len(branchDef) > 1 {
+										if branchFields, ok := branchDef[1].([]interface{}); ok {
+											if *verbose {
+												log.Printf("    📝 解析 container 的 %d 個字段", len(branchFields))
+											}
+											// 遞迴解析 container 的字段
+											expandedFields := parseFields(branchFields, globalTypes, parentName, packet)
+
+											if *verbose {
+												log.Printf("    📝 展開了 %d 個字段", len(expandedFields))
+											}
+
+											// 為每個字段添加條件讀寫（基於 compareField）
+											for i := range expandedFields {
+												expandedFields[i].ConditionalField = compareField
+												expandedFields[i].ConditionalValue = "!= 0" // 默認條件
+												// 包裝 ReadCode 和 WriteCode 為條件代碼
+												expandedFields[i].ReadCode = wrapConditionalCode(expandedFields[i].ReadCode, compareField, "!= 0")
+												expandedFields[i].WriteCode = wrapConditionalCode(expandedFields[i].WriteCode, compareField, "!= 0")
+											}
+											result = append(result, expandedFields...)
+										} else {
+											if *verbose {
+												log.Printf("    ❌ branchFields 不是 []interface{}")
+											}
+										}
+									} else {
+										if *verbose {
+											log.Printf("    ❌ branchDef 長度不足")
+										}
+									}
+								} else {
+									if *verbose {
+										log.Printf("    ❌ default 分支不是 container，是: %v", branchType)
+									}
+								}
+							} else {
+								if *verbose {
+									log.Printf("    ❌ defaultBranch 不是 []interface{}")
+								}
+							}
+						} else {
+							if *verbose {
+								log.Printf("    ❌ 沒有找到 default 分支")
+							}
+						}
+					} else {
+						if *verbose {
+							log.Printf("    ❌ switchConfig 不是 map")
+						}
+					}
+				} else {
+					if *verbose {
+						log.Printf("    ❌ switch 定義長度不足")
+					}
+				}
+
+			case "container":
+				// 匿名 container：直接展平所有字段
+				if len(t) > 1 {
+					if containerFields, ok := t[1].([]interface{}); ok {
+						result = parseFields(containerFields, globalTypes, parentName, packet)
+					}
+				}
+			}
+		}
+	}
+
+	return result
+}
+
+// wrapConditionalCode 將代碼包裝在條件語句中
+func wrapConditionalCode(code []string, compareField, condition string) []string {
+	if len(code) == 0 {
+		return code
+	}
+
+	wrapped := []string{
+		fmt.Sprintf("if p.%s %s {", toPascalCase(compareField), condition),
+	}
+
+	for _, line := range code {
+		if strings.HasPrefix(line, "//") {
+			wrapped = append(wrapped, line)
+		} else {
+			wrapped = append(wrapped, "\t"+line)
+		}
+	}
+
+	wrapped = append(wrapped, "}")
+	return wrapped
 }
 
 func parseFields(fields []interface{}, globalTypes map[string]interface{}, parentName string, packet *PacketDef) []PacketField {
@@ -237,7 +396,23 @@ func parseFields(fields []interface{}, globalTypes map[string]interface{}, paren
 		}
 
 		name, _ := fieldMap["name"].(string)
-		if name == "" {
+		isAnon, _ := fieldMap["anon"].(bool)
+
+		// 處理匿名字段（展平到父結構）
+		if name == "" || isAnon {
+			if isAnon {
+				if *verbose {
+					log.Printf("  🔄 檢測到匿名字段 in %s", parentName)
+				}
+				fieldType := fieldMap["type"]
+				// 展平匿名字段
+				anonFields := parseAnonymousField(fieldType, globalTypes, parentName, packet, result)
+				if *verbose {
+					log.Printf("  ✅ 展平了 %d 個匿名字段 in %s", len(anonFields), parentName)
+				}
+				result = append(result, anonFields...)
+				continue
+			}
 			if *verbose {
 				log.Printf("⚠️  跳過無名稱欄位 in %s", parentName)
 			}
@@ -263,6 +438,26 @@ func parseFieldType(name string, fieldType interface{}, globalTypes map[string]i
 
 	switch t := fieldType.(type) {
 	case string:
+		// 檢查是否為 globalTypes 中定義的複雜類型
+		if typeDef, exists := globalTypes[t]; exists {
+			// 檢查是否為原生類型（不應該遞迴展開）
+			if typeDefStr, ok := typeDef.(string); ok && typeDefStr == "native" {
+				// 原生類型，直接映射
+				field.Type = t
+				field.GoType = mapType(t)
+				field.MCTag = getMCTag(t)
+				field.ReadCode = generateReadCode(field.Name, t, false)
+				field.WriteCode = generateWriteCode(field.Name, t, false)
+				return field
+			}
+
+			if *verbose {
+				log.Printf("🔄 展開類型 %s 於字段 %s.%s", t, parentName, name)
+			}
+			// 遞迴展開 globalTypes 中的類型定義
+			return parseFieldType(name, typeDef, globalTypes, parentName, packet, parentFields)
+		}
+
 		// 簡單類型
 		field.Type = t
 		field.GoType = mapType(t)
@@ -358,6 +553,21 @@ func parseOptionalField(name string, t []interface{}, globalTypes map[string]int
 		// 检查内部类型
 		switch inner := innerType.(type) {
 		case string:
+			// 檢查是否為 globalTypes 中定義的複雜類型
+			if typeDef, exists := globalTypes[inner]; exists {
+				// 遞迴展開為複雜類型的 optional
+				baseField := parseFieldType("temp", typeDef, globalTypes, parentName, packet, []PacketField{})
+				if baseField != nil && baseField.IsStruct {
+					// 如果是結構體，轉換為可選的結構體
+					field.GoType = "*" + baseField.StructName
+					field.IsStruct = true
+					field.StructName = baseField.StructName
+					field.ReadCode = generateOptionalStructReadCode(field.Name, baseField.StructName)
+					field.WriteCode = generateOptionalStructWriteCode(field.Name, baseField.StructName)
+					return field
+				}
+			}
+
 			// 简单类型的 optional
 			field.GoType = "*" + mapType(inner)
 			field.ReadCode = generateOptionalReadCode(field.Name, inner)
@@ -424,6 +634,21 @@ func parseArrayField(name string, t []interface{}, globalTypes map[string]interf
 			// 检查数组元素类型
 			switch elemType := arrayElemType.(type) {
 			case string:
+				// 檢查是否為 globalTypes 中定義的複雜類型
+				if typeDef, exists := globalTypes[elemType]; exists {
+					// 遞迴展開為複雜類型的數組
+					baseField := parseFieldType("temp", typeDef, globalTypes, parentName, packet, []PacketField{})
+					if baseField != nil && baseField.IsStruct {
+						// 如果是結構體，生成結構體數組
+						field.GoType = "[]" + baseField.StructName
+						field.IsStruct = true
+						field.StructName = baseField.StructName
+						field.ReadCode = generateStructArrayReadCode(field.Name, baseField.StructName, countType)
+						field.WriteCode = generateStructArrayWriteCode(field.Name, baseField.StructName, countType)
+						return field
+					}
+				}
+
 				// 简单类型数组
 				field.ArrayType = elemType
 				field.GoType = "[]" + mapType(elemType)
@@ -725,15 +950,6 @@ func mapType(t string) string {
 		"u8":                      "uint8",
 		"ContainerID":             "int8",
 		"packedChunkPos":          "int64",
-		"RecipeDisplay":           "interface{}",
-		"SlotDisplay":             "interface{}",
-		"ItemSoundHolder":         "interface{}",
-		"ChatTypesHolder":         "interface{}",
-		"SpawnInfo":               "interface{}",
-		"previousMessages":        "interface{}",
-		"IDSet":                   "interface{}",
-		"command_node":            "interface{}",
-		"chunkBlockEntity":        "interface{}",
 		"PositionUpdateRelatives": "int32",
 		"soundSource":             "int32",
 		"u16":                     "uint16",
@@ -762,12 +978,8 @@ func mapType(t string) string {
 		"vec3f64":                 "[3]float64",
 		"vec3f":                   "[3]float32",
 		"vec3i":                   "[3]int32",
-		"HashedSlot":              "interface{}", // TODO: 实现 HashedSlot 类型
-		"UntrustedSlot":           "interface{}", // TODO: 实现 UntrustedSlot 类型
-		"MovementFlags":           "uint8",       // bitflags
-		"RecipeBookSetting":       "interface{}", // TODO: 实现 RecipeBookSetting 类型
-		"tags":                    "interface{}", // TODO: 实现 tags 类型
-		"Particle":                "interface{}", // TODO: 实现 Particle 类型
+		"HashedSlot":              "slot.HashedSlot",
+		"MovementFlags":           "uint8", // bitflags
 	}
 
 	if mapped, ok := mapping[t]; ok {
@@ -1367,6 +1579,13 @@ func generateValueReadLines(typeName, target string) []string {
 	case "void":
 		return []string{}
 	default:
+		// 檢查是否為 interface{} 類型 (複雜類型的 placeholder)
+		goType := mapType(typeName)
+		if goType == "interface{}" {
+			return []string{
+				"	// TODO: Read " + typeName + " type",
+			}
+		}
 		return []string{
 			"	temp, err = (*pk." + mapTypeToPkType(typeName) + ")(&" + target + ").ReadFrom(r)",
 			"	n += temp",
@@ -1435,6 +1654,13 @@ func generateValueWriteLines(typeName, valueExpr string) []string {
 	case "void":
 		return []string{}
 	default:
+		// 檢查是否為 interface{} 類型 (複雜類型的 placeholder)
+		goType := mapType(typeName)
+		if goType == "interface{}" {
+			return []string{
+				"	// TODO: Write " + typeName + " type",
+			}
+		}
 		return []string{
 			"	temp, err = pk." + mapTypeToPkType(typeName) + "(" + valueExpr + ").WriteTo(w)",
 			"	n += temp",
@@ -1597,6 +1823,12 @@ func generateOptionalReadCode(fieldName, innerType string) []string {
 			"	n += temp",
 			"	if err != nil { return n, err }",
 		)
+	case "HashedSlot":
+		code = append(code,
+			"	temp, err = (&val).ReadFrom(r)",
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
 	case "entityMetadata", "entityMetadataLoop":
 		code = append(code,
 			"	temp, err = (*metadata.EntityMetadata)(&val).ReadFrom(r)",
@@ -1677,6 +1909,12 @@ func generateOptionalWriteCode(fieldName, innerType string) []string {
 			"	if err != nil { return n, err }",
 		)
 	case "slot", "Slot":
+		code = append(code,
+			fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName),
+			"	n += temp",
+			"	if err != nil { return n, err }",
+		)
+	case "HashedSlot":
 		code = append(code,
 			fmt.Sprintf("	temp, err = p.%s.WriteTo(w)", fieldName),
 			"	n += temp",

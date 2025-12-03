@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityLook represents the Clientbound EntityLook packet.
@@ -27,6 +26,7 @@ func (*EntityLook) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -34,7 +34,7 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var yaw int8
 	temp, err = (*pk.Byte)(&yaw).ReadFrom(r)
@@ -42,7 +42,7 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Yaw = yaw
+	p.Yaw = yaw
 
 	var pitch int8
 	temp, err = (*pk.Byte)(&pitch).ReadFrom(r)
@@ -50,7 +50,7 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Pitch = pitch
+	p.Pitch = pitch
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
@@ -58,7 +58,7 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.OnGround = bool(onGround)
+	p.OnGround = bool(onGround)
 
 	return n, nil
 }
@@ -66,6 +66,7 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityLook) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

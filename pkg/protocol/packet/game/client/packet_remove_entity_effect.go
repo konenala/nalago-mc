@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // RemoveEntityEffect represents the Clientbound RemoveEntityEffect packet.
@@ -25,6 +24,7 @@ func (*RemoveEntityEffect) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *RemoveEntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *RemoveEntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var effectId pk.VarInt
 	temp, err = effectId.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *RemoveEntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EffectId = int32(effectId)
+	p.EffectId = int32(effectId)
 
 	return n, nil
 }
@@ -48,6 +48,7 @@ func (p *RemoveEntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p RemoveEntityEffect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

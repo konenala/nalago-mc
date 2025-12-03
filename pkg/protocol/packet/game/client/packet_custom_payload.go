@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // CustomPayload represents the Clientbound CustomPayload packet.
@@ -25,6 +24,7 @@ func (*CustomPayload) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var channel pk.String
 	temp, err = channel.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Channel = string(channel)
+	p.Channel = string(channel)
 
 	// TODO: Read Data (restBuffer)
 
@@ -42,6 +42,7 @@ func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p CustomPayload) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Channel).WriteTo(w)
 	n += temp

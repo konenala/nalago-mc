@@ -4,10 +4,10 @@ import (
 	"io"
 
 	"git.konjactw.dev/falloutBot/go-mc/chat"
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	"git.konjactw.dev/falloutBot/go-mc/level"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
 	"github.com/google/uuid"
 )

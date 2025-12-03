@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // WorldParticles represents the Clientbound WorldParticles packet.
@@ -34,6 +33,7 @@ func (*WorldParticles) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *WorldParticles) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var longDistance pk.Boolean
 	temp, err = longDistance.ReadFrom(r)
@@ -41,7 +41,7 @@ func (p *WorldParticles) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.LongDistance = bool(longDistance)
+	p.LongDistance = bool(longDistance)
 
 	var alwaysShow pk.Boolean
 	temp, err = alwaysShow.ReadFrom(r)
@@ -49,57 +49,57 @@ func (p *WorldParticles) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.AlwaysShow = bool(alwaysShow)
+	p.AlwaysShow = bool(alwaysShow)
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.OffsetX).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.OffsetX).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.OffsetY).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.OffsetY).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.OffsetZ).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.OffsetZ).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.VelocityOffset).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.VelocityOffset).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Amount).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Amount).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	// TODO: Read Particle (Particle)
+	// TODO: Read Particle (unsupported type Particle)
 
 	return n, nil
 }
@@ -107,6 +107,7 @@ func (p *WorldParticles) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p WorldParticles) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Boolean(p.LongDistance).WriteTo(w)
 	n += temp
@@ -168,7 +169,7 @@ func (p WorldParticles) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Particle (Particle)
+	// TODO: Write Particle (unsupported type Particle)
 
 	return n, nil
 }

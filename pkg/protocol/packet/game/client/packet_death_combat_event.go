@@ -4,17 +4,16 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // DeathCombatEvent represents the Clientbound DeathCombatEvent packet.
 
 type DeathCombatEvent struct {
-	PlayerId int32  `mc:"VarInt"`
-	Message  pk.NBT `mc:"NBT"`
+	PlayerId int32       `mc:"VarInt"`
+	Message  pk.NBTField `mc:"NBT"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -25,6 +24,7 @@ func (*DeathCombatEvent) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *DeathCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var playerId pk.VarInt
 	temp, err = playerId.ReadFrom(r)
@@ -32,9 +32,9 @@ func (p *DeathCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.PlayerId = int32(playerId)
+	p.PlayerId = int32(playerId)
 
-	temp, err = (*pk.NBT)(&s.Message).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Message).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -46,6 +46,7 @@ func (p *DeathCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p DeathCombatEvent) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.PlayerId).WriteTo(w)
 	n += temp
@@ -53,7 +54,7 @@ func (p DeathCombatEvent) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = s.Message.WriteTo(w)
+	temp, err = p.Message.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

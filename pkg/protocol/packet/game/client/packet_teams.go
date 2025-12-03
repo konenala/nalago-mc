@@ -4,12 +4,11 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
-
 
 // Teams represents the Clientbound Teams packet.
 
@@ -17,9 +16,11 @@ type Teams struct {
 	Team string `mc:"String"`
 	// TODO: Implement mapper type
 	Mode interface{}
-	// TODO: Switch type - conditional field based on other field value
-	 interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Mode：
+	//   add -> [array map[countType:varint type:string]]
+	//   join -> [array map[countType:varint type:string]]
+	//   leave -> [array map[countType:varint type:string]]
+	//   default -> void
 	Players interface{}
 }
 
@@ -28,22 +29,25 @@ func (*Teams) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundTeams
 }
 
-
 // ReadFrom reads the packet data from the reader.
 func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var team pk.String
 	temp, err = team.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Team = string(team)
+	if err != nil {
+		return n, err
+	}
+	p.Team = string(team)
 
 	// TODO: Read Mode
 
-	// TODO: Implement switch field read
-
-	// TODO: Implement switch field read
+	switch p.Mode {
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -51,24 +55,26 @@ func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Team).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	// TODO: Write Mode
 
-	// TODO: Implement switch field write
-
-	// TODO: Implement switch field write
+	switch v := p.Players.(type) {
+	default:
+		return n, fmt.Errorf("unsupported switch type for Players: %T", v)
+	}
 
 	return n, nil
 }
-
 
 func init() {
 	registerPacket(packetid.ClientboundTeams, func() ClientboundPacket {
 		return &Teams{}
 	})
 }
-

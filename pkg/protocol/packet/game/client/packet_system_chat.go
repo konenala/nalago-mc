@@ -4,16 +4,15 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SystemChat represents the Clientbound SystemChat packet.
 
 type SystemChat struct {
-	Content     pk.NBT `mc:"NBT"`
+	Content     pk.NBTField `mc:"NBT"`
 	IsActionBar bool
 }
 
@@ -25,8 +24,9 @@ func (*SystemChat) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SystemChat) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Content).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Content).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -38,7 +38,7 @@ func (p *SystemChat) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.IsActionBar = bool(isActionBar)
+	p.IsActionBar = bool(isActionBar)
 
 	return n, nil
 }
@@ -46,8 +46,9 @@ func (p *SystemChat) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SystemChat) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Content.WriteTo(w)
+	temp, err = p.Content.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

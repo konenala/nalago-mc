@@ -6,8 +6,8 @@ package client
 import (
 	"io"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 // KeepAlive represents the Clientbound KeepAlive packet.
@@ -25,7 +25,7 @@ func (*KeepAlive) PacketID() packetid.ClientboundPacketID {
 func (p *KeepAlive) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
 
-	temp, err = (*pk.Long)(&s.KeepAliveId).ReadFrom(r)
+	temp, err = (*pk.Long)(&p.KeepAliveId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err

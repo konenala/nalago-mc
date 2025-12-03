@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // MapChunkHeightmapsEntry is a sub-structure used in the packet.
@@ -18,8 +17,9 @@ type MapChunkHeightmapsEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Type
 
@@ -29,21 +29,24 @@ func (s *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Data = make([]int64, dataCount)
+	p.Data = make([]int64, dataCount)
 	for i := 0; i < int(dataCount); i++ {
-		temp, err = (*pk.i64)(&s.Data[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.Data[i] = int64(elem)
 	}
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Type
 
@@ -53,7 +56,7 @@ func (s MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Data {
-		temp, err = s.Data[i].WriteTo(w)
+		temp, err = pk.Long(p.Data[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -66,10 +69,11 @@ func (s MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 // MapChunk represents the Clientbound MapChunk packet.
 
 type MapChunk struct {
-	X                   int32
-	Z                   int32
-	Heightmaps          []MapChunkHeightmapsEntry
-	ChunkData           []byte
+	X          int32
+	Z          int32
+	Heightmaps []MapChunkHeightmapsEntry
+	ChunkData  []byte
+	// TODO: Array element type chunkBlockEntity unsupported
 	BlockEntities       []interface{}
 	SkyLightMask        []int64
 	BlockLightMask      []int64
@@ -87,14 +91,15 @@ func (*MapChunk) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Int)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -106,9 +111,9 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Heightmaps = make([]MapChunkHeightmapsEntry, heightmapsCount)
+	p.Heightmaps = make([]MapChunkHeightmapsEntry, heightmapsCount)
 	for i := 0; i < int(heightmapsCount); i++ {
-		temp, err = s.Heightmaps[i].ReadFrom(r)
+		temp, err = p.Heightmaps[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -117,34 +122,21 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 
 	// TODO: Read ChunkData (ByteArray)
 
-	var blockEntitiesCount pk.VarInt
-	temp, err = blockEntitiesCount.ReadFrom(r)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	s.BlockEntities = make([]interface{}, blockEntitiesCount)
-	for i := 0; i < int(blockEntitiesCount); i++ {
-		temp, err = (*pk.chunkBlockEntity)(&s.BlockEntities[i]).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-
 	var skyLightMaskCount pk.VarInt
 	temp, err = skyLightMaskCount.ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
-	s.SkyLightMask = make([]int64, skyLightMaskCount)
+	p.SkyLightMask = make([]int64, skyLightMaskCount)
 	for i := 0; i < int(skyLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.SkyLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.SkyLightMask[i] = int64(elem)
 	}
 
 	var blockLightMaskCount pk.VarInt
@@ -153,13 +145,15 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.BlockLightMask = make([]int64, blockLightMaskCount)
+	p.BlockLightMask = make([]int64, blockLightMaskCount)
 	for i := 0; i < int(blockLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.BlockLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.BlockLightMask[i] = int64(elem)
 	}
 
 	var emptySkyLightMaskCount pk.VarInt
@@ -168,13 +162,15 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EmptySkyLightMask = make([]int64, emptySkyLightMaskCount)
+	p.EmptySkyLightMask = make([]int64, emptySkyLightMaskCount)
 	for i := 0; i < int(emptySkyLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.EmptySkyLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.EmptySkyLightMask[i] = int64(elem)
 	}
 
 	var emptyBlockLightMaskCount pk.VarInt
@@ -183,13 +179,15 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EmptyBlockLightMask = make([]int64, emptyBlockLightMaskCount)
+	p.EmptyBlockLightMask = make([]int64, emptyBlockLightMaskCount)
 	for i := 0; i < int(emptyBlockLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.EmptyBlockLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.EmptyBlockLightMask[i] = int64(elem)
 	}
 
 	var skyLightCount pk.VarInt
@@ -198,7 +196,7 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SkyLight = make([][]uint8, skyLightCount)
+	p.SkyLight = make([][]uint8, skyLightCount)
 	for i := 0; i < int(skyLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
@@ -208,7 +206,9 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		p.SkyLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
-			temp, err = (*pk.Int)(&s.SkyLight[i][j]).ReadFrom(r)
+			var elem pk.UnsignedByte
+			temp, err = elem.ReadFrom(r)
+			p.SkyLight[i][j] = uint8(elem)
 			n += temp
 			if err != nil {
 				return n, err
@@ -222,7 +222,7 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.BlockLight = make([][]uint8, blockLightCount)
+	p.BlockLight = make([][]uint8, blockLightCount)
 	for i := 0; i < int(blockLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
@@ -232,7 +232,9 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		p.BlockLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
-			temp, err = (*pk.Int)(&s.BlockLight[i][j]).ReadFrom(r)
+			var elem pk.UnsignedByte
+			temp, err = elem.ReadFrom(r)
+			p.BlockLight[i][j] = uint8(elem)
 			n += temp
 			if err != nil {
 				return n, err
@@ -246,6 +248,7 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Int(p.X).WriteTo(w)
 	n += temp
@@ -265,7 +268,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Heightmaps {
-		temp, err = s.Heightmaps[i].WriteTo(w)
+		temp, err = p.Heightmaps[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -274,26 +277,13 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 
 	// TODO: Write ChunkData (ByteArray)
 
-	temp, err = pk.VarInt(len(p.BlockEntities)).WriteTo(w)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	for i := range p.BlockEntities {
-		temp, err = s.BlockEntities[i].WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
-
 	temp, err = pk.VarInt(len(p.SkyLightMask)).WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 	for i := range p.SkyLightMask {
-		temp, err = s.SkyLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.SkyLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -306,7 +296,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.BlockLightMask {
-		temp, err = s.BlockLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.BlockLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -319,7 +309,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.EmptySkyLightMask {
-		temp, err = s.EmptySkyLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.EmptySkyLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -332,7 +322,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.EmptyBlockLightMask {
-		temp, err = s.EmptyBlockLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.EmptyBlockLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -351,7 +341,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 		for j := range p.SkyLight[i] {
-			temp, err = pk.Int(p.SkyLight[i][j]).WriteTo(w)
+			temp, err = pk.UnsignedByte(p.SkyLight[i][j]).WriteTo(w)
 			n += temp
 			if err != nil {
 				return n, err
@@ -371,7 +361,7 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 		for j := range p.BlockLight[i] {
-			temp, err = pk.Int(p.BlockLight[i][j]).WriteTo(w)
+			temp, err = pk.UnsignedByte(p.BlockLight[i][j]).WriteTo(w)
 			n += temp
 			if err != nil {
 				return n, err

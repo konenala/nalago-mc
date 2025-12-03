@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // UpdateLight represents the Clientbound UpdateLight packet.
@@ -31,6 +30,7 @@ func (*UpdateLight) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var chunkX pk.VarInt
 	temp, err = chunkX.ReadFrom(r)
@@ -38,7 +38,7 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ChunkX = int32(chunkX)
+	p.ChunkX = int32(chunkX)
 
 	var chunkZ pk.VarInt
 	temp, err = chunkZ.ReadFrom(r)
@@ -46,7 +46,7 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ChunkZ = int32(chunkZ)
+	p.ChunkZ = int32(chunkZ)
 
 	var skyLightMaskCount pk.VarInt
 	temp, err = skyLightMaskCount.ReadFrom(r)
@@ -54,13 +54,15 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SkyLightMask = make([]int64, skyLightMaskCount)
+	p.SkyLightMask = make([]int64, skyLightMaskCount)
 	for i := 0; i < int(skyLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.SkyLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.SkyLightMask[i] = int64(elem)
 	}
 
 	var blockLightMaskCount pk.VarInt
@@ -69,13 +71,15 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.BlockLightMask = make([]int64, blockLightMaskCount)
+	p.BlockLightMask = make([]int64, blockLightMaskCount)
 	for i := 0; i < int(blockLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.BlockLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.BlockLightMask[i] = int64(elem)
 	}
 
 	var emptySkyLightMaskCount pk.VarInt
@@ -84,13 +88,15 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EmptySkyLightMask = make([]int64, emptySkyLightMaskCount)
+	p.EmptySkyLightMask = make([]int64, emptySkyLightMaskCount)
 	for i := 0; i < int(emptySkyLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.EmptySkyLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.EmptySkyLightMask[i] = int64(elem)
 	}
 
 	var emptyBlockLightMaskCount pk.VarInt
@@ -99,13 +105,15 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EmptyBlockLightMask = make([]int64, emptyBlockLightMaskCount)
+	p.EmptyBlockLightMask = make([]int64, emptyBlockLightMaskCount)
 	for i := 0; i < int(emptyBlockLightMaskCount); i++ {
-		temp, err = (*pk.i64)(&s.EmptyBlockLightMask[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
+		p.EmptyBlockLightMask[i] = int64(elem)
 	}
 
 	var skyLightCount pk.VarInt
@@ -114,7 +122,7 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SkyLight = make([][]uint8, skyLightCount)
+	p.SkyLight = make([][]uint8, skyLightCount)
 	for i := 0; i < int(skyLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
@@ -124,7 +132,9 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		p.SkyLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
-			temp, err = (*pk.Int)(&s.SkyLight[i][j]).ReadFrom(r)
+			var elem pk.UnsignedByte
+			temp, err = elem.ReadFrom(r)
+			p.SkyLight[i][j] = uint8(elem)
 			n += temp
 			if err != nil {
 				return n, err
@@ -138,7 +148,7 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.BlockLight = make([][]uint8, blockLightCount)
+	p.BlockLight = make([][]uint8, blockLightCount)
 	for i := 0; i < int(blockLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
@@ -148,7 +158,9 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		p.BlockLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
-			temp, err = (*pk.Int)(&s.BlockLight[i][j]).ReadFrom(r)
+			var elem pk.UnsignedByte
+			temp, err = elem.ReadFrom(r)
+			p.BlockLight[i][j] = uint8(elem)
 			n += temp
 			if err != nil {
 				return n, err
@@ -162,6 +174,7 @@ func (p *UpdateLight) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.ChunkX).WriteTo(w)
 	n += temp
@@ -181,7 +194,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.SkyLightMask {
-		temp, err = s.SkyLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.SkyLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -194,7 +207,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.BlockLightMask {
-		temp, err = s.BlockLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.BlockLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -207,7 +220,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.EmptySkyLightMask {
-		temp, err = s.EmptySkyLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.EmptySkyLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -220,7 +233,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.EmptyBlockLightMask {
-		temp, err = s.EmptyBlockLightMask[i].WriteTo(w)
+		temp, err = pk.Long(p.EmptyBlockLightMask[i]).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -239,7 +252,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 		for j := range p.SkyLight[i] {
-			temp, err = pk.Int(p.SkyLight[i][j]).WriteTo(w)
+			temp, err = pk.UnsignedByte(p.SkyLight[i][j]).WriteTo(w)
 			n += temp
 			if err != nil {
 				return n, err
@@ -259,7 +272,7 @@ func (p UpdateLight) WriteTo(w io.Writer) (n int64, err error) {
 			return n, err
 		}
 		for j := range p.BlockLight[i] {
-			temp, err = pk.Int(p.BlockLight[i][j]).WriteTo(w)
+			temp, err = pk.UnsignedByte(p.BlockLight[i][j]).WriteTo(w)
 			n += temp
 			if err != nil {
 				return n, err

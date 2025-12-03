@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Explosion represents the Clientbound Explosion packet.
@@ -16,7 +15,7 @@ type Explosion struct {
 	X                 float64
 	Y                 float64
 	Z                 float64
-	PlayerKnockback   *interface{}
+	PlayerKnockback   *[3]float32
 	ExplosionParticle interface{}
 	Sound             interface{}
 }
@@ -29,20 +28,21 @@ func (*Explosion) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Explosion) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -55,18 +55,22 @@ func (p *Explosion) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasPlayerKnockback {
-		var val interface{}
-		temp, err = (*pk.vec3f)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
+		var val [3]float32
+		for i := 0; i < 3; i++ {
+			var f pk.Float
+			temp, err = f.ReadFrom(r)
+			n += temp
+			if err != nil {
+				return n, err
+			}
+			val[i] = float32(f)
 		}
-		s.PlayerKnockback = &val
+		p.PlayerKnockback = &val
 	}
 
-	// TODO: Read ExplosionParticle (Particle)
+	// TODO: Read ExplosionParticle (unsupported type Particle)
 
-	// TODO: Read Sound (ItemSoundHolder)
+	// TODO: Read Sound (unsupported type ItemSoundHolder)
 
 	return n, nil
 }
@@ -74,6 +78,7 @@ func (p *Explosion) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Explosion) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
@@ -99,10 +104,12 @@ func (p Explosion) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.PlayerKnockback.WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
+		for i := 0; i < 3; i++ {
+			temp, err = pk.Float((*p.PlayerKnockback)[i]).WriteTo(w)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
@@ -112,9 +119,9 @@ func (p Explosion) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 
-	// TODO: Write ExplosionParticle (Particle)
+	// TODO: Write ExplosionParticle (unsupported type Particle)
 
-	// TODO: Write Sound (ItemSoundHolder)
+	// TODO: Write Sound (unsupported type ItemSoundHolder)
 
 	return n, nil
 }

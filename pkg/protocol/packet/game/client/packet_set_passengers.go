@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SetPassengers represents the Clientbound SetPassengers packet.
@@ -25,6 +24,7 @@ func (*SetPassengers) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var passengersCount pk.VarInt
 	temp, err = passengersCount.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Passengers = make([]int32, passengersCount)
+	p.Passengers = make([]int32, passengersCount)
 	for i := 0; i < int(passengersCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -57,6 +57,7 @@ func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SetPassengers) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

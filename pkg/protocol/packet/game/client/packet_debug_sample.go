@@ -4,18 +4,16 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
-
 
 // DebugSample represents the Clientbound DebugSample packet.
 
 type DebugSample struct {
 	Sample []int64
-	Type int32 `mc:"VarInt"`
+	Type   int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -23,27 +21,35 @@ func (*DebugSample) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundDebugSample
 }
 
-
 // ReadFrom reads the packet data from the reader.
 func (p *DebugSample) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var sampleCount pk.VarInt
 	temp, err = sampleCount.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Sample = make([]int64, sampleCount)
+	if err != nil {
+		return n, err
+	}
+	p.Sample = make([]int64, sampleCount)
 	for i := 0; i < int(sampleCount); i++ {
-		temp, err = (*pk.i64)(&s.Sample[i]).ReadFrom(r)
+		var elem pk.Long
+		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil { return n, err }
+		if err != nil {
+			return n, err
+		}
+		p.Sample[i] = int64(elem)
 	}
 
-	var type pk.VarInt
-	temp, err = type.ReadFrom(r)
+	var _type pk.VarInt
+	temp, err = _type.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Type = int32(type)
+	if err != nil {
+		return n, err
+	}
+	p.Type = int32(_type)
 
 	return n, nil
 }
@@ -51,27 +57,32 @@ func (p *DebugSample) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p DebugSample) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Sample)).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 	for i := range p.Sample {
-		temp, err = s.Sample[i].WriteTo(w)
+		temp, err = pk.Long(p.Sample[i]).WriteTo(w)
 		n += temp
-		if err != nil { return n, err }
+		if err != nil {
+			return n, err
+		}
 	}
 
 	temp, err = pk.VarInt(p.Type).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
-
 
 func init() {
 	registerPacket(packetid.ClientboundDebugSample, func() ClientboundPacket {
 		return &DebugSample{}
 	})
 }
-

@@ -4,18 +4,17 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // OpenWindow represents the Clientbound OpenWindow packet.
 
 type OpenWindow struct {
-	WindowId      int32  `mc:"VarInt"`
-	InventoryType int32  `mc:"VarInt"`
-	WindowTitle   pk.NBT `mc:"NBT"`
+	WindowId      int32       `mc:"VarInt"`
+	InventoryType int32       `mc:"VarInt"`
+	WindowTitle   pk.NBTField `mc:"NBT"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -26,6 +25,7 @@ func (*OpenWindow) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
@@ -33,7 +33,7 @@ func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.WindowId = int32(windowId)
+	p.WindowId = int32(windowId)
 
 	var inventoryType pk.VarInt
 	temp, err = inventoryType.ReadFrom(r)
@@ -41,9 +41,9 @@ func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.InventoryType = int32(inventoryType)
+	p.InventoryType = int32(inventoryType)
 
-	temp, err = (*pk.NBT)(&s.WindowTitle).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.WindowTitle).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -55,6 +55,7 @@ func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p OpenWindow) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
@@ -68,7 +69,7 @@ func (p OpenWindow) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = s.WindowTitle.WriteTo(w)
+	temp, err = p.WindowTitle.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // CraftProgressBar represents the Clientbound CraftProgressBar packet.
@@ -26,16 +25,17 @@ func (*CraftProgressBar) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *CraftProgressBar) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read WindowId (ContainerID)
 
-	temp, err = (*pk.Short)(&s.Property).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.Property).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Short)(&s.Value).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.Value).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -47,6 +47,7 @@ func (p *CraftProgressBar) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p CraftProgressBar) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write WindowId (ContainerID)
 

@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // OpenHorseWindow represents the Clientbound OpenHorseWindow packet.
@@ -26,6 +25,7 @@ func (*OpenHorseWindow) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *OpenHorseWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read WindowId (ContainerID)
 
@@ -35,9 +35,9 @@ func (p *OpenHorseWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.NbSlots = int32(nbSlots)
+	p.NbSlots = int32(nbSlots)
 
-	temp, err = (*pk.Int)(&s.EntityId).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.EntityId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -49,6 +49,7 @@ func (p *OpenHorseWindow) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p OpenHorseWindow) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write WindowId (ContainerID)
 

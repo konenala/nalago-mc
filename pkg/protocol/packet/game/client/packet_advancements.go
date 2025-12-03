@@ -4,43 +4,44 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
+	"io"
 )
 
 // AdvancementsAdvancementMappingEntryValueDisplayData is a sub-structure used in the packet.
 type AdvancementsAdvancementMappingEntryValueDisplayData struct {
-	Title       pk.NBT `mc:"NBT"`
-	Description pk.NBT `mc:"NBT"`
-	Icon        pk.Slot
+	Title       pk.NBTField `mc:"NBT"`
+	Description pk.NBTField `mc:"NBT"`
+	Icon        slot.Slot
 	FrameType   int32 `mc:"VarInt"`
 	// Bitfield - see protocol spec for bit layout
 	Flags int32
-	// TODO: Switch type - conditional field based on other field value
-	BackgroundTexture interface{}
+	// Optional，當 Flags 符合條件時出現
+	BackgroundTexture *string
 	XCord             float32
 	YCord             float32
 }
 
 // ReadFrom reads the data from the reader.
-func (s *AdvancementsAdvancementMappingEntryValueDisplayData) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *AdvancementsAdvancementMappingEntryValueDisplayData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Title).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Title).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.NBT)(&s.Description).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Description).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Slot)(&s.Icon).ReadFrom(r)
+	temp, err = (*slot.Slot)(&p.Icon).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -52,23 +53,34 @@ func (s *AdvancementsAdvancementMappingEntryValueDisplayData) ReadFrom(r io.Read
 	if err != nil {
 		return n, err
 	}
-	s.FrameType = int32(frameType)
+	p.FrameType = int32(frameType)
 
-	temp, err = (*pk.Int)(&s.Flags).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Flags).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	// TODO: Implement switch field read
+	// 當 Flags == 1 時讀取 BackgroundTexture
+	if p.Flags == 1 {
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = string(elem)
+		p.BackgroundTexture = &val
+	}
 
-	temp, err = (*pk.Float)(&s.XCord).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.XCord).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.YCord).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.YCord).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -78,22 +90,23 @@ func (s *AdvancementsAdvancementMappingEntryValueDisplayData) ReadFrom(r io.Read
 }
 
 // WriteTo writes the data to the writer.
-func (s AdvancementsAdvancementMappingEntryValueDisplayData) WriteTo(w io.Writer) (n int64, err error) {
+func (p AdvancementsAdvancementMappingEntryValueDisplayData) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Title.WriteTo(w)
+	temp, err = p.Title.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = s.Description.WriteTo(w)
+	temp, err = p.Description.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = s.Icon.WriteTo(w)
+	temp, err = p.Icon.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -111,7 +124,13 @@ func (s AdvancementsAdvancementMappingEntryValueDisplayData) WriteTo(w io.Writer
 		return n, err
 	}
 
-	// TODO: Implement switch field write
+	if p.BackgroundTexture != nil {
+		temp, err = pk.String(*p.BackgroundTexture).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	temp, err = pk.Float(p.XCord).WriteTo(w)
 	n += temp
@@ -137,8 +156,9 @@ type AdvancementsAdvancementMappingEntryValue struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var hasParentId pk.Boolean
 	temp, err = hasParentId.ReadFrom(r)
@@ -155,7 +175,7 @@ func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int6
 			return n, err
 		}
 		val = string(elem)
-		s.ParentId = &val
+		p.ParentId = &val
 	}
 
 	var hasDisplayData pk.Boolean
@@ -165,8 +185,8 @@ func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int6
 		return n, err
 	}
 	if hasDisplayData {
-		s.DisplayData = &AdvancementsAdvancementMappingEntryValueDisplayData{}
-		temp, err = s.DisplayData.ReadFrom(r)
+		p.DisplayData = &AdvancementsAdvancementMappingEntryValueDisplayData{}
+		temp, err = p.DisplayData.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -179,7 +199,7 @@ func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int6
 	if err != nil {
 		return n, err
 	}
-	s.Requirements = make([][]string, requirementsCount)
+	p.Requirements = make([][]string, requirementsCount)
 	for i := 0; i < int(requirementsCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
@@ -187,11 +207,11 @@ func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int6
 		if err != nil {
 			return n, err
 		}
-		s.Requirements[i] = make([]string, innerCount)
+		p.Requirements[i] = make([]string, innerCount)
 		for j := 0; j < int(innerCount); j++ {
 			var elem pk.String
 			temp, err = elem.ReadFrom(r)
-			s.Requirements[i][j] = string(elem)
+			p.Requirements[i][j] = string(elem)
 			n += temp
 			if err != nil {
 				return n, err
@@ -205,14 +225,15 @@ func (s *AdvancementsAdvancementMappingEntryValue) ReadFrom(r io.Reader) (n int6
 	if err != nil {
 		return n, err
 	}
-	s.SendsTelemtryData = bool(sendsTelemtryData)
+	p.SendsTelemtryData = bool(sendsTelemtryData)
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s AdvancementsAdvancementMappingEntryValue) WriteTo(w io.Writer) (n int64, err error) {
+func (p AdvancementsAdvancementMappingEntryValue) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	if p.ParentId != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
@@ -239,7 +260,7 @@ func (s AdvancementsAdvancementMappingEntryValue) WriteTo(w io.Writer) (n int64,
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.DisplayData.WriteTo(w)
+		temp, err = p.DisplayData.WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -288,8 +309,9 @@ type AdvancementsAdvancementMappingEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *AdvancementsAdvancementMappingEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *AdvancementsAdvancementMappingEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var key pk.String
 	temp, err = key.ReadFrom(r)
@@ -297,9 +319,9 @@ func (s *AdvancementsAdvancementMappingEntry) ReadFrom(r io.Reader) (n int64, er
 	if err != nil {
 		return n, err
 	}
-	s.Key = string(key)
+	p.Key = string(key)
 
-	temp, err = s.Value.ReadFrom(r)
+	temp, err = p.Value.ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -309,8 +331,9 @@ func (s *AdvancementsAdvancementMappingEntry) ReadFrom(r io.Reader) (n int64, er
 }
 
 // WriteTo writes the data to the writer.
-func (s AdvancementsAdvancementMappingEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p AdvancementsAdvancementMappingEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Key).WriteTo(w)
 	n += temp
@@ -318,7 +341,7 @@ func (s AdvancementsAdvancementMappingEntry) WriteTo(w io.Writer) (n int64, err 
 		return n, err
 	}
 
-	temp, err = s.Value.WriteTo(w)
+	temp, err = p.Value.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -334,8 +357,9 @@ type AdvancementsProgressMappingEntryValueEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *AdvancementsProgressMappingEntryValueEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *AdvancementsProgressMappingEntryValueEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var criterionIdentifier pk.String
 	temp, err = criterionIdentifier.ReadFrom(r)
@@ -343,7 +367,7 @@ func (s *AdvancementsProgressMappingEntryValueEntry) ReadFrom(r io.Reader) (n in
 	if err != nil {
 		return n, err
 	}
-	s.CriterionIdentifier = string(criterionIdentifier)
+	p.CriterionIdentifier = string(criterionIdentifier)
 
 	var hasCriterionProgress pk.Boolean
 	temp, err = hasCriterionProgress.ReadFrom(r)
@@ -353,20 +377,21 @@ func (s *AdvancementsProgressMappingEntryValueEntry) ReadFrom(r io.Reader) (n in
 	}
 	if hasCriterionProgress {
 		var val int64
-		temp, err = (*pk.i64)(&val).ReadFrom(r)
+		temp, err = (*pk.Long)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-		s.CriterionProgress = &val
+		p.CriterionProgress = &val
 	}
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s AdvancementsProgressMappingEntryValueEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p AdvancementsProgressMappingEntryValueEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.CriterionIdentifier).WriteTo(w)
 	n += temp
@@ -380,7 +405,7 @@ func (s AdvancementsProgressMappingEntryValueEntry) WriteTo(w io.Writer) (n int6
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.CriterionProgress.WriteTo(w)
+		temp, err = pk.Long(*p.CriterionProgress).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -403,8 +428,9 @@ type AdvancementsProgressMappingEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *AdvancementsProgressMappingEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *AdvancementsProgressMappingEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var key pk.String
 	temp, err = key.ReadFrom(r)
@@ -412,7 +438,7 @@ func (s *AdvancementsProgressMappingEntry) ReadFrom(r io.Reader) (n int64, err e
 	if err != nil {
 		return n, err
 	}
-	s.Key = string(key)
+	p.Key = string(key)
 
 	var valueCount pk.VarInt
 	temp, err = valueCount.ReadFrom(r)
@@ -420,9 +446,9 @@ func (s *AdvancementsProgressMappingEntry) ReadFrom(r io.Reader) (n int64, err e
 	if err != nil {
 		return n, err
 	}
-	s.Value = make([]AdvancementsProgressMappingEntryValueEntry, valueCount)
+	p.Value = make([]AdvancementsProgressMappingEntryValueEntry, valueCount)
 	for i := 0; i < int(valueCount); i++ {
-		temp, err = s.Value[i].ReadFrom(r)
+		temp, err = p.Value[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -433,8 +459,9 @@ func (s *AdvancementsProgressMappingEntry) ReadFrom(r io.Reader) (n int64, err e
 }
 
 // WriteTo writes the data to the writer.
-func (s AdvancementsProgressMappingEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p AdvancementsProgressMappingEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Key).WriteTo(w)
 	n += temp
@@ -448,7 +475,7 @@ func (s AdvancementsProgressMappingEntry) WriteTo(w io.Writer) (n int64, err err
 		return n, err
 	}
 	for i := range p.Value {
-		temp, err = s.Value[i].WriteTo(w)
+		temp, err = p.Value[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -476,6 +503,7 @@ func (*Advancements) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var reset pk.Boolean
 	temp, err = reset.ReadFrom(r)
@@ -483,7 +511,7 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Reset = bool(reset)
+	p.Reset = bool(reset)
 
 	var advancementMappingCount pk.VarInt
 	temp, err = advancementMappingCount.ReadFrom(r)
@@ -491,9 +519,9 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.AdvancementMapping = make([]AdvancementsAdvancementMappingEntry, advancementMappingCount)
+	p.AdvancementMapping = make([]AdvancementsAdvancementMappingEntry, advancementMappingCount)
 	for i := 0; i < int(advancementMappingCount); i++ {
-		temp, err = s.AdvancementMapping[i].ReadFrom(r)
+		temp, err = p.AdvancementMapping[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -506,7 +534,7 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Identifiers = make([]string, identifiersCount)
+	p.Identifiers = make([]string, identifiersCount)
 	for i := 0; i < int(identifiersCount); i++ {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
@@ -523,9 +551,9 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ProgressMapping = make([]AdvancementsProgressMappingEntry, progressMappingCount)
+	p.ProgressMapping = make([]AdvancementsProgressMappingEntry, progressMappingCount)
 	for i := 0; i < int(progressMappingCount); i++ {
-		temp, err = s.ProgressMapping[i].ReadFrom(r)
+		temp, err = p.ProgressMapping[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -538,7 +566,7 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ShowAdvancements = bool(showAdvancements)
+	p.ShowAdvancements = bool(showAdvancements)
 
 	return n, nil
 }
@@ -546,6 +574,7 @@ func (p *Advancements) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Advancements) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Boolean(p.Reset).WriteTo(w)
 	n += temp
@@ -559,7 +588,7 @@ func (p Advancements) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.AdvancementMapping {
-		temp, err = s.AdvancementMapping[i].WriteTo(w)
+		temp, err = p.AdvancementMapping[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -585,7 +614,7 @@ func (p Advancements) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.ProgressMapping {
-		temp, err = s.ProgressMapping[i].WriteTo(w)
+		temp, err = p.ProgressMapping[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

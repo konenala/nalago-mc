@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityMoveLook represents the Clientbound EntityMoveLook packet.
@@ -30,6 +29,7 @@ func (*EntityMoveLook) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -37,21 +37,21 @@ func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
-	temp, err = (*pk.Short)(&s.DX).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.DX).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Short)(&s.DY).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.DY).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Short)(&s.DZ).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.DZ).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -63,7 +63,7 @@ func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Yaw = yaw
+	p.Yaw = yaw
 
 	var pitch int8
 	temp, err = (*pk.Byte)(&pitch).ReadFrom(r)
@@ -71,7 +71,7 @@ func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Pitch = pitch
+	p.Pitch = pitch
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
@@ -79,7 +79,7 @@ func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.OnGround = bool(onGround)
+	p.OnGround = bool(onGround)
 
 	return n, nil
 }
@@ -87,6 +87,7 @@ func (p *EntityMoveLook) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityMoveLook) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

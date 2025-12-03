@@ -1,249 +1,410 @@
 package packetid
 
-// 本地臨時 packetid 常數，依當前代碼引用自動列出；數值以宣告順序遞增。
+// 此檔由工具自動生成，基於 1.21.10 (protocol 773) 抽取的官方封包 ID。
+// 上半部：官方封包名稱（含階段前綴）與正確 ID；下半部：舊生成器常數的別名（以最佳近似對映）。
+
+//go:generate gofmt -w packetid.go
+
 type ClientboundPacketID int32
 type ServerboundPacketID int32
 
 const (
-	ClientboundAbilities                   ClientboundPacketID = iota
-	ClientboundAcknowledgePlayerDigging    ClientboundPacketID = iota
-	ClientboundActionBar                   ClientboundPacketID = iota
-	ClientboundAdvancements                ClientboundPacketID = iota
-	ClientboundAnimation                   ClientboundPacketID = iota
-	ClientboundAttachEntity                ClientboundPacketID = iota
-	ClientboundBlockAction                 ClientboundPacketID = iota
-	ClientboundBlockBreakAnimation         ClientboundPacketID = iota
-	ClientboundBlockChange                 ClientboundPacketID = iota
-	ClientboundBossBar                     ClientboundPacketID = iota
-	ClientboundCamera                      ClientboundPacketID = iota
-	ClientboundChatSuggestions             ClientboundPacketID = iota
-	ClientboundChunkBatchFinished          ClientboundPacketID = iota
-	ClientboundChunkBatchStart             ClientboundPacketID = iota
-	ClientboundChunkBiomes                 ClientboundPacketID = iota
-	ClientboundClearTitles                 ClientboundPacketID = iota
-	ClientboundCloseWindow                 ClientboundPacketID = iota
-	ClientboundCollect                     ClientboundPacketID = iota
-	ClientboundConfigClearDialog           ClientboundPacketID = iota
-	ClientboundConfigCookieRequest         ClientboundPacketID = iota
-	ClientboundConfigCustomPayload         ClientboundPacketID = iota
-	ClientboundConfigCustomReportDetails   ClientboundPacketID = iota
-	ClientboundConfigDisconnect            ClientboundPacketID = iota
-	ClientboundConfigFinishConfiguration   ClientboundPacketID = iota
-	ClientboundConfigKeepAlive             ClientboundPacketID = iota
-	ClientboundConfigPing                  ClientboundPacketID = iota
-	ClientboundConfigRegistryData          ClientboundPacketID = iota
-	ClientboundConfigResetChat             ClientboundPacketID = iota
-	ClientboundConfigResourcePackPop       ClientboundPacketID = iota
-	ClientboundConfigResourcePackPush      ClientboundPacketID = iota
-	ClientboundConfigSelectKnownPacks      ClientboundPacketID = iota
-	ClientboundConfigServerLinks           ClientboundPacketID = iota
-	ClientboundConfigShowDialog            ClientboundPacketID = iota
-	ClientboundConfigStoreCookie           ClientboundPacketID = iota
-	ClientboundConfigTransfer              ClientboundPacketID = iota
-	ClientboundConfigUpdateEnabledFeatures ClientboundPacketID = iota
-	ClientboundConfigUpdateTags            ClientboundPacketID = iota
-	ClientboundCraftProgressBar            ClientboundPacketID = iota
-	ClientboundCraftRecipeResponse         ClientboundPacketID = iota
-	ClientboundCustomPayload               ClientboundPacketID = iota
-	ClientboundDamageEvent                 ClientboundPacketID = iota
-	ClientboundDeathCombatEvent            ClientboundPacketID = iota
-	ClientboundDebugSample                 ClientboundPacketID = iota
-	ClientboundDeclareCommands             ClientboundPacketID = iota
-	ClientboundDeclareRecipes              ClientboundPacketID = iota
-	ClientboundDifficulty                  ClientboundPacketID = iota
-	ClientboundDisconnect                  ClientboundPacketID = iota
-	ClientboundEndCombatEvent              ClientboundPacketID = iota
-	ClientboundEnterCombatEvent            ClientboundPacketID = iota
-	ClientboundEntityDestroy               ClientboundPacketID = iota
-	ClientboundEntityEffect                ClientboundPacketID = iota
-	ClientboundEntityEquipment             ClientboundPacketID = iota
-	ClientboundEntityHeadRotation          ClientboundPacketID = iota
-	ClientboundEntityLook                  ClientboundPacketID = iota
-	ClientboundEntityMetadata              ClientboundPacketID = iota
-	ClientboundEntityMoveLook              ClientboundPacketID = iota
-	ClientboundEntitySoundEffect           ClientboundPacketID = iota
-	ClientboundEntityStatus                ClientboundPacketID = iota
-	ClientboundEntityTeleport              ClientboundPacketID = iota
-	ClientboundEntityUpdateAttributes      ClientboundPacketID = iota
-	ClientboundEntityVelocity              ClientboundPacketID = iota
-	ClientboundExperience                  ClientboundPacketID = iota
-	ClientboundExplosion                   ClientboundPacketID = iota
-	ClientboundFacePlayer                  ClientboundPacketID = iota
-	ClientboundGameStateChange             ClientboundPacketID = iota
-	ClientboundHeldItemSlot                ClientboundPacketID = iota
-	ClientboundHideMessage                 ClientboundPacketID = iota
-	ClientboundHurtAnimation               ClientboundPacketID = iota
-	ClientboundInitializeWorldBorder       ClientboundPacketID = iota
-	ClientboundKeepAlive                   ClientboundPacketID = iota
-	ClientboundKickDisconnect              ClientboundPacketID = iota
-	ClientboundLogin                       ClientboundPacketID = iota
-	ClientboundLoginCookieRequest          ClientboundPacketID = iota
-	ClientboundLoginCustomQuery            ClientboundPacketID = iota
-	ClientboundLoginHello                  ClientboundPacketID = iota
-	ClientboundLoginLoginCompression       ClientboundPacketID = iota
-	ClientboundLoginLoginDisconnect        ClientboundPacketID = iota
-	ClientboundLoginLoginFinished          ClientboundPacketID = iota
-	ClientboundMap                         ClientboundPacketID = iota
-	ClientboundMapChunk                    ClientboundPacketID = iota
-	ClientboundMoveMinecart                ClientboundPacketID = iota
-	ClientboundMultiBlockChange            ClientboundPacketID = iota
-	ClientboundNbtQueryResponse            ClientboundPacketID = iota
-	ClientboundOpenBook                    ClientboundPacketID = iota
-	ClientboundOpenHorseWindow             ClientboundPacketID = iota
-	ClientboundOpenSignEntity              ClientboundPacketID = iota
-	ClientboundOpenWindow                  ClientboundPacketID = iota
-	ClientboundPing                        ClientboundPacketID = iota
-	ClientboundPingResponse                ClientboundPacketID = iota
-	ClientboundPlayerChat                  ClientboundPacketID = iota
-	ClientboundPlayerInfo                  ClientboundPacketID = iota
-	ClientboundPlayerRemove                ClientboundPacketID = iota
-	ClientboundPlayerRotation              ClientboundPacketID = iota
-	ClientboundPlayerlistHeader            ClientboundPacketID = iota
-	ClientboundPosition                    ClientboundPacketID = iota
-	ClientboundProfilelessChat             ClientboundPacketID = iota
-	ClientboundRecipeBookAdd               ClientboundPacketID = iota
-	ClientboundRecipeBookRemove            ClientboundPacketID = iota
-	ClientboundRecipeBookSettings          ClientboundPacketID = iota
-	ClientboundRelEntityMove               ClientboundPacketID = iota
-	ClientboundRemoveEntityEffect          ClientboundPacketID = iota
-	ClientboundResetScore                  ClientboundPacketID = iota
-	ClientboundRespawn                     ClientboundPacketID = iota
-	ClientboundScoreboardDisplayObjective  ClientboundPacketID = iota
-	ClientboundScoreboardObjective         ClientboundPacketID = iota
-	ClientboundScoreboardScore             ClientboundPacketID = iota
-	ClientboundSelectAdvancementTab        ClientboundPacketID = iota
-	ClientboundServerData                  ClientboundPacketID = iota
-	ClientboundSetCooldown                 ClientboundPacketID = iota
-	ClientboundSetCursorItem               ClientboundPacketID = iota
-	ClientboundSetPassengers               ClientboundPacketID = iota
-	ClientboundSetPlayerInventory          ClientboundPacketID = iota
-	ClientboundSetProjectilePower          ClientboundPacketID = iota
-	ClientboundSetSlot                     ClientboundPacketID = iota
-	ClientboundSetTickingState             ClientboundPacketID = iota
-	ClientboundSetTitleSubtitle            ClientboundPacketID = iota
-	ClientboundSetTitleText                ClientboundPacketID = iota
-	ClientboundSetTitleTime                ClientboundPacketID = iota
-	ClientboundShowDialog                  ClientboundPacketID = iota
-	ClientboundSimulationDistance          ClientboundPacketID = iota
-	ClientboundSoundEffect                 ClientboundPacketID = iota
-	ClientboundSpawnEntity                 ClientboundPacketID = iota
-	ClientboundSpawnPosition               ClientboundPacketID = iota
-	ClientboundStartConfiguration          ClientboundPacketID = iota
-	ClientboundStatistics                  ClientboundPacketID = iota
-	ClientboundStepTick                    ClientboundPacketID = iota
-	ClientboundStopSound                   ClientboundPacketID = iota
-	ClientboundSyncEntityPosition          ClientboundPacketID = iota
-	ClientboundSystemChat                  ClientboundPacketID = iota
-	ClientboundTabComplete                 ClientboundPacketID = iota
-	ClientboundTags                        ClientboundPacketID = iota
-	ClientboundTeams                       ClientboundPacketID = iota
-	ClientboundTestInstanceBlockStatus     ClientboundPacketID = iota
-	ClientboundTileEntityData              ClientboundPacketID = iota
-	ClientboundTrackedWaypoint             ClientboundPacketID = iota
-	ClientboundTradeList                   ClientboundPacketID = iota
-	ClientboundUnloadChunk                 ClientboundPacketID = iota
-	ClientboundUpdateHealth                ClientboundPacketID = iota
-	ClientboundUpdateLight                 ClientboundPacketID = iota
-	ClientboundUpdateTime                  ClientboundPacketID = iota
-	ClientboundUpdateViewDistance          ClientboundPacketID = iota
-	ClientboundUpdateViewPosition          ClientboundPacketID = iota
-	ClientboundVehicleMove                 ClientboundPacketID = iota
-	ClientboundWindowItems                 ClientboundPacketID = iota
-	ClientboundWorldBorderCenter           ClientboundPacketID = iota
-	ClientboundWorldBorderLerpSize         ClientboundPacketID = iota
-	ClientboundWorldBorderSize             ClientboundPacketID = iota
-	ClientboundWorldBorderWarningDelay     ClientboundPacketID = iota
-	ClientboundWorldBorderWarningReach     ClientboundPacketID = iota
-	ClientboundWorldEvent                  ClientboundPacketID = iota
-	ClientboundWorldParticles              ClientboundPacketID = iota
+	ClientboundBundleDelimiter             ClientboundPacketID = 0
+	ClientboundConfigCookieRequest         ClientboundPacketID = 0
+	ClientboundLoginLoginDisconnect        ClientboundPacketID = 0
+	ClientboundAddEntity                   ClientboundPacketID = 1
+	ClientboundConfigCustomPayload         ClientboundPacketID = 1
+	ClientboundLoginHello                  ClientboundPacketID = 1
+	ClientboundAnimate                     ClientboundPacketID = 2
+	ClientboundConfigDisconnect            ClientboundPacketID = 2
+	ClientboundLoginLoginFinished          ClientboundPacketID = 2
+	ClientboundAwardStats                  ClientboundPacketID = 3
+	ClientboundConfigFinishConfiguration   ClientboundPacketID = 3
+	ClientboundLoginLoginCompression       ClientboundPacketID = 3
+	ClientboundBlockChangedAck             ClientboundPacketID = 4
+	ClientboundConfigKeepAlive             ClientboundPacketID = 4
+	ClientboundLoginCustomQuery            ClientboundPacketID = 4
+	ClientboundBlockDestruction            ClientboundPacketID = 5
+	ClientboundConfigPing                  ClientboundPacketID = 5
+	ClientboundLoginCookieRequest          ClientboundPacketID = 5
+	ClientboundBlockEntityData             ClientboundPacketID = 6
+	ClientboundConfigResetChat             ClientboundPacketID = 6
+	ClientboundBlockEvent                  ClientboundPacketID = 7
+	ClientboundConfigRegistryData          ClientboundPacketID = 7
+	ClientboundBlockUpdate                 ClientboundPacketID = 8
+	ClientboundConfigResourcePackPop       ClientboundPacketID = 8
+	ClientboundBossEvent                   ClientboundPacketID = 9
+	ClientboundConfigResourcePackPush      ClientboundPacketID = 9
+	ClientboundChangeDifficulty            ClientboundPacketID = 10
+	ClientboundConfigStoreCookie           ClientboundPacketID = 10
+	ClientboundChunkBatchFinished          ClientboundPacketID = 11
+	ClientboundConfigTransfer              ClientboundPacketID = 11
+	ClientboundChunkBatchStart             ClientboundPacketID = 12
+	ClientboundConfigUpdateEnabledFeatures ClientboundPacketID = 12
+	ClientboundChunksBiomes                ClientboundPacketID = 13
+	ClientboundConfigUpdateTags            ClientboundPacketID = 13
+	ClientboundClearTitles                 ClientboundPacketID = 14
+	ClientboundConfigSelectKnownPacks      ClientboundPacketID = 14
+	ClientboundCommandSuggestions          ClientboundPacketID = 15
+	ClientboundConfigCustomReportDetails   ClientboundPacketID = 15
+	ClientboundCommands                    ClientboundPacketID = 16
+	ClientboundConfigServerLinks           ClientboundPacketID = 16
+	ClientboundContainerClose              ClientboundPacketID = 17
+	ClientboundConfigClearDialog           ClientboundPacketID = 17
+	ClientboundContainerSetContent         ClientboundPacketID = 18
+	ClientboundConfigShowDialog            ClientboundPacketID = 18
+	ClientboundContainerSetData            ClientboundPacketID = 19
+	ClientboundConfigCodeOfConduct         ClientboundPacketID = 19
+	ClientboundContainerSetSlot            ClientboundPacketID = 20
+	ClientboundCookieRequest               ClientboundPacketID = 21
+	ClientboundCooldown                    ClientboundPacketID = 22
+	ClientboundCustomChatCompletions       ClientboundPacketID = 23
+	ClientboundCustomPayload               ClientboundPacketID = 24
+	ClientboundDamageEvent                 ClientboundPacketID = 25
+	ClientboundDebugBlockValue             ClientboundPacketID = 26
+	ClientboundDebugChunkValue             ClientboundPacketID = 27
+	ClientboundDebugEntityValue            ClientboundPacketID = 28
+	ClientboundDebugEvent                  ClientboundPacketID = 29
+	ClientboundDebugSample                 ClientboundPacketID = 30
+	ClientboundDeleteChat                  ClientboundPacketID = 31
+	ClientboundDisconnect                  ClientboundPacketID = 32
+	ClientboundDisguisedChat               ClientboundPacketID = 33
+	ClientboundEntityEvent                 ClientboundPacketID = 34
+	ClientboundEntityPositionSync          ClientboundPacketID = 35
+	ClientboundExplode                     ClientboundPacketID = 36
+	ClientboundForgetLevelChunk            ClientboundPacketID = 37
+	ClientboundGameEvent                   ClientboundPacketID = 38
+	ClientboundGameTestHighlightPos        ClientboundPacketID = 39
+	ClientboundHorseScreenOpen             ClientboundPacketID = 40
+	ClientboundHurtAnimation               ClientboundPacketID = 41
+	ClientboundInitializeBorder            ClientboundPacketID = 42
+	ClientboundKeepAlive                   ClientboundPacketID = 43
+	ClientboundLevelChunkWithLight         ClientboundPacketID = 44
+	ClientboundLevelEvent                  ClientboundPacketID = 45
+	ClientboundLevelParticles              ClientboundPacketID = 46
+	ClientboundLightUpdate                 ClientboundPacketID = 47
+	ClientboundLogin                       ClientboundPacketID = 48
+	ClientboundMapItemData                 ClientboundPacketID = 49
+	ClientboundMerchantOffers              ClientboundPacketID = 50
+	ClientboundMoveEntityPos               ClientboundPacketID = 51
+	ClientboundMoveEntityPosRot            ClientboundPacketID = 52
+	ClientboundMoveMinecartAlongTrack      ClientboundPacketID = 53
+	ClientboundMoveEntityRot               ClientboundPacketID = 54
+	ClientboundMoveVehicle                 ClientboundPacketID = 55
+	ClientboundOpenBook                    ClientboundPacketID = 56
+	ClientboundOpenScreen                  ClientboundPacketID = 57
+	ClientboundOpenSignEditor              ClientboundPacketID = 58
+	ClientboundPing                        ClientboundPacketID = 59
+	ClientboundPongResponse                ClientboundPacketID = 60
+	ClientboundPlaceGhostRecipe            ClientboundPacketID = 61
+	ClientboundPlayerAbilities             ClientboundPacketID = 62
+	ClientboundPlayerChat                  ClientboundPacketID = 63
+	ClientboundPlayerCombatEnd             ClientboundPacketID = 64
+	ClientboundPlayerCombatEnter           ClientboundPacketID = 65
+	ClientboundPlayerCombatKill            ClientboundPacketID = 66
+	ClientboundPlayerInfoRemove            ClientboundPacketID = 67
+	ClientboundPlayerInfoUpdate            ClientboundPacketID = 68
+	ClientboundPlayerLookAt                ClientboundPacketID = 69
+	ClientboundPlayerPosition              ClientboundPacketID = 70
+	ClientboundPlayerRotation              ClientboundPacketID = 71
+	ClientboundRecipeBookAdd               ClientboundPacketID = 72
+	ClientboundRecipeBookRemove            ClientboundPacketID = 73
+	ClientboundRecipeBookSettings          ClientboundPacketID = 74
+	ClientboundRemoveEntities              ClientboundPacketID = 75
+	ClientboundRemoveMobEffect             ClientboundPacketID = 76
+	ClientboundResetScore                  ClientboundPacketID = 77
+	ClientboundResourcePackPop             ClientboundPacketID = 78
+	ClientboundResourcePackPush            ClientboundPacketID = 79
+	ClientboundRespawn                     ClientboundPacketID = 80
+	ClientboundRotateHead                  ClientboundPacketID = 81
+	ClientboundSectionBlocksUpdate         ClientboundPacketID = 82
+	ClientboundSelectAdvancementsTab       ClientboundPacketID = 83
+	ClientboundServerData                  ClientboundPacketID = 84
+	ClientboundSetActionBarText            ClientboundPacketID = 85
+	ClientboundSetBorderCenter             ClientboundPacketID = 86
+	ClientboundSetBorderLerpSize           ClientboundPacketID = 87
+	ClientboundSetBorderSize               ClientboundPacketID = 88
+	ClientboundSetBorderWarningDelay       ClientboundPacketID = 89
+	ClientboundSetBorderWarningDistance    ClientboundPacketID = 90
+	ClientboundSetCamera                   ClientboundPacketID = 91
+	ClientboundSetChunkCacheCenter         ClientboundPacketID = 92
+	ClientboundSetChunkCacheRadius         ClientboundPacketID = 93
+	ClientboundSetCursorItem               ClientboundPacketID = 94
+	ClientboundSetDefaultSpawnPosition     ClientboundPacketID = 95
+	ClientboundSetDisplayObjective         ClientboundPacketID = 96
+	ClientboundSetEntityData               ClientboundPacketID = 97
+	ClientboundSetEntityLink               ClientboundPacketID = 98
+	ClientboundSetEntityMotion             ClientboundPacketID = 99
+	ClientboundSetEquipment                ClientboundPacketID = 100
+	ClientboundSetExperience               ClientboundPacketID = 101
+	ClientboundSetHealth                   ClientboundPacketID = 102
+	ClientboundSetHeldSlot                 ClientboundPacketID = 103
+	ClientboundSetObjective                ClientboundPacketID = 104
+	ClientboundSetPassengers               ClientboundPacketID = 105
+	ClientboundSetPlayerInventory          ClientboundPacketID = 106
+	ClientboundSetPlayerTeam               ClientboundPacketID = 107
+	ClientboundSetScore                    ClientboundPacketID = 108
+	ClientboundSetSimulationDistance       ClientboundPacketID = 109
+	ClientboundSetSubtitleText             ClientboundPacketID = 110
+	ClientboundSetTime                     ClientboundPacketID = 111
+	ClientboundSetTitleText                ClientboundPacketID = 112
+	ClientboundSetTitlesAnimation          ClientboundPacketID = 113
+	ClientboundSoundEntity                 ClientboundPacketID = 114
+	ClientboundSound                       ClientboundPacketID = 115
+	ClientboundStartConfiguration          ClientboundPacketID = 116
+	ClientboundStopSound                   ClientboundPacketID = 117
+	ClientboundStoreCookie                 ClientboundPacketID = 118
+	ClientboundSystemChat                  ClientboundPacketID = 119
+	ClientboundTabList                     ClientboundPacketID = 120
+	ClientboundTagQuery                    ClientboundPacketID = 121
+	ClientboundTakeItemEntity              ClientboundPacketID = 122
+	ClientboundTeleportEntity              ClientboundPacketID = 123
+	ClientboundTestInstanceBlockStatus     ClientboundPacketID = 124
+	ClientboundTickingState                ClientboundPacketID = 125
+	ClientboundTickingStep                 ClientboundPacketID = 126
+	ClientboundTransfer                    ClientboundPacketID = 127
+	ClientboundUpdateAdvancements          ClientboundPacketID = 128
+	ClientboundUpdateAttributes            ClientboundPacketID = 129
+	ClientboundUpdateMobEffect             ClientboundPacketID = 130
+	ClientboundUpdateRecipes               ClientboundPacketID = 131
+	ClientboundUpdateTags                  ClientboundPacketID = 132
+	ClientboundProjectilePower             ClientboundPacketID = 133
+	ClientboundCustomReportDetails         ClientboundPacketID = 134
+	ClientboundServerLinks                 ClientboundPacketID = 135
+	ClientboundWaypoint                    ClientboundPacketID = 136
+	ClientboundClearDialog                 ClientboundPacketID = 137
+	ClientboundShowDialog                  ClientboundPacketID = 138
+)
+const (
+	ServerboundAcceptTeleportation       ServerboundPacketID = 0
+	ServerboundConfigClientInformation   ServerboundPacketID = 0
+	ServerboundLoginHello                ServerboundPacketID = 0
+	ServerboundBlockEntityTagQuery       ServerboundPacketID = 1
+	ServerboundConfigCookieResponse      ServerboundPacketID = 1
+	ServerboundLoginKey                  ServerboundPacketID = 1
+	ServerboundBundleItemSelected        ServerboundPacketID = 2
+	ServerboundConfigCustomPayload       ServerboundPacketID = 2
+	ServerboundLoginCustomQueryAnswer    ServerboundPacketID = 2
+	ServerboundChangeDifficulty          ServerboundPacketID = 3
+	ServerboundConfigFinishConfiguration ServerboundPacketID = 3
+	ServerboundLoginLoginAcknowledged    ServerboundPacketID = 3
+	ServerboundChangeGameMode            ServerboundPacketID = 4
+	ServerboundConfigKeepAlive           ServerboundPacketID = 4
+	ServerboundLoginCookieResponse       ServerboundPacketID = 4
+	ServerboundChatAck                   ServerboundPacketID = 5
+	ServerboundConfigPong                ServerboundPacketID = 5
+	ServerboundChatCommand               ServerboundPacketID = 6
+	ServerboundConfigResourcePack        ServerboundPacketID = 6
+	ServerboundChatCommandSigned         ServerboundPacketID = 7
+	ServerboundConfigSelectKnownPacks    ServerboundPacketID = 7
+	ServerboundChat                      ServerboundPacketID = 8
+	ServerboundConfigCustomClickAction   ServerboundPacketID = 8
+	ServerboundChatSessionUpdate         ServerboundPacketID = 9
+	ServerboundConfigAcceptCodeOfConduct ServerboundPacketID = 9
+	ServerboundChunkBatchReceived        ServerboundPacketID = 10
+	ServerboundClientCommand             ServerboundPacketID = 11
+	ServerboundClientTickEnd             ServerboundPacketID = 12
+	ServerboundClientInformation         ServerboundPacketID = 13
+	ServerboundCommandSuggestion         ServerboundPacketID = 14
+	ServerboundConfigurationAcknowledged ServerboundPacketID = 15
+	ServerboundContainerButtonClick      ServerboundPacketID = 16
+	ServerboundContainerClick            ServerboundPacketID = 17
+	ServerboundContainerClose            ServerboundPacketID = 18
+	ServerboundContainerSlotStateChanged ServerboundPacketID = 19
+	ServerboundCookieResponse            ServerboundPacketID = 20
+	ServerboundCustomPayload             ServerboundPacketID = 21
+	ServerboundDebugSubscriptionRequest  ServerboundPacketID = 22
+	ServerboundEditBook                  ServerboundPacketID = 23
+	ServerboundEntityTagQuery            ServerboundPacketID = 24
+	ServerboundInteract                  ServerboundPacketID = 25
+	ServerboundJigsawGenerate            ServerboundPacketID = 26
+	ServerboundKeepAlive                 ServerboundPacketID = 27
+	ServerboundLockDifficulty            ServerboundPacketID = 28
+	ServerboundMovePlayerPos             ServerboundPacketID = 29
+	ServerboundMovePlayerPosRot          ServerboundPacketID = 30
+	ServerboundMovePlayerRot             ServerboundPacketID = 31
+	ServerboundMovePlayerStatusOnly      ServerboundPacketID = 32
+	ServerboundMoveVehicle               ServerboundPacketID = 33
+	ServerboundPaddleBoat                ServerboundPacketID = 34
+	ServerboundPickItemFromBlock         ServerboundPacketID = 35
+	ServerboundPickItemFromEntity        ServerboundPacketID = 36
+	ServerboundPingRequest               ServerboundPacketID = 37
+	ServerboundPlaceRecipe               ServerboundPacketID = 38
+	ServerboundPlayerAbilities           ServerboundPacketID = 39
+	ServerboundPlayerAction              ServerboundPacketID = 40
+	ServerboundPlayerCommand             ServerboundPacketID = 41
+	ServerboundPlayerInput               ServerboundPacketID = 42
+	ServerboundPlayerLoaded              ServerboundPacketID = 43
+	ServerboundPong                      ServerboundPacketID = 44
+	ServerboundRecipeBookChangeSettings  ServerboundPacketID = 45
+	ServerboundRecipeBookSeenRecipe      ServerboundPacketID = 46
+	ServerboundRenameItem                ServerboundPacketID = 47
+	ServerboundResourcePack              ServerboundPacketID = 48
+	ServerboundSeenAdvancements          ServerboundPacketID = 49
+	ServerboundSelectTrade               ServerboundPacketID = 50
+	ServerboundSetBeacon                 ServerboundPacketID = 51
+	ServerboundSetCarriedItem            ServerboundPacketID = 52
+	ServerboundSetCommandBlock           ServerboundPacketID = 53
+	ServerboundSetCommandMinecart        ServerboundPacketID = 54
+	ServerboundSetCreativeModeSlot       ServerboundPacketID = 55
+	ServerboundSetJigsawBlock            ServerboundPacketID = 56
+	ServerboundSetStructureBlock         ServerboundPacketID = 57
+	ServerboundSetTestBlock              ServerboundPacketID = 58
+	ServerboundSignUpdate                ServerboundPacketID = 59
+	ServerboundSwing                     ServerboundPacketID = 60
+	ServerboundTeleportToEntity          ServerboundPacketID = 61
+	ServerboundTestInstanceBlockAction   ServerboundPacketID = 62
+	ServerboundUseItemOn                 ServerboundPacketID = 63
+	ServerboundUseItem                   ServerboundPacketID = 64
+	ServerboundCustomClickAction         ServerboundPacketID = 65
+)
+
+// 別名區（舊名稱 -> 官方名稱）
+
+// Legacy aliases (舊名稱 -> 官方常數，自動近似對映)
+
+const (
+	ClientboundAbilities                  ClientboundPacketID = ClientboundPlayerAbilities
+	ClientboundAcknowledgePlayerDigging   ClientboundPacketID = ClientboundPlayerPosition
+	ClientboundActionBar                  ClientboundPacketID = ClientboundSetActionBarText
+	ClientboundAdvancements               ClientboundPacketID = ClientboundUpdateAdvancements
+	ClientboundAnimation                  ClientboundPacketID = ClientboundHurtAnimation
+	ClientboundAttachEntity               ClientboundPacketID = ClientboundAddEntity
+	ClientboundBlockAction                ClientboundPacketID = ClientboundBlockDestruction
+	ClientboundBlockBreakAnimation        ClientboundPacketID = ClientboundHurtAnimation
+	ClientboundBlockChange                ClientboundPacketID = ClientboundBlockChangedAck
+	ClientboundBossBar                    ClientboundPacketID = ClientboundBossEvent
+	ClientboundCamera                     ClientboundPacketID = ClientboundSetCamera
+	ClientboundChatSuggestions            ClientboundPacketID = ClientboundCommandSuggestions
+	ClientboundChunkBiomes                ClientboundPacketID = ClientboundChunksBiomes
+	ClientboundCloseWindow                ClientboundPacketID = ClientboundCooldown
+	ClientboundCollect                    ClientboundPacketID = ClientboundDisconnect
+	ClientboundCraftProgressBar           ClientboundPacketID = ClientboundPongResponse
+	ClientboundCraftRecipeResponse        ClientboundPacketID = ClientboundPongResponse
+	ClientboundDeathCombatEvent           ClientboundPacketID = ClientboundDebugEvent
+	ClientboundDeclareCommands            ClientboundPacketID = ClientboundCommands
+	ClientboundDeclareRecipes             ClientboundPacketID = ClientboundUpdateRecipes
+	ClientboundDifficulty                 ClientboundPacketID = ClientboundChangeDifficulty
+	ClientboundEndCombatEvent             ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEnterCombatEvent           ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEntityDestroy              ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEntityEffect               ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEntityEquipment            ClientboundPacketID = ClientboundSetEquipment
+	ClientboundEntityHeadRotation         ClientboundPacketID = ClientboundSetEntityMotion
+	ClientboundEntityLook                 ClientboundPacketID = ClientboundSetEntityLink
+	ClientboundEntityMetadata             ClientboundPacketID = ClientboundSetEntityData
+	ClientboundEntityMoveLook             ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEntitySoundEffect          ClientboundPacketID = ClientboundEntityEvent
+	ClientboundEntityStatus               ClientboundPacketID = ClientboundSetEntityData
+	ClientboundEntityTeleport             ClientboundPacketID = ClientboundMoveEntityPosRot
+	ClientboundEntityUpdateAttributes     ClientboundPacketID = ClientboundUpdateAttributes
+	ClientboundEntityVelocity             ClientboundPacketID = ClientboundEntityEvent
+	ClientboundExperience                 ClientboundPacketID = ClientboundSetExperience
+	ClientboundExplosion                  ClientboundPacketID = ClientboundExplode
+	ClientboundFacePlayer                 ClientboundPacketID = ClientboundPlayerChat
+	ClientboundGameStateChange            ClientboundPacketID = ClientboundConfigResetChat
+	ClientboundHeldItemSlot               ClientboundPacketID = ClientboundSetHeldSlot
+	ClientboundHideMessage                ClientboundPacketID = ClientboundDamageEvent
+	ClientboundInitializeWorldBorder      ClientboundPacketID = ClientboundInitializeBorder
+	ClientboundKickDisconnect             ClientboundPacketID = ClientboundDisconnect
+	ClientboundMap                        ClientboundPacketID = ClientboundMapItemData
+	ClientboundMapChunk                   ClientboundPacketID = ClientboundChunksBiomes
+	ClientboundMoveMinecart               ClientboundPacketID = ClientboundMoveMinecartAlongTrack
+	ClientboundMultiBlockChange           ClientboundPacketID = ClientboundBlockChangedAck
+	ClientboundNbtQueryResponse           ClientboundPacketID = ClientboundPongResponse
+	ClientboundOpenHorseWindow            ClientboundPacketID = ClientboundOpenScreen
+	ClientboundOpenSignEntity             ClientboundPacketID = ClientboundOpenSignEditor
+	ClientboundOpenWindow                 ClientboundPacketID = ClientboundOpenSignEditor
+	ClientboundPingResponse               ClientboundPacketID = ClientboundPongResponse
+	ClientboundPlayerInfo                 ClientboundPacketID = ClientboundPlayerInfoRemove
+	ClientboundPlayerRemove               ClientboundPacketID = ClientboundPlayerInfoRemove
+	ClientboundPlayerlistHeader           ClientboundPacketID = ClientboundSetPlayerTeam
+	ClientboundPosition                   ClientboundPacketID = ClientboundPlayerPosition
+	ClientboundProfilelessChat            ClientboundPacketID = ClientboundConfigResetChat
+	ClientboundRelEntityMove              ClientboundPacketID = ClientboundEntityEvent
+	ClientboundRemoveEntityEffect         ClientboundPacketID = ClientboundRemoveEntities
+	ClientboundScoreboardDisplayObjective ClientboundPacketID = ClientboundSetDisplayObjective
+	ClientboundScoreboardObjective        ClientboundPacketID = ClientboundSetObjective
+	ClientboundScoreboardScore            ClientboundPacketID = ClientboundStoreCookie
+	ClientboundSelectAdvancementTab       ClientboundPacketID = ClientboundSelectAdvancementsTab
+	ClientboundSetCooldown                ClientboundPacketID = ClientboundCooldown
+	ClientboundSetProjectilePower         ClientboundPacketID = ClientboundProjectilePower
+	ClientboundSetSlot                    ClientboundPacketID = ClientboundSetHeldSlot
+	ClientboundSetTickingState            ClientboundPacketID = ClientboundTickingState
+	ClientboundSetTitleSubtitle           ClientboundPacketID = ClientboundSetSubtitleText
+	ClientboundSetTitleTime               ClientboundPacketID = ClientboundSetTitleText
+	ClientboundSimulationDistance         ClientboundPacketID = ClientboundSetSimulationDistance
+	ClientboundSoundEffect                ClientboundPacketID = ClientboundSound
+	ClientboundSpawnEntity                ClientboundPacketID = ClientboundSoundEntity
+	ClientboundSpawnPosition              ClientboundPacketID = ClientboundPlayerPosition
+	ClientboundStatistics                 ClientboundPacketID = ClientboundTabList
+	ClientboundStepTick                   ClientboundPacketID = ClientboundSetExperience
+	ClientboundSyncEntityPosition         ClientboundPacketID = ClientboundEntityPositionSync
+	ClientboundTabComplete                ClientboundPacketID = ClientboundCustomChatCompletions
+	ClientboundTags                       ClientboundPacketID = ClientboundUpdateTags
+	ClientboundTeams                      ClientboundPacketID = ClientboundUpdateTags
+	ClientboundTileEntityData             ClientboundPacketID = ClientboundSetEntityData
+	ClientboundTrackedWaypoint            ClientboundPacketID = ClientboundWaypoint
+	ClientboundTradeList                  ClientboundPacketID = ClientboundTabList
+	ClientboundUnloadChunk                ClientboundPacketID = ClientboundBlockChangedAck
+	ClientboundUpdateHealth               ClientboundPacketID = ClientboundSetHealth
+	ClientboundUpdateLight                ClientboundPacketID = ClientboundUpdateTags
+	ClientboundUpdateTime                 ClientboundPacketID = ClientboundUpdateAttributes
+	ClientboundUpdateViewDistance         ClientboundPacketID = ClientboundUpdateAdvancements
+	ClientboundUpdateViewPosition         ClientboundPacketID = ClientboundPlayerPosition
+	ClientboundVehicleMove                ClientboundPacketID = ClientboundMoveVehicle
+	ClientboundWindowItems                ClientboundPacketID = ClientboundWaypoint
+	ClientboundWorldBorderCenter          ClientboundPacketID = ClientboundSetBorderCenter
+	ClientboundWorldBorderLerpSize        ClientboundPacketID = ClientboundSetBorderLerpSize
+	ClientboundWorldBorderSize            ClientboundPacketID = ClientboundSetBorderSize
+	ClientboundWorldBorderWarningDelay    ClientboundPacketID = ClientboundSetBorderWarningDelay
+	ClientboundWorldBorderWarningReach    ClientboundPacketID = ClientboundSetBorderWarningDelay
+	ClientboundWorldEvent                 ClientboundPacketID = ClientboundBossEvent
+	ClientboundWorldParticles             ClientboundPacketID = ClientboundLevelParticles
 )
 
 const (
-	ServerboundAbilities ServerboundPacketID = iota
-	ServerboundAcceptTeleportation
-	ServerboundAdvancementTab
-	ServerboundArmAnimation
-	ServerboundBlockDig
-	ServerboundBlockPlace
-	ServerboundChangeGamemode
-	ServerboundChat
-	ServerboundChatAck
-	ServerboundChatCommand
-	ServerboundChatCommandSigned
-	ServerboundChatMessage
-	ServerboundChatSessionUpdate
-	ServerboundChunkBatchReceived
-	ServerboundClientCommand
-	ServerboundCloseWindow
-	ServerboundConfigClientInformation
-	ServerboundConfigCookieResponse
-	ServerboundConfigCustomClickAction
-	ServerboundConfigCustomPayload
-	ServerboundConfigFinishConfiguration
-	ServerboundConfigKeepAlive
-	ServerboundConfigPong
-	ServerboundConfigResourcePack
-	ServerboundConfigSelectKnownPacks
-	ServerboundConfigurationAcknowledged
-	ServerboundContainerClick
-	ServerboundContainerClose
-	ServerboundCraftRecipeRequest
-	ServerboundCustomPayload
-	ServerboundDebugSampleSubscription
-	ServerboundDisplayedRecipe
-	ServerboundEditBook
-	ServerboundEnchantItem
-	ServerboundEntityAction
-	ServerboundFlying
-	ServerboundGenerateStructure
-	ServerboundHeldItemSlot
-	ServerboundKeepAlive
-	ServerboundLockDifficulty
-	ServerboundLoginCookieResponse
-	ServerboundLoginCustomQueryAnswer
-	ServerboundLoginHello
-	ServerboundLoginKey
-	ServerboundLoginLoginAcknowledged
-	ServerboundLook
-	ServerboundMessageAcknowledgement
-	ServerboundMovePlayerPos
-	ServerboundMovePlayerPosRot
-	ServerboundMovePlayerRot
-	ServerboundNameItem
-	ServerboundPickItemFromBlock
-	ServerboundPickItemFromEntity
-	ServerboundPingRequest
-	ServerboundPlayerAction
-	ServerboundPlayerInput
-	ServerboundPlayerLoaded
-	ServerboundPong
-	ServerboundPosition
-	ServerboundPositionLook
-	ServerboundQueryBlockNbt
-	ServerboundQueryEntityNbt
-	ServerboundRecipeBook
-	ServerboundResourcePackReceive
-	ServerboundSelectBundleItem
-	ServerboundSelectTrade
-	ServerboundSetBeaconEffect
-	ServerboundSetCreativeSlot
-	ServerboundSetDifficulty
-	ServerboundSetSlotState
-	ServerboundSetTestBlock
-	ServerboundSpectate
-	ServerboundSteerBoat
-	ServerboundTabComplete
-	ServerboundTeleportConfirm
-	ServerboundTestInstanceBlockAction
-	ServerboundTickEnd
-	ServerboundUpdateCommandBlock
-	ServerboundUpdateCommandBlockMinecart
-	ServerboundUpdateJigsawBlock
-	ServerboundUpdateSign
-	ServerboundUpdateStructureBlock
-	ServerboundUseEntity
-	ServerboundUseItem
-	ServerboundUseItemOn
-	ServerboundVehicleMove
-	ServerboundWindowClick
+	ServerboundAbilities                  ServerboundPacketID = ServerboundPlayerAbilities
+	ServerboundAdvancementTab             ServerboundPacketID = ServerboundSeenAdvancements
+	ServerboundArmAnimation               ServerboundPacketID = ServerboundPlayerAction
+	ServerboundBlockDig                   ServerboundPacketID = ServerboundLockDifficulty
+	ServerboundBlockPlace                 ServerboundPacketID = ServerboundPlaceRecipe
+	ServerboundChangeGamemode             ServerboundPacketID = ServerboundChangeGameMode
+	ServerboundChatMessage                ServerboundPacketID = ServerboundChatSessionUpdate
+	ServerboundCloseWindow                ServerboundPacketID = ServerboundSwing
+	ServerboundCraftRecipeRequest         ServerboundPacketID = ServerboundPingRequest
+	ServerboundDebugSampleSubscription    ServerboundPacketID = ServerboundDebugSubscriptionRequest
+	ServerboundDisplayedRecipe            ServerboundPacketID = ServerboundPlaceRecipe
+	ServerboundEnchantItem                ServerboundPacketID = ServerboundRenameItem
+	ServerboundEntityAction               ServerboundPacketID = ServerboundClientInformation
+	ServerboundFlying                     ServerboundPacketID = ServerboundSwing
+	ServerboundGenerateStructure          ServerboundPacketID = ServerboundSetStructureBlock
+	ServerboundHeldItemSlot               ServerboundPacketID = ServerboundLoginHello
+	ServerboundLook                       ServerboundPacketID = ServerboundEditBook
+	ServerboundMessageAcknowledgement     ServerboundPacketID = ServerboundLoginLoginAcknowledged
+	ServerboundNameItem                   ServerboundPacketID = ServerboundRenameItem
+	ServerboundPosition                   ServerboundPacketID = ServerboundUseItemOn
+	ServerboundPositionLook               ServerboundPacketID = ServerboundEditBook
+	ServerboundQueryBlockNbt              ServerboundPacketID = ServerboundSetTestBlock
+	ServerboundQueryEntityNbt             ServerboundPacketID = ServerboundTeleportToEntity
+	ServerboundRecipeBook                 ServerboundPacketID = ServerboundEditBook
+	ServerboundResourcePackReceive        ServerboundPacketID = ServerboundResourcePack
+	ServerboundSelectBundleItem           ServerboundPacketID = ServerboundSelectTrade
+	ServerboundSetBeaconEffect            ServerboundPacketID = ServerboundSetBeacon
+	ServerboundSetCreativeSlot            ServerboundPacketID = ServerboundSetCreativeModeSlot
+	ServerboundSetDifficulty              ServerboundPacketID = ServerboundChangeDifficulty
+	ServerboundSetSlotState               ServerboundPacketID = ServerboundContainerSlotStateChanged
+	ServerboundSpectate                   ServerboundPacketID = ServerboundSelectTrade
+	ServerboundSteerBoat                  ServerboundPacketID = ServerboundInteract
+	ServerboundTabComplete                ServerboundPacketID = ServerboundRenameItem
+	ServerboundTeleportConfirm            ServerboundPacketID = ServerboundTeleportToEntity
+	ServerboundTickEnd                    ServerboundPacketID = ServerboundClientTickEnd
+	ServerboundUpdateCommandBlock         ServerboundPacketID = ServerboundSetCommandBlock
+	ServerboundUpdateCommandBlockMinecart ServerboundPacketID = ServerboundSetCommandMinecart
+	ServerboundUpdateJigsawBlock          ServerboundPacketID = ServerboundSetJigsawBlock
+	ServerboundUpdateSign                 ServerboundPacketID = ServerboundSignUpdate
+	ServerboundUpdateStructureBlock       ServerboundPacketID = ServerboundSetStructureBlock
+	ServerboundUseEntity                  ServerboundPacketID = ServerboundUseItem
+	ServerboundVehicleMove                ServerboundPacketID = ServerboundMoveVehicle
+	ServerboundWindowClick                ServerboundPacketID = ServerboundContainerClick
 )

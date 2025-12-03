@@ -4,18 +4,16 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
-
 
 // BlockChange represents the Clientbound BlockChange packet.
 
 type BlockChange struct {
 	Location pk.Position
-	Type int32 `mc:"VarInt"`
+	Type     int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
@@ -23,20 +21,24 @@ func (*BlockChange) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundBlockChange
 }
 
-
 // ReadFrom reads the packet data from the reader.
 func (p *BlockChange) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Position)(&s.Location).ReadFrom(r)
+	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	var type pk.VarInt
-	temp, err = type.ReadFrom(r)
+	var _type pk.VarInt
+	temp, err = _type.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Type = int32(type)
+	if err != nil {
+		return n, err
+	}
+	p.Type = int32(_type)
 
 	return n, nil
 }
@@ -44,22 +46,25 @@ func (p *BlockChange) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p BlockChange) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Location.WriteTo(w)
+	temp, err = p.Location.WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.VarInt(p.Type).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
-
 
 func init() {
 	registerPacket(packetid.ClientboundBlockChange, func() ClientboundPacket {
 		return &BlockChange{}
 	})
 }
-

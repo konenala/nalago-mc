@@ -4,17 +4,16 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // TestInstanceBlockStatus represents the Clientbound TestInstanceBlockStatus packet.
 
 type TestInstanceBlockStatus struct {
-	Status pk.NBT `mc:"NBT"`
-	Size   *interface{}
+	Status pk.NBTField `mc:"NBT"`
+	Size   *[3]int32
 }
 
 // PacketID returns the packet ID for this packet.
@@ -25,8 +24,9 @@ func (*TestInstanceBlockStatus) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *TestInstanceBlockStatus) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Status).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Status).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -39,13 +39,17 @@ func (p *TestInstanceBlockStatus) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasSize {
-		var val interface{}
-		temp, err = (*pk.vec3i)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
+		var val [3]int32
+		for i := 0; i < 3; i++ {
+			var v pk.VarInt
+			temp, err = v.ReadFrom(r)
+			n += temp
+			if err != nil {
+				return n, err
+			}
+			val[i] = int32(v)
 		}
-		s.Size = &val
+		p.Size = &val
 	}
 
 	return n, nil
@@ -54,8 +58,9 @@ func (p *TestInstanceBlockStatus) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p TestInstanceBlockStatus) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Status.WriteTo(w)
+	temp, err = p.Status.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -67,10 +72,12 @@ func (p TestInstanceBlockStatus) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.Size.WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
+		for i := 0; i < 3; i++ {
+			temp, err = pk.VarInt((*p.Size)[i]).WriteTo(w)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)

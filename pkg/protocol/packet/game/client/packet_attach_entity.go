@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // AttachEntity represents the Clientbound AttachEntity packet.
@@ -25,14 +24,15 @@ func (*AttachEntity) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *AttachEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Int)(&s.EntityId).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.EntityId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.VehicleId).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.VehicleId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -44,6 +44,7 @@ func (p *AttachEntity) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p AttachEntity) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Int(p.EntityId).WriteTo(w)
 	n += temp

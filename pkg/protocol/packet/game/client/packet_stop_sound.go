@@ -4,19 +4,25 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // StopSound represents the Clientbound StopSound packet.
 
 type StopSound struct {
 	Flags int8
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Flags：
+	//   1 -> varint
+	//   3 -> varint
+	//   default -> void
 	Source interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Flags：
+	//   2 -> string
+	//   3 -> string
+	//   default -> void
 	Sound interface{}
 }
 
@@ -28,6 +34,7 @@ func (*StopSound) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var flags int8
 	temp, err = (*pk.Byte)(&flags).ReadFrom(r)
@@ -35,11 +42,57 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Flags = flags
+	p.Flags = flags
 
-	// TODO: Implement switch field read
+	switch p.Flags {
+	case 1:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Source = val
+	case 3:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Source = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Flags {
+	case 2:
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = string(elem)
+		p.Sound = val
+	case 3:
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = string(elem)
+		p.Sound = val
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -47,6 +100,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p StopSound) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Byte(p.Flags).WriteTo(w)
 	n += temp
@@ -54,9 +108,27 @@ func (p StopSound) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Implement switch field write
+	switch v := p.Source.(type) {
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Source: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Sound.(type) {
+	case string:
+		temp, err = pk.String(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Sound: %T", v)
+	}
 
 	return n, nil
 }

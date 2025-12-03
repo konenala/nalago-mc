@@ -4,10 +4,8 @@
 package client
 
 import (
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // CraftRecipeResponse represents the Clientbound CraftRecipeResponse packet.
@@ -25,10 +23,11 @@ func (*CraftRecipeResponse) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *CraftRecipeResponse) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read WindowId (ContainerID)
 
-	// TODO: Read RecipeDisplay (RecipeDisplay)
+	// TODO: Read RecipeDisplay (unsupported type RecipeDisplay)
 
 	return n, nil
 }
@@ -36,10 +35,11 @@ func (p *CraftRecipeResponse) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p CraftRecipeResponse) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write WindowId (ContainerID)
 
-	// TODO: Write RecipeDisplay (RecipeDisplay)
+	// TODO: Write RecipeDisplay (unsupported type RecipeDisplay)
 
 	return n, nil
 }

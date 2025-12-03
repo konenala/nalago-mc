@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Map represents the Clientbound Map packet.
@@ -16,15 +16,24 @@ type Map struct {
 	ItemDamage int32 `mc:"VarInt"`
 	Scale      int8
 	Locked     bool
-	Icons
+	// TODO: Optional complex type
+	Icons   *interface{}
 	Columns uint8
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Columns：
+	//   0 -> void
+	//   default -> u8
 	Rows interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Columns：
+	//   0 -> void
+	//   default -> u8
 	X interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Columns：
+	//   0 -> void
+	//   default -> u8
 	Y interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Columns：
+	//   0 -> void
+
 	Data interface{}
 }
 
@@ -36,6 +45,7 @@ func (*Map) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Map) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var itemDamage pk.VarInt
 	temp, err = itemDamage.ReadFrom(r)
@@ -43,7 +53,7 @@ func (p *Map) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ItemDamage = int32(itemDamage)
+	p.ItemDamage = int32(itemDamage)
 
 	var scale int8
 	temp, err = (*pk.Byte)(&scale).ReadFrom(r)
@@ -51,7 +61,7 @@ func (p *Map) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Scale = scale
+	p.Scale = scale
 
 	var locked pk.Boolean
 	temp, err = locked.ReadFrom(r)
@@ -59,17 +69,73 @@ func (p *Map) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Locked = bool(locked)
+	p.Locked = bool(locked)
 
-	// TODO: Read Columns (u8)
+	// TODO: Read optional complex type
 
-	// TODO: Implement switch field read
+	var columns pk.UnsignedByte
+	temp, err = columns.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Columns = uint8(columns)
 
-	// TODO: Implement switch field read
+	switch p.Columns {
+	case 0:
+		var val interface{}
+		p.Rows = val
+	default:
+		var val uint8
+		var elem pk.UnsignedByte
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = uint8(elem)
+		p.Rows = val
+	}
 
-	// TODO: Implement switch field read
+	switch p.Columns {
+	case 0:
+		var val interface{}
+		p.X = val
+	default:
+		var val uint8
+		var elem pk.UnsignedByte
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = uint8(elem)
+		p.X = val
+	}
 
-	// TODO: Implement switch field read
+	switch p.Columns {
+	case 0:
+		var val interface{}
+		p.Y = val
+	default:
+		var val uint8
+		var elem pk.UnsignedByte
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = uint8(elem)
+		p.Y = val
+	}
+
+	switch p.Columns {
+	case 0:
+		var val interface{}
+		p.Data = val
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -77,6 +143,7 @@ func (p *Map) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Map) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.ItemDamage).WriteTo(w)
 	n += temp
@@ -96,15 +163,67 @@ func (p Map) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Columns (u8)
+	// TODO: Write optional complex type
 
-	// TODO: Implement switch field write
+	temp, err = pk.UnsignedByte(p.Columns).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Rows.(type) {
+	case interface{}:
+		if err != nil {
+			return n, err
+		}
+	case uint8:
+		temp, err = pk.UnsignedByte(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Rows: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.X.(type) {
+	case interface{}:
+		if err != nil {
+			return n, err
+		}
+	case uint8:
+		temp, err = pk.UnsignedByte(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for X: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Y.(type) {
+	case interface{}:
+		if err != nil {
+			return n, err
+		}
+	case uint8:
+		temp, err = pk.UnsignedByte(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Y: %T", v)
+	}
+
+	switch v := p.Data.(type) {
+	case interface{}:
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
+	}
 
 	return n, nil
 }

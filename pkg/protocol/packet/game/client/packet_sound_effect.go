@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SoundEffect represents the Clientbound SoundEffect packet.
@@ -31,42 +30,43 @@ func (*SoundEffect) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Read Sound (ItemSoundHolder)
+	// TODO: Read Sound (unsupported type ItemSoundHolder)
 
 	// TODO: Read SoundCategory (soundSource)
 
-	temp, err = (*pk.Int)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Y).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.Volume).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.Volume).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.Pitch).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Long)(&s.Seed).ReadFrom(r)
+	temp, err = (*pk.Long)(&p.Seed).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -78,8 +78,9 @@ func (p *SoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Write Sound (ItemSoundHolder)
+	// TODO: Write Sound (unsupported type ItemSoundHolder)
 
 	// TODO: Write SoundCategory (soundSource)
 

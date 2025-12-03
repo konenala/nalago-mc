@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // InitializeWorldBorder represents the Clientbound InitializeWorldBorder packet.
@@ -31,26 +30,27 @@ func (*InitializeWorldBorder) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.OldDiameter).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.OldDiameter).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.NewDiameter).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.NewDiameter).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -62,7 +62,7 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Speed = int32(speed)
+	p.Speed = int32(speed)
 
 	var portalTeleportBoundary pk.VarInt
 	temp, err = portalTeleportBoundary.ReadFrom(r)
@@ -70,7 +70,7 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.PortalTeleportBoundary = int32(portalTeleportBoundary)
+	p.PortalTeleportBoundary = int32(portalTeleportBoundary)
 
 	var warningBlocks pk.VarInt
 	temp, err = warningBlocks.ReadFrom(r)
@@ -78,7 +78,7 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.WarningBlocks = int32(warningBlocks)
+	p.WarningBlocks = int32(warningBlocks)
 
 	var warningTime pk.VarInt
 	temp, err = warningTime.ReadFrom(r)
@@ -86,7 +86,7 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.WarningTime = int32(warningTime)
+	p.WarningTime = int32(warningTime)
 
 	return n, nil
 }
@@ -94,6 +94,7 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p InitializeWorldBorder) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp

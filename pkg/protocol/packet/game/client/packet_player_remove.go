@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // PlayerRemove represents the Clientbound PlayerRemove packet.
@@ -24,6 +23,7 @@ func (*PlayerRemove) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerRemove) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var playersCount pk.VarInt
 	temp, err = playersCount.ReadFrom(r)
@@ -31,9 +31,9 @@ func (p *PlayerRemove) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Players = make([]pk.UUID, playersCount)
+	p.Players = make([]pk.UUID, playersCount)
 	for i := 0; i < int(playersCount); i++ {
-		temp, err = (*pk.UUID)(&s.Players[i]).ReadFrom(r)
+		temp, err = p.Players[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -46,6 +46,7 @@ func (p *PlayerRemove) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p PlayerRemove) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Players)).WriteTo(w)
 	n += temp
@@ -53,7 +54,7 @@ func (p PlayerRemove) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Players {
-		temp, err = s.Players[i].WriteTo(w)
+		temp, err = p.Players[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

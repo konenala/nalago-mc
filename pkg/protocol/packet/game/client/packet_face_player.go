@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // FacePlayer represents the Clientbound FacePlayer packet.
@@ -18,10 +17,10 @@ type FacePlayer struct {
 	Y        float64
 	Z        float64
 	IsEntity bool
-	// TODO: Switch type - conditional field based on other field value
-	EntityId interface{}
-	// TODO: Switch type - conditional field based on other field value
-	EntityFeetEyes interface{}
+	// Optional，當 IsEntity 符合條件時出現
+	EntityId *int32
+	// Optional，當 IsEntity 符合條件時出現
+	EntityFeetEyes *int32
 }
 
 // PacketID returns the packet ID for this packet.
@@ -32,6 +31,7 @@ func (*FacePlayer) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var feetEyes pk.VarInt
 	temp, err = feetEyes.ReadFrom(r)
@@ -39,21 +39,21 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.FeetEyes = int32(feetEyes)
+	p.FeetEyes = int32(feetEyes)
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -65,11 +65,33 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.IsEntity = bool(isEntity)
+	p.IsEntity = bool(isEntity)
 
-	// TODO: Implement switch field read
+	// 當 IsEntity == true 時讀取 EntityId
+	if p.IsEntity == true {
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.EntityId = &val
+	}
 
-	// TODO: Implement switch field read
+	// 當 IsEntity == true 時讀取 EntityFeetEyes
+	if p.IsEntity == true {
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.EntityFeetEyes = &val
+	}
 
 	return n, nil
 }
@@ -77,6 +99,7 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p FacePlayer) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.FeetEyes).WriteTo(w)
 	n += temp
@@ -108,9 +131,21 @@ func (p FacePlayer) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Implement switch field write
+	if p.EntityId != nil {
+		temp, err = pk.VarInt(*p.EntityId).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
-	// TODO: Implement switch field write
+	if p.EntityFeetEyes != nil {
+		temp, err = pk.VarInt(*p.EntityFeetEyes).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	}
 
 	return n, nil
 }

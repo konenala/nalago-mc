@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // PlayerInfoDataEntry is a sub-structure used in the packet.
@@ -32,10 +31,11 @@ type PlayerInfoDataEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *PlayerInfoDataEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *PlayerInfoDataEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.UUID)(&s.Uuid).ReadFrom(r)
+	temp, err = (*pk.UUID)(&p.Uuid).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -61,10 +61,11 @@ func (s *PlayerInfoDataEntry) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // WriteTo writes the data to the writer.
-func (s PlayerInfoDataEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p PlayerInfoDataEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Uuid.WriteTo(w)
+	temp, err = p.Uuid.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -105,6 +106,7 @@ func (*PlayerInfo) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerInfo) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Action
 
@@ -114,9 +116,9 @@ func (p *PlayerInfo) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Data = make([]PlayerInfoDataEntry, dataCount)
+	p.Data = make([]PlayerInfoDataEntry, dataCount)
 	for i := 0; i < int(dataCount); i++ {
-		temp, err = s.Data[i].ReadFrom(r)
+		temp, err = p.Data[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -129,6 +131,7 @@ func (p *PlayerInfo) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p PlayerInfo) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Action
 
@@ -138,7 +141,7 @@ func (p PlayerInfo) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Data {
-		temp, err = s.Data[i].WriteTo(w)
+		temp, err = p.Data[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

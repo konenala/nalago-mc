@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // OpenBook represents the Clientbound OpenBook packet.
@@ -24,6 +23,7 @@ func (*OpenBook) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *OpenBook) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var hand pk.VarInt
 	temp, err = hand.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *OpenBook) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Hand = int32(hand)
+	p.Hand = int32(hand)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *OpenBook) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p OpenBook) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Hand).WriteTo(w)
 	n += temp

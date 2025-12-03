@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Difficulty represents the Clientbound Difficulty packet.
@@ -26,6 +25,7 @@ func (*Difficulty) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Difficulty
 
@@ -35,7 +35,7 @@ func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.DifficultyLocked = bool(difficultyLocked)
+	p.DifficultyLocked = bool(difficultyLocked)
 
 	return n, nil
 }
@@ -43,6 +43,7 @@ func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Difficulty) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Difficulty
 

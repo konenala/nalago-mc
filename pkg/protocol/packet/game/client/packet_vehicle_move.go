@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // VehicleMove represents the Clientbound VehicleMove packet.
@@ -28,32 +27,33 @@ func (*VehicleMove) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *VehicleMove) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.Yaw).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.Pitch).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -65,6 +65,7 @@ func (p *VehicleMove) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p VehicleMove) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp

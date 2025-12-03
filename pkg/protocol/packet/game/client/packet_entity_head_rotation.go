@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityHeadRotation represents the Clientbound EntityHeadRotation packet.
@@ -25,6 +24,7 @@ func (*EntityHeadRotation) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityHeadRotation) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *EntityHeadRotation) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var headYaw int8
 	temp, err = (*pk.Byte)(&headYaw).ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *EntityHeadRotation) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.HeadYaw = headYaw
+	p.HeadYaw = headYaw
 
 	return n, nil
 }
@@ -48,6 +48,7 @@ func (p *EntityHeadRotation) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityHeadRotation) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp

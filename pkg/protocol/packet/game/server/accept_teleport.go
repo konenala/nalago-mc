@@ -3,8 +3,8 @@ package server
 import (
 	"io"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 type AcceptTeleportation struct {

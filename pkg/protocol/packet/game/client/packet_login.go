@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Login represents the Clientbound Login packet.
@@ -34,8 +33,9 @@ func (*Login) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Int)(&s.EntityId).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.EntityId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -47,7 +47,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.IsHardcore = bool(isHardcore)
+	p.IsHardcore = bool(isHardcore)
 
 	var worldNamesCount pk.VarInt
 	temp, err = worldNamesCount.ReadFrom(r)
@@ -55,7 +55,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.WorldNames = make([]string, worldNamesCount)
+	p.WorldNames = make([]string, worldNamesCount)
 	for i := 0; i < int(worldNamesCount); i++ {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
@@ -72,7 +72,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.MaxPlayers = int32(maxPlayers)
+	p.MaxPlayers = int32(maxPlayers)
 
 	var viewDistance pk.VarInt
 	temp, err = viewDistance.ReadFrom(r)
@@ -80,7 +80,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ViewDistance = int32(viewDistance)
+	p.ViewDistance = int32(viewDistance)
 
 	var simulationDistance pk.VarInt
 	temp, err = simulationDistance.ReadFrom(r)
@@ -88,7 +88,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SimulationDistance = int32(simulationDistance)
+	p.SimulationDistance = int32(simulationDistance)
 
 	var reducedDebugInfo pk.Boolean
 	temp, err = reducedDebugInfo.ReadFrom(r)
@@ -96,7 +96,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ReducedDebugInfo = bool(reducedDebugInfo)
+	p.ReducedDebugInfo = bool(reducedDebugInfo)
 
 	var enableRespawnScreen pk.Boolean
 	temp, err = enableRespawnScreen.ReadFrom(r)
@@ -104,7 +104,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EnableRespawnScreen = bool(enableRespawnScreen)
+	p.EnableRespawnScreen = bool(enableRespawnScreen)
 
 	var doLimitedCrafting pk.Boolean
 	temp, err = doLimitedCrafting.ReadFrom(r)
@@ -112,9 +112,9 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.DoLimitedCrafting = bool(doLimitedCrafting)
+	p.DoLimitedCrafting = bool(doLimitedCrafting)
 
-	// TODO: Read WorldState (SpawnInfo)
+	// TODO: Read WorldState (unsupported type SpawnInfo)
 
 	var enforcesSecureChat pk.Boolean
 	temp, err = enforcesSecureChat.ReadFrom(r)
@@ -122,7 +122,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EnforcesSecureChat = bool(enforcesSecureChat)
+	p.EnforcesSecureChat = bool(enforcesSecureChat)
 
 	return n, nil
 }
@@ -130,6 +130,7 @@ func (p *Login) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Login) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Int(p.EntityId).WriteTo(w)
 	n += temp
@@ -192,7 +193,7 @@ func (p Login) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write WorldState (SpawnInfo)
+	// TODO: Write WorldState (unsupported type SpawnInfo)
 
 	temp, err = pk.Boolean(p.EnforcesSecureChat).WriteTo(w)
 	n += temp

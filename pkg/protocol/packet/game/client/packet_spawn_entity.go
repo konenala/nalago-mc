@@ -4,29 +4,27 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
-
 
 // SpawnEntity represents the Clientbound SpawnEntity packet.
 
 type SpawnEntity struct {
-	EntityId int32 `mc:"VarInt"`
+	EntityId   int32 `mc:"VarInt"`
 	ObjectUUID pk.UUID
-	Type int32 `mc:"VarInt"`
-	X float64
-	Y float64
-	Z float64
-	Pitch int8
-	Yaw int8
-	HeadPitch int8
+	Type       int32 `mc:"VarInt"`
+	X          float64
+	Y          float64
+	Z          float64
+	Pitch      int8
+	Yaw        int8
+	HeadPitch  int8
 	ObjectData int32 `mc:"VarInt"`
-	VelocityX int16
-	VelocityY int16
-	VelocityZ int16
+	VelocityX  int16
+	VelocityY  int16
+	VelocityZ  int16
 }
 
 // PacketID returns the packet ID for this packet.
@@ -34,74 +32,100 @@ func (*SpawnEntity) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSpawnEntity
 }
 
-
 // ReadFrom reads the packet data from the reader.
 func (p *SpawnEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.EntityId = int32(entityId)
+	if err != nil {
+		return n, err
+	}
+	p.EntityId = int32(entityId)
 
-	temp, err = (*pk.UUID)(&s.ObjectUUID).ReadFrom(r)
+	temp, err = (*pk.UUID)(&p.ObjectUUID).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	var type pk.VarInt
-	temp, err = type.ReadFrom(r)
+	var _type pk.VarInt
+	temp, err = _type.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Type = int32(type)
+	if err != nil {
+		return n, err
+	}
+	p.Type = int32(_type)
 
-	temp, err = (*pk.Double)(&s.X).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	temp, err = (*pk.Double)(&s.Y).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	temp, err = (*pk.Double)(&s.Z).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	var pitch int8
 	temp, err = (*pk.Byte)(&pitch).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Pitch = pitch
+	if err != nil {
+		return n, err
+	}
+	p.Pitch = pitch
 
 	var yaw int8
 	temp, err = (*pk.Byte)(&yaw).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.Yaw = yaw
+	if err != nil {
+		return n, err
+	}
+	p.Yaw = yaw
 
 	var headPitch int8
 	temp, err = (*pk.Byte)(&headPitch).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.HeadPitch = headPitch
+	if err != nil {
+		return n, err
+	}
+	p.HeadPitch = headPitch
 
 	var objectData pk.VarInt
 	temp, err = objectData.ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
-	s.ObjectData = int32(objectData)
+	if err != nil {
+		return n, err
+	}
+	p.ObjectData = int32(objectData)
 
-	temp, err = (*pk.Short)(&s.VelocityX).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.VelocityX).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	temp, err = (*pk.Short)(&s.VelocityY).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.VelocityY).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	temp, err = (*pk.Short)(&s.VelocityZ).ReadFrom(r)
+	temp, err = (*pk.Short)(&p.VelocityZ).ReadFrom(r)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -109,66 +133,91 @@ func (p *SpawnEntity) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SpawnEntity) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
-	temp, err = s.ObjectUUID.WriteTo(w)
+	temp, err = p.ObjectUUID.WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.VarInt(p.Type).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Byte(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Byte(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Byte(p.HeadPitch).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.VarInt(p.ObjectData).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Short(p.VelocityX).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Short(p.VelocityY).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	temp, err = pk.Short(p.VelocityZ).WriteTo(w)
 	n += temp
-	if err != nil { return n, err }
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
-
 
 func init() {
 	registerPacket(packetid.ClientboundSpawnEntity, func() ClientboundPacket {
 		return &SpawnEntity{}
 	})
 }
-

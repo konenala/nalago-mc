@@ -14,9 +14,9 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	mcnet "git.konjactw.dev/falloutBot/go-mc/net"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
 	"git.konjactw.dev/patyhank/minego/pkg/bot"

@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
+	"io"
 )
 
 // TradeListTradesEntryInputItem1 is a sub-structure used in the packet.
@@ -18,8 +18,9 @@ type TradeListTradesEntryInputItem1 struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var itemId pk.VarInt
 	temp, err = itemId.ReadFrom(r)
@@ -27,7 +28,7 @@ func (s *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err err
 	if err != nil {
 		return n, err
 	}
-	s.ItemId = int32(itemId)
+	p.ItemId = int32(itemId)
 
 	var itemCount pk.VarInt
 	temp, err = itemCount.ReadFrom(r)
@@ -35,16 +36,17 @@ func (s *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err err
 	if err != nil {
 		return n, err
 	}
-	s.ItemCount = int32(itemCount)
+	p.ItemCount = int32(itemCount)
 
-	// TODO: Read Components (ExactComponentMatcher)
+	// TODO: Read Components (unsupported type ExactComponentMatcher)
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s TradeListTradesEntryInputItem1) WriteTo(w io.Writer) (n int64, err error) {
+func (p TradeListTradesEntryInputItem1) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.ItemId).WriteTo(w)
 	n += temp
@@ -58,7 +60,7 @@ func (s TradeListTradesEntryInputItem1) WriteTo(w io.Writer) (n int64, err error
 		return n, err
 	}
 
-	// TODO: Write Components (ExactComponentMatcher)
+	// TODO: Write Components (unsupported type ExactComponentMatcher)
 
 	return n, nil
 }
@@ -71,8 +73,9 @@ type TradeListTradesEntryInputItem2 struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var itemId pk.VarInt
 	temp, err = itemId.ReadFrom(r)
@@ -80,7 +83,7 @@ func (s *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err err
 	if err != nil {
 		return n, err
 	}
-	s.ItemId = int32(itemId)
+	p.ItemId = int32(itemId)
 
 	var itemCount pk.VarInt
 	temp, err = itemCount.ReadFrom(r)
@@ -88,16 +91,17 @@ func (s *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err err
 	if err != nil {
 		return n, err
 	}
-	s.ItemCount = int32(itemCount)
+	p.ItemCount = int32(itemCount)
 
-	// TODO: Read Components (ExactComponentMatcher)
+	// TODO: Read Components (unsupported type ExactComponentMatcher)
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error) {
+func (p TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.ItemId).WriteTo(w)
 	n += temp
@@ -111,7 +115,7 @@ func (s TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error
 		return n, err
 	}
 
-	// TODO: Write Components (ExactComponentMatcher)
+	// TODO: Write Components (unsupported type ExactComponentMatcher)
 
 	return n, nil
 }
@@ -119,7 +123,7 @@ func (s TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error
 // TradeListTradesEntry is a sub-structure used in the packet.
 type TradeListTradesEntry struct {
 	InputItem1         TradeListTradesEntryInputItem1
-	OutputItem         pk.Slot
+	OutputItem         slot.Slot
 	InputItem2         *TradeListTradesEntryInputItem2
 	TradeDisabled      bool
 	NbTradeUses        int32
@@ -131,16 +135,17 @@ type TradeListTradesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.InputItem1.ReadFrom(r)
+	temp, err = p.InputItem1.ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Slot)(&s.OutputItem).ReadFrom(r)
+	temp, err = (*slot.Slot)(&p.OutputItem).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -153,8 +158,8 @@ func (s *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasInputItem2 {
-		s.InputItem2 = &TradeListTradesEntryInputItem2{}
-		temp, err = s.InputItem2.ReadFrom(r)
+		p.InputItem2 = &TradeListTradesEntryInputItem2{}
+		temp, err = p.InputItem2.ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -167,39 +172,39 @@ func (s *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.TradeDisabled = bool(tradeDisabled)
+	p.TradeDisabled = bool(tradeDisabled)
 
-	temp, err = (*pk.Int)(&s.NbTradeUses).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.NbTradeUses).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.MaximumNbTradeUses).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.MaximumNbTradeUses).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Xp).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Xp).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.SpecialPrice).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.SpecialPrice).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.PriceMultiplier).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.PriceMultiplier).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Demand).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Demand).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -209,16 +214,17 @@ func (s *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // WriteTo writes the data to the writer.
-func (s TradeListTradesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p TradeListTradesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.InputItem1.WriteTo(w)
+	temp, err = p.InputItem1.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = s.OutputItem.WriteTo(w)
+	temp, err = p.OutputItem.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -230,7 +236,7 @@ func (s TradeListTradesEntry) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.InputItem2.WriteTo(w)
+		temp, err = p.InputItem2.WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -307,6 +313,7 @@ func (*TradeList) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read WindowId (ContainerID)
 
@@ -316,9 +323,9 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Trades = make([]TradeListTradesEntry, tradesCount)
+	p.Trades = make([]TradeListTradesEntry, tradesCount)
 	for i := 0; i < int(tradesCount); i++ {
-		temp, err = s.Trades[i].ReadFrom(r)
+		temp, err = p.Trades[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -331,7 +338,7 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.VillagerLevel = int32(villagerLevel)
+	p.VillagerLevel = int32(villagerLevel)
 
 	var experience pk.VarInt
 	temp, err = experience.ReadFrom(r)
@@ -339,7 +346,7 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Experience = int32(experience)
+	p.Experience = int32(experience)
 
 	var isRegularVillager pk.Boolean
 	temp, err = isRegularVillager.ReadFrom(r)
@@ -347,7 +354,7 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.IsRegularVillager = bool(isRegularVillager)
+	p.IsRegularVillager = bool(isRegularVillager)
 
 	var canRestock pk.Boolean
 	temp, err = canRestock.ReadFrom(r)
@@ -355,7 +362,7 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CanRestock = bool(canRestock)
+	p.CanRestock = bool(canRestock)
 
 	return n, nil
 }
@@ -363,6 +370,7 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p TradeList) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write WindowId (ContainerID)
 
@@ -372,7 +380,7 @@ func (p TradeList) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Trades {
-		temp, err = s.Trades[i].WriteTo(w)
+		temp, err = p.Trades[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

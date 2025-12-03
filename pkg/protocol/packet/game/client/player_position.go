@@ -3,7 +3,7 @@ package client
 import (
 	"io"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 // PlayerPosition stub used by player.go

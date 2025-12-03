@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Animation represents the Clientbound Animation packet.
@@ -25,6 +24,7 @@ func (*Animation) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Animation) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -32,9 +32,15 @@ func (p *Animation) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
-	// TODO: Read Animation (u8)
+	var animation pk.UnsignedByte
+	temp, err = animation.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Animation = uint8(animation)
 
 	return n, nil
 }
@@ -42,6 +48,7 @@ func (p *Animation) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Animation) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -49,7 +56,11 @@ func (p Animation) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Animation (u8)
+	temp, err = pk.UnsignedByte(p.Animation).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

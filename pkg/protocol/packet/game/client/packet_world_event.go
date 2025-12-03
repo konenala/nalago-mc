@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // WorldEvent represents the Clientbound WorldEvent packet.
@@ -27,20 +26,21 @@ func (*WorldEvent) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *WorldEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Int)(&s.EffectId).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.EffectId).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Position)(&s.Location).ReadFrom(r)
+	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Data).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Data).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -52,7 +52,7 @@ func (p *WorldEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Global = bool(global)
+	p.Global = bool(global)
 
 	return n, nil
 }
@@ -60,6 +60,7 @@ func (p *WorldEvent) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p WorldEvent) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Int(p.EffectId).WriteTo(w)
 	n += temp
@@ -67,7 +68,7 @@ func (p WorldEvent) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = s.Location.WriteTo(w)
+	temp, err = p.Location.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

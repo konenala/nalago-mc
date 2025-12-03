@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // WorldBorderWarningReach represents the Clientbound WorldBorderWarningReach packet.
@@ -24,6 +23,7 @@ func (*WorldBorderWarningReach) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *WorldBorderWarningReach) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var warningBlocks pk.VarInt
 	temp, err = warningBlocks.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *WorldBorderWarningReach) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.WarningBlocks = int32(warningBlocks)
+	p.WarningBlocks = int32(warningBlocks)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *WorldBorderWarningReach) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p WorldBorderWarningReach) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.WarningBlocks).WriteTo(w)
 	n += temp

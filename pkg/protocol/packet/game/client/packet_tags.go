@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // TagsTagsEntry is a sub-structure used in the packet.
@@ -17,8 +16,9 @@ type TagsTagsEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *TagsTagsEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *TagsTagsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var tagType pk.String
 	temp, err = tagType.ReadFrom(r)
@@ -26,16 +26,17 @@ func (s *TagsTagsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.TagType = string(tagType)
+	p.TagType = string(tagType)
 
-	// TODO: Read Tags (tags)
+	// TODO: Read Tags (unsupported type tags)
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s TagsTagsEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p TagsTagsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.TagType).WriteTo(w)
 	n += temp
@@ -43,7 +44,7 @@ func (s TagsTagsEntry) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Tags (tags)
+	// TODO: Write Tags (unsupported type tags)
 
 	return n, nil
 }
@@ -62,6 +63,7 @@ func (*Tags) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Tags) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var tagsCount pk.VarInt
 	temp, err = tagsCount.ReadFrom(r)
@@ -69,9 +71,9 @@ func (p *Tags) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Tags = make([]TagsTagsEntry, tagsCount)
+	p.Tags = make([]TagsTagsEntry, tagsCount)
 	for i := 0; i < int(tagsCount); i++ {
-		temp, err = s.Tags[i].ReadFrom(r)
+		temp, err = p.Tags[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -84,6 +86,7 @@ func (p *Tags) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Tags) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Tags)).WriteTo(w)
 	n += temp
@@ -91,7 +94,7 @@ func (p Tags) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Tags {
-		temp, err = s.Tags[i].WriteTo(w)
+		temp, err = p.Tags[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

@@ -4,19 +4,18 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ProfilelessChat represents the Clientbound ProfilelessChat packet.
 
 type ProfilelessChat struct {
-	Message pk.NBT `mc:"NBT"`
+	Message pk.NBTField `mc:"NBT"`
 	Type    interface{}
-	Name    pk.NBT `mc:"NBT"`
-	Target  *pk.NBT
+	Name    pk.NBTField `mc:"NBT"`
+	Target  *pk.NBTField
 }
 
 // PacketID returns the packet ID for this packet.
@@ -27,16 +26,17 @@ func (*ProfilelessChat) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.NBT)(&s.Message).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Message).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	// TODO: Read Type (ChatTypesHolder)
+	// TODO: Read Type (unsupported type ChatTypesHolder)
 
-	temp, err = (*pk.NBT)(&s.Name).ReadFrom(r)
+	temp, err = (*pk.NBTField)(&p.Name).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -49,13 +49,13 @@ func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasTarget {
-		var val pk.NBT
-		temp, err = (*pk.NBT)(&val).ReadFrom(r)
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-		s.Target = &val
+		p.Target = &val
 	}
 
 	return n, nil
@@ -64,16 +64,17 @@ func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ProfilelessChat) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Message.WriteTo(w)
+	temp, err = p.Message.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	// TODO: Write Type (ChatTypesHolder)
+	// TODO: Write Type (unsupported type ChatTypesHolder)
 
-	temp, err = s.Name.WriteTo(w)
+	temp, err = p.Name.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -85,7 +86,7 @@ func (p ProfilelessChat) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.Target.WriteTo(w)
+		temp, err = pk.NBTField(*p.Target).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

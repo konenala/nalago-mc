@@ -3,8 +3,8 @@ package client
 import (
 	"github.com/google/uuid"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	"git.konjactw.dev/falloutBot/go-mc/yggdrasil/user"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 //codec:gen

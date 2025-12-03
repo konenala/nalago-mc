@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SelectAdvancementTab represents the Clientbound SelectAdvancementTab packet.
@@ -24,6 +23,7 @@ func (*SelectAdvancementTab) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SelectAdvancementTab) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var hasId pk.Boolean
 	temp, err = hasId.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *SelectAdvancementTab) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		val = string(elem)
-		s.Id = &val
+		p.Id = &val
 	}
 
 	return n, nil
@@ -49,6 +49,7 @@ func (p *SelectAdvancementTab) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SelectAdvancementTab) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	if p.Id != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)

@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // BlockBreakAnimation represents the Clientbound BlockBreakAnimation packet.
@@ -26,6 +25,7 @@ func (*BlockBreakAnimation) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -33,9 +33,9 @@ func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
-	temp, err = (*pk.Position)(&s.Location).ReadFrom(r)
+	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -47,7 +47,7 @@ func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.DestroyStage = destroyStage
+	p.DestroyStage = destroyStage
 
 	return n, nil
 }
@@ -55,6 +55,7 @@ func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p BlockBreakAnimation) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -62,7 +63,7 @@ func (p BlockBreakAnimation) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	temp, err = s.Location.WriteTo(w)
+	temp, err = p.Location.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

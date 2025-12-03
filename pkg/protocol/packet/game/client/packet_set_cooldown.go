@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SetCooldown represents the Clientbound SetCooldown packet.
@@ -25,6 +24,7 @@ func (*SetCooldown) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SetCooldown) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var cooldownGroup pk.String
 	temp, err = cooldownGroup.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *SetCooldown) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CooldownGroup = string(cooldownGroup)
+	p.CooldownGroup = string(cooldownGroup)
 
 	var cooldownTicks pk.VarInt
 	temp, err = cooldownTicks.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *SetCooldown) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CooldownTicks = int32(cooldownTicks)
+	p.CooldownTicks = int32(cooldownTicks)
 
 	return n, nil
 }
@@ -48,6 +48,7 @@ func (p *SetCooldown) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SetCooldown) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.CooldownGroup).WriteTo(w)
 	n += temp

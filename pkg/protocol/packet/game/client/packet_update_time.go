@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // UpdateTime represents the Clientbound UpdateTime packet.
@@ -26,14 +25,15 @@ func (*UpdateTime) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateTime) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Long)(&s.Age).ReadFrom(r)
+	temp, err = (*pk.Long)(&p.Age).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Long)(&s.Time).ReadFrom(r)
+	temp, err = (*pk.Long)(&p.Time).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -45,7 +45,7 @@ func (p *UpdateTime) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.TickDayTime = bool(tickDayTime)
+	p.TickDayTime = bool(tickDayTime)
 
 	return n, nil
 }
@@ -53,6 +53,7 @@ func (p *UpdateTime) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p UpdateTime) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Long(p.Age).WriteTo(w)
 	n += temp

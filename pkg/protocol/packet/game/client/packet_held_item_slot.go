@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // HeldItemSlot represents the Clientbound HeldItemSlot packet.
@@ -24,6 +23,7 @@ func (*HeldItemSlot) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *HeldItemSlot) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var slot pk.VarInt
 	temp, err = slot.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *HeldItemSlot) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Slot = int32(slot)
+	p.Slot = int32(slot)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *HeldItemSlot) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p HeldItemSlot) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Slot).WriteTo(w)
 	n += temp

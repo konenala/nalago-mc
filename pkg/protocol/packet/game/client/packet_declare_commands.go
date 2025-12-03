@@ -4,15 +4,15 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // DeclareCommands represents the Clientbound DeclareCommands packet.
 
 type DeclareCommands struct {
+	// TODO: Array element type command_node unsupported
 	Nodes     []interface{}
 	RootIndex int32 `mc:"VarInt"`
 }
@@ -25,21 +25,7 @@ func (*DeclareCommands) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *DeclareCommands) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
-
-	var nodesCount pk.VarInt
-	temp, err = nodesCount.ReadFrom(r)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	s.Nodes = make([]interface{}, nodesCount)
-	for i := 0; i < int(nodesCount); i++ {
-		temp, err = (*pk.command_node)(&s.Nodes[i]).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
+	_ = temp
 
 	var rootIndex pk.VarInt
 	temp, err = rootIndex.ReadFrom(r)
@@ -47,7 +33,7 @@ func (p *DeclareCommands) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.RootIndex = int32(rootIndex)
+	p.RootIndex = int32(rootIndex)
 
 	return n, nil
 }
@@ -55,19 +41,7 @@ func (p *DeclareCommands) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p DeclareCommands) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
-
-	temp, err = pk.VarInt(len(p.Nodes)).WriteTo(w)
-	n += temp
-	if err != nil {
-		return n, err
-	}
-	for i := range p.Nodes {
-		temp, err = s.Nodes[i].WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	}
+	_ = temp
 
 	temp, err = pk.VarInt(p.RootIndex).WriteTo(w)
 	n += temp

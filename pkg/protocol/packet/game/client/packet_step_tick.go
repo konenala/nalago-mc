@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // StepTick represents the Clientbound StepTick packet.
@@ -24,6 +23,7 @@ func (*StepTick) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *StepTick) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var tickSteps pk.VarInt
 	temp, err = tickSteps.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *StepTick) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.TickSteps = int32(tickSteps)
+	p.TickSteps = int32(tickSteps)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *StepTick) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p StepTick) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.TickSteps).WriteTo(w)
 	n += temp

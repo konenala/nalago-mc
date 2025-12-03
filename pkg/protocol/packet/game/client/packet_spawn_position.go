@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SpawnPosition represents the Clientbound SpawnPosition packet.
@@ -25,14 +24,15 @@ func (*SpawnPosition) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SpawnPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Position)(&s.Location).ReadFrom(r)
+	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.Angle).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.Angle).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -44,8 +44,9 @@ func (p *SpawnPosition) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SpawnPosition) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Location.WriteTo(w)
+	temp, err = p.Location.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

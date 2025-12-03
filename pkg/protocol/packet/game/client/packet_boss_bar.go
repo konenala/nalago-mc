@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // BossBar represents the Clientbound BossBar packet.
@@ -15,15 +15,30 @@ import (
 type BossBar struct {
 	EntityUUID pk.UUID
 	Action     int32 `mc:"VarInt"`
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> anonymousNbt
+	//   3 -> anonymousNbt
+	//   default -> void
 	Title interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> f32
+	//   2 -> f32
+	//   default -> void
 	Health interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> varint
+	//   4 -> varint
+	//   default -> void
 	Color interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> varint
+	//   4 -> varint
+	//   default -> void
 	Dividers interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> u8
+	//   5 -> u8
+	//   default -> void
 	Flags interface{}
 }
 
@@ -35,8 +50,9 @@ func (*BossBar) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.UUID)(&s.EntityUUID).ReadFrom(r)
+	temp, err = (*pk.UUID)(&p.EntityUUID).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -48,17 +64,124 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Action = int32(action)
+	p.Action = int32(action)
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Title = val
+	case 3:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Title = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Health = val
+	case 2:
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Health = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Color = val
+	case 4:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Color = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Dividers = val
+	case 4:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Dividers = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 5:
+		var val uint8
+		var elem pk.UnsignedByte
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = uint8(elem)
+		p.Flags = val
+	case 0:
+		var val uint8
+		var elem pk.UnsignedByte
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = uint8(elem)
+		p.Flags = val
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -66,8 +189,9 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.EntityUUID.WriteTo(w)
+	temp, err = p.EntityUUID.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -79,15 +203,60 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Implement switch field write
+	switch v := p.Title.(type) {
+	case pk.NBTField:
+		temp, err = pk.NBTField(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Title: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Health.(type) {
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Health: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Color.(type) {
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Color: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Dividers.(type) {
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Dividers: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Flags.(type) {
+	case uint8:
+		temp, err = pk.UnsignedByte(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Flags: %T", v)
+	}
 
 	return n, nil
 }

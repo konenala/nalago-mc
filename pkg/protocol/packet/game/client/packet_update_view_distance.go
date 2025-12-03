@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // UpdateViewDistance represents the Clientbound UpdateViewDistance packet.
@@ -24,6 +23,7 @@ func (*UpdateViewDistance) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateViewDistance) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var viewDistance pk.VarInt
 	temp, err = viewDistance.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *UpdateViewDistance) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ViewDistance = int32(viewDistance)
+	p.ViewDistance = int32(viewDistance)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *UpdateViewDistance) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p UpdateViewDistance) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.ViewDistance).WriteTo(w)
 	n += temp

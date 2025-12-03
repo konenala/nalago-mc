@@ -4,17 +4,17 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityMetadata represents the Clientbound EntityMetadata packet.
 
 type EntityMetadata struct {
 	EntityId int32 `mc:"VarInt"`
-	Metadata pk.Metadata
+	Metadata metadata.EntityMetadata
 }
 
 // PacketID returns the packet ID for this packet.
@@ -25,6 +25,7 @@ func (*EntityMetadata) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityMetadata) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -32,9 +33,13 @@ func (p *EntityMetadata) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
-	// TODO: Read Metadata (entityMetadata)
+	temp, err = (*metadata.EntityMetadata)(&p.Metadata).ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }
@@ -42,6 +47,7 @@ func (p *EntityMetadata) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityMetadata) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -49,7 +55,11 @@ func (p EntityMetadata) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Metadata (entityMetadata)
+	temp, err = p.Metadata.WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

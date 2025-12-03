@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ResetScore represents the Clientbound ResetScore packet.
@@ -25,6 +24,7 @@ func (*ResetScore) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityName pk.String
 	temp, err = entityName.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityName = string(entityName)
+	p.EntityName = string(entityName)
 
 	var hasObjectiveName pk.Boolean
 	temp, err = hasObjectiveName.ReadFrom(r)
@@ -49,7 +49,7 @@ func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		val = string(elem)
-		s.ObjectiveName = &val
+		p.ObjectiveName = &val
 	}
 
 	return n, nil
@@ -58,6 +58,7 @@ func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ResetScore) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.EntityName).WriteTo(w)
 	n += temp

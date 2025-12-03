@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Respawn represents the Clientbound Respawn packet.
@@ -25,10 +24,17 @@ func (*Respawn) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Respawn) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Read WorldState (SpawnInfo)
+	// TODO: Read WorldState (unsupported type SpawnInfo)
 
-	// TODO: Read CopyMetadata (u8)
+	var copyMetadata pk.UnsignedByte
+	temp, err = copyMetadata.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.CopyMetadata = uint8(copyMetadata)
 
 	return n, nil
 }
@@ -36,10 +42,15 @@ func (p *Respawn) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Respawn) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Write WorldState (SpawnInfo)
+	// TODO: Write WorldState (unsupported type SpawnInfo)
 
-	// TODO: Write CopyMetadata (u8)
+	temp, err = pk.UnsignedByte(p.CopyMetadata).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

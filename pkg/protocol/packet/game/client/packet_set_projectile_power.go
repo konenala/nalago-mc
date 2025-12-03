@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SetProjectilePower represents the Clientbound SetProjectilePower packet.
@@ -25,6 +24,7 @@ func (*SetProjectilePower) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SetProjectilePower) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var id pk.VarInt
 	temp, err = id.ReadFrom(r)
@@ -32,9 +32,9 @@ func (p *SetProjectilePower) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Id = int32(id)
+	p.Id = int32(id)
 
-	temp, err = (*pk.Double)(&s.AccelerationPower).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.AccelerationPower).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -46,6 +46,7 @@ func (p *SetProjectilePower) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SetProjectilePower) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Id).WriteTo(w)
 	n += temp

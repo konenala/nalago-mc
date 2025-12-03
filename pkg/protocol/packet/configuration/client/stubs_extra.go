@@ -3,7 +3,7 @@ package client
 import (
 	"io"
 
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 // 補齊 configuration 階段缺少的封包結構，僅供編譯使用。

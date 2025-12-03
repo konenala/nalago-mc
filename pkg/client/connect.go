@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"git.konjactw.dev/falloutBot/go-mc/chat"
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"

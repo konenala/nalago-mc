@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // RecipeBookAddEntriesEntryRecipe is a sub-structure used in the packet.
@@ -17,12 +16,14 @@ type RecipeBookAddEntriesEntryRecipe struct {
 	Group     *int32 `mc:"VarInt"`
 	// TODO: Implement mapper type
 	Category interface{}
-	CraftingRequirements
+	// TODO: Optional complex type
+	CraftingRequirements *interface{}
 }
 
 // ReadFrom reads the data from the reader.
-func (s *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var displayId pk.VarInt
 	temp, err = displayId.ReadFrom(r)
@@ -30,20 +31,23 @@ func (s *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 	if err != nil {
 		return n, err
 	}
-	s.DisplayId = int32(displayId)
+	p.DisplayId = int32(displayId)
 
-	// TODO: Read Display (RecipeDisplay)
+	// TODO: Read Display (unsupported type RecipeDisplay)
 
 	// TODO: Read Group (optvarint)
 
 	// TODO: Read Category
 
+	// TODO: Read optional complex type
+
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err error) {
+func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.DisplayId).WriteTo(w)
 	n += temp
@@ -51,11 +55,13 @@ func (s RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 		return n, err
 	}
 
-	// TODO: Write Display (RecipeDisplay)
+	// TODO: Write Display (unsupported type RecipeDisplay)
 
 	// TODO: Write Group (optvarint)
 
 	// TODO: Write Category
+
+	// TODO: Write optional complex type
 
 	return n, nil
 }
@@ -68,10 +74,11 @@ type RecipeBookAddEntriesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *RecipeBookAddEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *RecipeBookAddEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Recipe.ReadFrom(r)
+	temp, err = p.Recipe.ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -83,10 +90,11 @@ func (s *RecipeBookAddEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // WriteTo writes the data to the writer.
-func (s RecipeBookAddEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p RecipeBookAddEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Recipe.WriteTo(w)
+	temp, err = p.Recipe.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err
@@ -112,6 +120,7 @@ func (*RecipeBookAdd) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entriesCount pk.VarInt
 	temp, err = entriesCount.ReadFrom(r)
@@ -119,9 +128,9 @@ func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Entries = make([]RecipeBookAddEntriesEntry, entriesCount)
+	p.Entries = make([]RecipeBookAddEntriesEntry, entriesCount)
 	for i := 0; i < int(entriesCount); i++ {
-		temp, err = s.Entries[i].ReadFrom(r)
+		temp, err = p.Entries[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -134,7 +143,7 @@ func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Replace = bool(replace)
+	p.Replace = bool(replace)
 
 	return n, nil
 }
@@ -142,6 +151,7 @@ func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p RecipeBookAdd) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Entries)).WriteTo(w)
 	n += temp
@@ -149,7 +159,7 @@ func (p RecipeBookAdd) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Entries {
-		temp, err = s.Entries[i].WriteTo(w)
+		temp, err = p.Entries[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

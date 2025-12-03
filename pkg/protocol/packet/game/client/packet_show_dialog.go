@@ -4,10 +4,8 @@
 package client
 
 import (
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // ShowDialog represents the Clientbound ShowDialog packet.
@@ -25,6 +23,7 @@ func (*ShowDialog) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ShowDialog) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Dialog
 
@@ -34,6 +33,7 @@ func (p *ShowDialog) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ShowDialog) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Dialog
 

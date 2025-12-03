@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Abilities represents the Clientbound Abilities packet.
@@ -26,6 +25,7 @@ func (*Abilities) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Abilities) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var flags int8
 	temp, err = (*pk.Byte)(&flags).ReadFrom(r)
@@ -33,15 +33,15 @@ func (p *Abilities) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Flags = flags
+	p.Flags = flags
 
-	temp, err = (*pk.Float)(&s.FlyingSpeed).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.FlyingSpeed).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Float)(&s.WalkingSpeed).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.WalkingSpeed).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -53,6 +53,7 @@ func (p *Abilities) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Abilities) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Byte(p.Flags).WriteTo(w)
 	n += temp

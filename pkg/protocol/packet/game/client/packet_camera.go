@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // Camera represents the Clientbound Camera packet.
@@ -24,6 +23,7 @@ func (*Camera) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *Camera) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var cameraId pk.VarInt
 	temp, err = cameraId.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *Camera) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.CameraId = int32(cameraId)
+	p.CameraId = int32(cameraId)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *Camera) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p Camera) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.CameraId).WriteTo(w)
 	n += temp

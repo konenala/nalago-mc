@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ScoreboardScore represents the Clientbound ScoreboardScore packet.
@@ -16,9 +16,12 @@ type ScoreboardScore struct {
 	ItemName     string `mc:"String"`
 	ScoreName    string `mc:"String"`
 	Value        int32  `mc:"VarInt"`
-	DisplayName  *pk.NBT
+	DisplayName  *pk.NBTField
 	NumberFormat *int32
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 NumberFormat：
+	//   1 -> anonymousNbt
+	//   2 -> anonymousNbt
+	//   default -> void
 	Styling interface{}
 }
 
@@ -30,6 +33,7 @@ func (*ScoreboardScore) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var itemName pk.String
 	temp, err = itemName.ReadFrom(r)
@@ -37,7 +41,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ItemName = string(itemName)
+	p.ItemName = string(itemName)
 
 	var scoreName pk.String
 	temp, err = scoreName.ReadFrom(r)
@@ -45,7 +49,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.ScoreName = string(scoreName)
+	p.ScoreName = string(scoreName)
 
 	var value pk.VarInt
 	temp, err = value.ReadFrom(r)
@@ -53,7 +57,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Value = int32(value)
+	p.Value = int32(value)
 
 	var hasDisplayName pk.Boolean
 	temp, err = hasDisplayName.ReadFrom(r)
@@ -62,13 +66,13 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasDisplayName {
-		var val pk.NBT
-		temp, err = (*pk.NBT)(&val).ReadFrom(r)
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-		s.DisplayName = &val
+		p.DisplayName = &val
 	}
 
 	var hasNumberFormat pk.Boolean
@@ -86,10 +90,29 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		val = int32(elem)
-		s.NumberFormat = &val
+		p.NumberFormat = &val
 	}
 
-	// TODO: Implement switch field read
+	switch *p.NumberFormat {
+	case 2:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Styling = val
+	case 1:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Styling = val
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -97,6 +120,7 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ScoreboardScore) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.ItemName).WriteTo(w)
 	n += temp
@@ -122,7 +146,7 @@ func (p ScoreboardScore) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.DisplayName.WriteTo(w)
+		temp, err = pk.NBTField(*p.DisplayName).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -154,7 +178,16 @@ func (p ScoreboardScore) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	}
 
-	// TODO: Implement switch field write
+	switch v := p.Styling.(type) {
+	case pk.NBTField:
+		temp, err = pk.NBTField(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Styling: %T", v)
+	}
 
 	return n, nil
 }

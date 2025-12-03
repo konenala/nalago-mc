@@ -4,21 +4,21 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // TabCompleteMatchesEntry is a sub-structure used in the packet.
 type TabCompleteMatchesEntry struct {
 	Match   string `mc:"String"`
-	Tooltip *pk.NBT
+	Tooltip *pk.NBTField
 }
 
 // ReadFrom reads the data from the reader.
-func (s *TabCompleteMatchesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *TabCompleteMatchesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var match pk.String
 	temp, err = match.ReadFrom(r)
@@ -26,7 +26,7 @@ func (s *TabCompleteMatchesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Match = string(match)
+	p.Match = string(match)
 
 	var hasTooltip pk.Boolean
 	temp, err = hasTooltip.ReadFrom(r)
@@ -35,21 +35,22 @@ func (s *TabCompleteMatchesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasTooltip {
-		var val pk.NBT
-		temp, err = (*pk.NBT)(&val).ReadFrom(r)
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-		s.Tooltip = &val
+		p.Tooltip = &val
 	}
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s TabCompleteMatchesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p TabCompleteMatchesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Match).WriteTo(w)
 	n += temp
@@ -63,7 +64,7 @@ func (s TabCompleteMatchesEntry) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.Tooltip.WriteTo(w)
+		temp, err = pk.NBTField(*p.Tooltip).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -96,6 +97,7 @@ func (*TabComplete) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var transactionId pk.VarInt
 	temp, err = transactionId.ReadFrom(r)
@@ -103,7 +105,7 @@ func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.TransactionId = int32(transactionId)
+	p.TransactionId = int32(transactionId)
 
 	var start pk.VarInt
 	temp, err = start.ReadFrom(r)
@@ -111,7 +113,7 @@ func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Start = int32(start)
+	p.Start = int32(start)
 
 	var length pk.VarInt
 	temp, err = length.ReadFrom(r)
@@ -119,7 +121,7 @@ func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Length = int32(length)
+	p.Length = int32(length)
 
 	var matchesCount pk.VarInt
 	temp, err = matchesCount.ReadFrom(r)
@@ -127,9 +129,9 @@ func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Matches = make([]TabCompleteMatchesEntry, matchesCount)
+	p.Matches = make([]TabCompleteMatchesEntry, matchesCount)
 	for i := 0; i < int(matchesCount); i++ {
-		temp, err = s.Matches[i].ReadFrom(r)
+		temp, err = p.Matches[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -142,6 +144,7 @@ func (p *TabComplete) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p TabComplete) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.TransactionId).WriteTo(w)
 	n += temp
@@ -167,7 +170,7 @@ func (p TabComplete) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Matches {
-		temp, err = s.Matches[i].WriteTo(w)
+		temp, err = p.Matches[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

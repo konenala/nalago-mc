@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ChunkBiomesBiomesEntry is a sub-structure used in the packet.
@@ -17,8 +16,9 @@ type ChunkBiomesBiomesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Position (packedChunkPos)
 
@@ -28,8 +28,9 @@ func (s *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 // WriteTo writes the data to the writer.
-func (s ChunkBiomesBiomesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p ChunkBiomesBiomesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Position (packedChunkPos)
 
@@ -52,6 +53,7 @@ func (*ChunkBiomes) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ChunkBiomes) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var biomesCount pk.VarInt
 	temp, err = biomesCount.ReadFrom(r)
@@ -59,9 +61,9 @@ func (p *ChunkBiomes) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Biomes = make([]ChunkBiomesBiomesEntry, biomesCount)
+	p.Biomes = make([]ChunkBiomesBiomesEntry, biomesCount)
 	for i := 0; i < int(biomesCount); i++ {
-		temp, err = s.Biomes[i].ReadFrom(r)
+		temp, err = p.Biomes[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -74,6 +76,7 @@ func (p *ChunkBiomes) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ChunkBiomes) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Biomes)).WriteTo(w)
 	n += temp
@@ -81,7 +84,7 @@ func (p ChunkBiomes) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Biomes {
-		temp, err = s.Biomes[i].WriteTo(w)
+		temp, err = p.Biomes[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

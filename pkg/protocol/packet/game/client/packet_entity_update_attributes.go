@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityUpdateAttributesPropertiesEntryModifiersEntry is a sub-structure used in the packet.
@@ -18,8 +17,9 @@ type EntityUpdateAttributesPropertiesEntryModifiersEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *EntityUpdateAttributesPropertiesEntryModifiersEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *EntityUpdateAttributesPropertiesEntryModifiersEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var uuid pk.String
 	temp, err = uuid.ReadFrom(r)
@@ -27,9 +27,9 @@ func (s *EntityUpdateAttributesPropertiesEntryModifiersEntry) ReadFrom(r io.Read
 	if err != nil {
 		return n, err
 	}
-	s.Uuid = string(uuid)
+	p.Uuid = string(uuid)
 
-	temp, err = (*pk.Double)(&s.Amount).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Amount).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -41,14 +41,15 @@ func (s *EntityUpdateAttributesPropertiesEntryModifiersEntry) ReadFrom(r io.Read
 	if err != nil {
 		return n, err
 	}
-	s.Operation = operation
+	p.Operation = operation
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s EntityUpdateAttributesPropertiesEntryModifiersEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p EntityUpdateAttributesPropertiesEntryModifiersEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Uuid).WriteTo(w)
 	n += temp
@@ -80,12 +81,13 @@ type EntityUpdateAttributesPropertiesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *EntityUpdateAttributesPropertiesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *EntityUpdateAttributesPropertiesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Key
 
-	temp, err = (*pk.Double)(&s.Value).ReadFrom(r)
+	temp, err = (*pk.Double)(&p.Value).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -97,9 +99,9 @@ func (s *EntityUpdateAttributesPropertiesEntry) ReadFrom(r io.Reader) (n int64, 
 	if err != nil {
 		return n, err
 	}
-	s.Modifiers = make([]EntityUpdateAttributesPropertiesEntryModifiersEntry, modifiersCount)
+	p.Modifiers = make([]EntityUpdateAttributesPropertiesEntryModifiersEntry, modifiersCount)
 	for i := 0; i < int(modifiersCount); i++ {
-		temp, err = s.Modifiers[i].ReadFrom(r)
+		temp, err = p.Modifiers[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -110,8 +112,9 @@ func (s *EntityUpdateAttributesPropertiesEntry) ReadFrom(r io.Reader) (n int64, 
 }
 
 // WriteTo writes the data to the writer.
-func (s EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Key
 
@@ -127,7 +130,7 @@ func (s EntityUpdateAttributesPropertiesEntry) WriteTo(w io.Writer) (n int64, er
 		return n, err
 	}
 	for i := range p.Modifiers {
-		temp, err = s.Modifiers[i].WriteTo(w)
+		temp, err = p.Modifiers[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -152,6 +155,7 @@ func (*EntityUpdateAttributes) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityUpdateAttributes) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -159,7 +163,7 @@ func (p *EntityUpdateAttributes) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var propertiesCount pk.VarInt
 	temp, err = propertiesCount.ReadFrom(r)
@@ -167,9 +171,9 @@ func (p *EntityUpdateAttributes) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Properties = make([]EntityUpdateAttributesPropertiesEntry, propertiesCount)
+	p.Properties = make([]EntityUpdateAttributesPropertiesEntry, propertiesCount)
 	for i := 0; i < int(propertiesCount); i++ {
-		temp, err = s.Properties[i].ReadFrom(r)
+		temp, err = p.Properties[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -182,6 +186,7 @@ func (p *EntityUpdateAttributes) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityUpdateAttributes) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -195,7 +200,7 @@ func (p EntityUpdateAttributes) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Properties {
-		temp, err = s.Properties[i].WriteTo(w)
+		temp, err = p.Properties[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

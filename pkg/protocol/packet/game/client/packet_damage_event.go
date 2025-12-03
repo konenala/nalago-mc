@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // DamageEvent represents the Clientbound DamageEvent packet.
@@ -17,7 +16,7 @@ type DamageEvent struct {
 	SourceTypeId   int32 `mc:"VarInt"`
 	SourceCauseId  int32 `mc:"VarInt"`
 	SourceDirectId int32 `mc:"VarInt"`
-	SourcePosition *pk.Vec3d
+	SourcePosition *[3]float64
 }
 
 // PacketID returns the packet ID for this packet.
@@ -28,6 +27,7 @@ func (*DamageEvent) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -35,7 +35,7 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var sourceTypeId pk.VarInt
 	temp, err = sourceTypeId.ReadFrom(r)
@@ -43,7 +43,7 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SourceTypeId = int32(sourceTypeId)
+	p.SourceTypeId = int32(sourceTypeId)
 
 	var sourceCauseId pk.VarInt
 	temp, err = sourceCauseId.ReadFrom(r)
@@ -51,7 +51,7 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SourceCauseId = int32(sourceCauseId)
+	p.SourceCauseId = int32(sourceCauseId)
 
 	var sourceDirectId pk.VarInt
 	temp, err = sourceDirectId.ReadFrom(r)
@@ -59,7 +59,7 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.SourceDirectId = int32(sourceDirectId)
+	p.SourceDirectId = int32(sourceDirectId)
 
 	var hasSourcePosition pk.Boolean
 	temp, err = hasSourcePosition.ReadFrom(r)
@@ -68,13 +68,17 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	if hasSourcePosition {
-		var val pk.Vec3d
-		temp, err = (*pk.vec3f64)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
+		var val [3]float64
+		for i := 0; i < 3; i++ {
+			var d pk.Double
+			temp, err = d.ReadFrom(r)
+			n += temp
+			if err != nil {
+				return n, err
+			}
+			val[i] = float64(d)
 		}
-		s.SourcePosition = &val
+		p.SourcePosition = &val
 	}
 
 	return n, nil
@@ -83,6 +87,7 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p DamageEvent) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -114,10 +119,12 @@ func (p DamageEvent) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-		temp, err = s.SourcePosition.WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
+		for i := 0; i < 3; i++ {
+			temp, err = pk.Double(p.SourcePosition[i]).WriteTo(w)
+			n += temp
+			if err != nil {
+				return n, err
+			}
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)

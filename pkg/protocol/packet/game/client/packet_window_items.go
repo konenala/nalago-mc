@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
+	"io"
 )
 
 // WindowItems represents the Clientbound WindowItems packet.
@@ -15,8 +15,8 @@ import (
 type WindowItems struct {
 	WindowId    int8
 	StateId     int32 `mc:"VarInt"`
-	Items       []pk.Slot
-	CarriedItem pk.Slot
+	Items       []slot.Slot
+	CarriedItem slot.Slot
 }
 
 // PacketID returns the packet ID for this packet.
@@ -27,6 +27,7 @@ func (*WindowItems) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *WindowItems) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read WindowId (ContainerID)
 
@@ -36,7 +37,7 @@ func (p *WindowItems) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.StateId = int32(stateId)
+	p.StateId = int32(stateId)
 
 	var itemsCount pk.VarInt
 	temp, err = itemsCount.ReadFrom(r)
@@ -44,16 +45,16 @@ func (p *WindowItems) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Items = make([]pk.Slot, itemsCount)
+	p.Items = make([]slot.Slot, itemsCount)
 	for i := 0; i < int(itemsCount); i++ {
-		temp, err = (*pk.Slot)(&s.Items[i]).ReadFrom(r)
+		temp, err = (*slot.Slot)(&p.Items[i]).ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	}
 
-	temp, err = (*pk.Slot)(&s.CarriedItem).ReadFrom(r)
+	temp, err = (*slot.Slot)(&p.CarriedItem).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -65,6 +66,7 @@ func (p *WindowItems) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p WindowItems) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write WindowId (ContainerID)
 
@@ -80,14 +82,14 @@ func (p WindowItems) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Items {
-		temp, err = s.Items[i].WriteTo(w)
+		temp, err = p.Items[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
 	}
 
-	temp, err = s.CarriedItem.WriteTo(w)
+	temp, err = p.CarriedItem.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

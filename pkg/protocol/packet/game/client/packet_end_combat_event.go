@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EndCombatEvent represents the Clientbound EndCombatEvent packet.
@@ -24,6 +23,7 @@ func (*EndCombatEvent) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EndCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var duration pk.VarInt
 	temp, err = duration.ReadFrom(r)
@@ -31,7 +31,7 @@ func (p *EndCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Duration = int32(duration)
+	p.Duration = int32(duration)
 
 	return n, nil
 }
@@ -39,6 +39,7 @@ func (p *EndCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EndCombatEvent) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Duration).WriteTo(w)
 	n += temp

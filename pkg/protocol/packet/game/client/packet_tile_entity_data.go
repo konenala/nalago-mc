@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // TileEntityData represents the Clientbound TileEntityData packet.
@@ -15,7 +14,7 @@ import (
 type TileEntityData struct {
 	Location pk.Position
 	Action   int32 `mc:"VarInt"`
-	NbtData  *pk.NBT
+	NbtData  *pk.NBTField
 }
 
 // PacketID returns the packet ID for this packet.
@@ -26,8 +25,9 @@ func (*TileEntityData) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *TileEntityData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Position)(&s.Location).ReadFrom(r)
+	temp, err = (*pk.Position)(&p.Location).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -39,7 +39,7 @@ func (p *TileEntityData) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Action = int32(action)
+	p.Action = int32(action)
 
 	// TODO: Read NbtData (anonOptionalNbt)
 
@@ -49,8 +49,9 @@ func (p *TileEntityData) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p TileEntityData) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Location.WriteTo(w)
+	temp, err = p.Location.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

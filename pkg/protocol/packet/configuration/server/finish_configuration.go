@@ -1,6 +1,6 @@
 package server
 
-import "git.konjactw.dev/falloutBot/go-mc/data/packetid"
+import "git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 
 //codec:gen
 type ConfigFinishConfiguration struct {

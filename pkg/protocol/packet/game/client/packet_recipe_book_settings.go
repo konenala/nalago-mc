@@ -4,10 +4,8 @@
 package client
 
 import (
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // RecipeBookSettings represents the Clientbound RecipeBookSettings packet.
@@ -27,14 +25,15 @@ func (*RecipeBookSettings) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBookSettings) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Read Crafting (RecipeBookSetting)
+	// TODO: Read Crafting (unsupported type RecipeBookSetting)
 
-	// TODO: Read Furnace (RecipeBookSetting)
+	// TODO: Read Furnace (unsupported type RecipeBookSetting)
 
-	// TODO: Read Blast (RecipeBookSetting)
+	// TODO: Read Blast (unsupported type RecipeBookSetting)
 
-	// TODO: Read Smoker (RecipeBookSetting)
+	// TODO: Read Smoker (unsupported type RecipeBookSetting)
 
 	return n, nil
 }
@@ -42,14 +41,15 @@ func (p *RecipeBookSettings) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p RecipeBookSettings) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Write Crafting (RecipeBookSetting)
+	// TODO: Write Crafting (unsupported type RecipeBookSetting)
 
-	// TODO: Write Furnace (RecipeBookSetting)
+	// TODO: Write Furnace (unsupported type RecipeBookSetting)
 
-	// TODO: Write Blast (RecipeBookSetting)
+	// TODO: Write Blast (unsupported type RecipeBookSetting)
 
-	// TODO: Write Smoker (RecipeBookSetting)
+	// TODO: Write Smoker (unsupported type RecipeBookSetting)
 
 	return n, nil
 }

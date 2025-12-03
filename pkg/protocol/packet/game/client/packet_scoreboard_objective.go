@@ -4,10 +4,10 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"fmt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ScoreboardObjective represents the Clientbound ScoreboardObjective packet.
@@ -15,13 +15,25 @@ import (
 type ScoreboardObjective struct {
 	Name   string `mc:"String"`
 	Action int8
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> anonymousNbt
+	//   2 -> anonymousNbt
+	//   default -> void
 	DisplayText interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> varint
+	//   2 -> varint
+	//   default -> void
 	Type interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> [option varint]
+	//   2 -> [option varint]
+	//   default -> void
 	NumberFormat interface{}
-	// TODO: Switch type - conditional field based on other field value
+	// Switch 基於 Action：
+	//   0 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
+	//   2 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
+	//   default -> void
 	Styling interface{}
 }
 
@@ -33,6 +45,7 @@ func (*ScoreboardObjective) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var name pk.String
 	temp, err = name.ReadFrom(r)
@@ -40,7 +53,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Name = string(name)
+	p.Name = string(name)
 
 	var action int8
 	temp, err = (*pk.Byte)(&action).ReadFrom(r)
@@ -48,15 +61,63 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Action = action
+	p.Action = action
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.DisplayText = val
+	case 2:
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.DisplayText = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	case 0:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Type = val
+	case 2:
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		val = int32(elem)
+		p.Type = val
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	default:
+		// 無對應負載
+	}
 
-	// TODO: Implement switch field read
+	switch p.Action {
+	default:
+		// 無對應負載
+	}
 
 	return n, nil
 }
@@ -64,6 +125,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ScoreboardObjective) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Name).WriteTo(w)
 	n += temp
@@ -77,13 +139,37 @@ func (p ScoreboardObjective) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Implement switch field write
+	switch v := p.DisplayText.(type) {
+	case pk.NBTField:
+		temp, err = pk.NBTField(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for DisplayText: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Type.(type) {
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	default:
+		return n, fmt.Errorf("unsupported switch type for Type: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.NumberFormat.(type) {
+	default:
+		return n, fmt.Errorf("unsupported switch type for NumberFormat: %T", v)
+	}
 
-	// TODO: Implement switch field write
+	switch v := p.Styling.(type) {
+	default:
+		return n, fmt.Errorf("unsupported switch type for Styling: %T", v)
+	}
 
 	return n, nil
 }

@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // DeclareRecipesRecipesEntry is a sub-structure used in the packet.
@@ -17,8 +16,9 @@ type DeclareRecipesRecipesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *DeclareRecipesRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *DeclareRecipesRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var name pk.String
 	temp, err = name.ReadFrom(r)
@@ -26,7 +26,7 @@ func (s *DeclareRecipesRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) 
 	if err != nil {
 		return n, err
 	}
-	s.Name = string(name)
+	p.Name = string(name)
 
 	var itemsCount pk.VarInt
 	temp, err = itemsCount.ReadFrom(r)
@@ -34,7 +34,7 @@ func (s *DeclareRecipesRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) 
 	if err != nil {
 		return n, err
 	}
-	s.Items = make([]int32, itemsCount)
+	p.Items = make([]int32, itemsCount)
 	for i := 0; i < int(itemsCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -42,15 +42,16 @@ func (s *DeclareRecipesRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) 
 		if err != nil {
 			return n, err
 		}
-		s.Items[i] = int32(elem)
+		p.Items[i] = int32(elem)
 	}
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s DeclareRecipesRecipesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p DeclareRecipesRecipesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.String(p.Name).WriteTo(w)
 	n += temp
@@ -81,23 +82,25 @@ type DeclareRecipesStoneCutterRecipesEntry struct {
 }
 
 // ReadFrom reads the data from the reader.
-func (s *DeclareRecipesStoneCutterRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) {
+func (p *DeclareRecipesStoneCutterRecipesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Read Input (IDSet)
+	// TODO: Read Input (unsupported type IDSet)
 
-	// TODO: Read SlotDisplay (SlotDisplay)
+	// TODO: Read SlotDisplay (unsupported type SlotDisplay)
 
 	return n, nil
 }
 
 // WriteTo writes the data to the writer.
-func (s DeclareRecipesStoneCutterRecipesEntry) WriteTo(w io.Writer) (n int64, err error) {
+func (p DeclareRecipesStoneCutterRecipesEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	// TODO: Write Input (IDSet)
+	// TODO: Write Input (unsupported type IDSet)
 
-	// TODO: Write SlotDisplay (SlotDisplay)
+	// TODO: Write SlotDisplay (unsupported type SlotDisplay)
 
 	return n, nil
 }
@@ -117,6 +120,7 @@ func (*DeclareRecipes) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *DeclareRecipes) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var recipesCount pk.VarInt
 	temp, err = recipesCount.ReadFrom(r)
@@ -124,9 +128,9 @@ func (p *DeclareRecipes) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Recipes = make([]DeclareRecipesRecipesEntry, recipesCount)
+	p.Recipes = make([]DeclareRecipesRecipesEntry, recipesCount)
 	for i := 0; i < int(recipesCount); i++ {
-		temp, err = s.Recipes[i].ReadFrom(r)
+		temp, err = p.Recipes[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -139,9 +143,9 @@ func (p *DeclareRecipes) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.StoneCutterRecipes = make([]DeclareRecipesStoneCutterRecipesEntry, stoneCutterRecipesCount)
+	p.StoneCutterRecipes = make([]DeclareRecipesStoneCutterRecipesEntry, stoneCutterRecipesCount)
 	for i := 0; i < int(stoneCutterRecipesCount); i++ {
-		temp, err = s.StoneCutterRecipes[i].ReadFrom(r)
+		temp, err = p.StoneCutterRecipes[i].ReadFrom(r)
 		n += temp
 		if err != nil {
 			return n, err
@@ -154,6 +158,7 @@ func (p *DeclareRecipes) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p DeclareRecipes) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(len(p.Recipes)).WriteTo(w)
 	n += temp
@@ -161,7 +166,7 @@ func (p DeclareRecipes) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.Recipes {
-		temp, err = s.Recipes[i].WriteTo(w)
+		temp, err = p.Recipes[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -174,7 +179,7 @@ func (p DeclareRecipes) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 	for i := range p.StoneCutterRecipes {
-		temp, err = s.StoneCutterRecipes[i].WriteTo(w)
+		temp, err = p.StoneCutterRecipes[i].WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

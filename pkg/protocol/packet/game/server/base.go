@@ -2,7 +2,7 @@
 package server
 
 import (
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
 )
 

@@ -2,7 +2,7 @@ package client
 
 import (
 	"git.konjactw.dev/falloutBot/go-mc/chat"
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 )
 
 //codec:gen

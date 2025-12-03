@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // GameStateChange represents the Clientbound GameStateChange packet.
@@ -26,10 +25,11 @@ func (*GameStateChange) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *GameStateChange) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Read Reason
 
-	temp, err = (*pk.Float)(&s.GameMode).ReadFrom(r)
+	temp, err = (*pk.Float)(&p.GameMode).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -41,6 +41,7 @@ func (p *GameStateChange) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p GameStateChange) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	// TODO: Write Reason
 

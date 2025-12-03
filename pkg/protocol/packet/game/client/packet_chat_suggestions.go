@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ChatSuggestions represents the Clientbound ChatSuggestions packet.
@@ -25,6 +24,7 @@ func (*ChatSuggestions) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var action pk.VarInt
 	temp, err = action.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Action = int32(action)
+	p.Action = int32(action)
 
 	var entriesCount pk.VarInt
 	temp, err = entriesCount.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Entries = make([]string, entriesCount)
+	p.Entries = make([]string, entriesCount)
 	for i := 0; i < int(entriesCount); i++ {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
@@ -57,6 +57,7 @@ func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p ChatSuggestions) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Action).WriteTo(w)
 	n += temp

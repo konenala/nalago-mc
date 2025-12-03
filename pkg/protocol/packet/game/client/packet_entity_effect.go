@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // EntityEffect represents the Clientbound EntityEffect packet.
@@ -28,6 +27,7 @@ func (*EntityEffect) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
@@ -35,7 +35,7 @@ func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EntityId = int32(entityId)
+	p.EntityId = int32(entityId)
 
 	var effectId pk.VarInt
 	temp, err = effectId.ReadFrom(r)
@@ -43,7 +43,7 @@ func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.EffectId = int32(effectId)
+	p.EffectId = int32(effectId)
 
 	var amplifier pk.VarInt
 	temp, err = amplifier.ReadFrom(r)
@@ -51,7 +51,7 @@ func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Amplifier = int32(amplifier)
+	p.Amplifier = int32(amplifier)
 
 	var duration pk.VarInt
 	temp, err = duration.ReadFrom(r)
@@ -59,9 +59,15 @@ func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	if err != nil {
 		return n, err
 	}
-	s.Duration = int32(duration)
+	p.Duration = int32(duration)
 
-	// TODO: Read Flags (u8)
+	var flags pk.UnsignedByte
+	temp, err = flags.ReadFrom(r)
+	n += temp
+	if err != nil {
+		return n, err
+	}
+	p.Flags = uint8(flags)
 
 	return n, nil
 }
@@ -69,6 +75,7 @@ func (p *EntityEffect) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p EntityEffect) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
@@ -94,7 +101,11 @@ func (p EntityEffect) WriteTo(w io.Writer) (n int64, err error) {
 		return n, err
 	}
 
-	// TODO: Write Flags (u8)
+	temp, err = pk.UnsignedByte(p.Flags).WriteTo(w)
+	n += temp
+	if err != nil {
+		return n, err
+	}
 
 	return n, nil
 }

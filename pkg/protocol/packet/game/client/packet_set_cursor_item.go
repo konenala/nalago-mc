@@ -4,16 +4,15 @@
 package client
 
 import (
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
 	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // SetCursorItem represents the Clientbound SetCursorItem packet.
 
 type SetCursorItem struct {
-	Contents pk.Slot
+	Contents slot.Slot
 }
 
 // PacketID returns the packet ID for this packet.
@@ -24,8 +23,9 @@ func (*SetCursorItem) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SetCursorItem) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Slot)(&s.Contents).ReadFrom(r)
+	temp, err = (*slot.Slot)(&p.Contents).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -37,8 +37,9 @@ func (p *SetCursorItem) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SetCursorItem) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = s.Contents.WriteTo(w)
+	temp, err = p.Contents.WriteTo(w)
 	n += temp
 	if err != nil {
 		return n, err

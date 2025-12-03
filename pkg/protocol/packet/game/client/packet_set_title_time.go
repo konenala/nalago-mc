@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // SetTitleTime represents the Clientbound SetTitleTime packet.
@@ -26,20 +25,21 @@ func (*SetTitleTime) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *SetTitleTime) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
-	temp, err = (*pk.Int)(&s.FadeIn).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.FadeIn).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.Stay).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.Stay).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
 	}
 
-	temp, err = (*pk.Int)(&s.FadeOut).ReadFrom(r)
+	temp, err = (*pk.Int)(&p.FadeOut).ReadFrom(r)
 	n += temp
 	if err != nil {
 		return n, err
@@ -51,6 +51,7 @@ func (p *SetTitleTime) ReadFrom(r io.Reader) (n int64, err error) {
 // WriteTo writes the packet data to the writer.
 func (p SetTitleTime) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.Int(p.FadeIn).WriteTo(w)
 	n += temp

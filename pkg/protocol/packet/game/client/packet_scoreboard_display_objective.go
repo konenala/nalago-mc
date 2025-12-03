@@ -4,10 +4,9 @@
 package client
 
 import (
-	"io"
-
-	"git.konjactw.dev/falloutBot/go-mc/data/packetid"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
+	"io"
 )
 
 // ScoreboardDisplayObjective represents the Clientbound ScoreboardDisplayObjective packet.
@@ -25,6 +24,7 @@ func (*ScoreboardDisplayObjective) PacketID() packetid.ClientboundPacketID {
 // ReadFrom reads the packet data from the reader.
 func (p *ScoreboardDisplayObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	var position pk.VarInt
 	temp, err = position.ReadFrom(r)
@@ -32,7 +32,7 @@ func (p *ScoreboardDisplayObjective) ReadFrom(r io.Reader) (n int64, err error) 
 	if err != nil {
 		return n, err
 	}
-	s.Position = int32(position)
+	p.Position = int32(position)
 
 	var name pk.String
 	temp, err = name.ReadFrom(r)
@@ -40,7 +40,7 @@ func (p *ScoreboardDisplayObjective) ReadFrom(r io.Reader) (n int64, err error) 
 	if err != nil {
 		return n, err
 	}
-	s.Name = string(name)
+	p.Name = string(name)
 
 	return n, nil
 }
@@ -48,6 +48,7 @@ func (p *ScoreboardDisplayObjective) ReadFrom(r io.Reader) (n int64, err error) 
 // WriteTo writes the packet data to the writer.
 func (p ScoreboardDisplayObjective) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
+	_ = temp
 
 	temp, err = pk.VarInt(p.Position).WriteTo(w)
 	n += temp
