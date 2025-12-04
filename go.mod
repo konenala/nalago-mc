@@ -17,4 +17,7 @@ require (
 	golang.org/x/net v0.47.0
 )
 
-replace github.com/konjacbot/prismarine-go => github.com/konenala/prismarine-go v0.0.0-20251203015614-890b84de5277
+replace (
+	git.konjactw.dev/falloutBot/go-mc => github.com/konenala/go-mc-core-nala21 v0.0.0-20251204110953-25fd1266dbfa
+	github.com/konjacbot/prismarine-go => github.com/konenala/prismarine-go v0.0.0-20251203015614-890b84de5277
+)

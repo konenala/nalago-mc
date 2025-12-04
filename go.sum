@@ -1,9 +1,9 @@
-git.konjactw.dev/falloutBot/go-mc v0.0.0-20250827122940-185020e31ce8 h1:h/JX0gCWAE2QY6e1zgogijv7+OKY6YpZvXK/6zLYLJE=
-git.konjactw.dev/falloutBot/go-mc v0.0.0-20250827122940-185020e31ce8/go.mod h1:/KAQOP2x0pA8xEQuNkQa4d1TMKoyfLvUKmFqUJ8keDc=
 github.com/go-gl/mathgl v1.2.0 h1:v2eOj/y1B2afDxF6URV1qCYmo1KW08lAMtTbOn3KXCY=
 github.com/go-gl/mathgl v1.2.0/go.mod h1:pf9+b5J3LFP7iZ4XXaVzZrCle0Q/vNpB/vDe5+3ulRE=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/konenala/go-mc-core-nala21 v0.0.0-20251204110953-25fd1266dbfa h1:dfvp5QgB+VZInEly69dmXD0WK0GaUYzqPx1o+4M/rbc=
+github.com/konenala/go-mc-core-nala21 v0.0.0-20251204110953-25fd1266dbfa/go.mod h1:/KAQOP2x0pA8xEQuNkQa4d1TMKoyfLvUKmFqUJ8keDc=
 github.com/konenala/prismarine-go v0.0.0-20251203015614-890b84de5277 h1:aDuo0EYui2mzB79xW+Tzp2ezG7khJQrzjdKx+EXghGw=
 github.com/konenala/prismarine-go v0.0.0-20251203015614-890b84de5277/go.mod h1:YM0yaMSzIVwFMnoMN22ggNv01LHRrswWACqpQhzRcIc=
 golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39 h1:DHNhtq3sNNzrvduZZIiFyXWOL9IWaDPHqTnLJp+rCBY=

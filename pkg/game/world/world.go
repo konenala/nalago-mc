@@ -5,6 +5,7 @@ import (
 	"container/list"
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 
 	"github.com/go-gl/mathgl/mgl64"
@@ -12,6 +13,7 @@ import (
 
 	"git.konjactw.dev/falloutBot/go-mc/level"
 	"git.konjactw.dev/falloutBot/go-mc/level/block"
+	"git.konjactw.dev/falloutBot/go-mc/nbt"
 	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 
 	"git.konjactw.dev/patyhank/minego/pkg/bot"
@@ -19,30 +21,34 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
 	cp "git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 
-	"git.konjactw.dev/falloutBot/go-mc/nbt"
 	"github.com/google/uuid"
 )
 
 type World struct {
 	c bot.Client
 
-	columns  map[level.ChunkPos]*level.Chunk
-	entities map[int32]*Entity
+	columns             map[level.ChunkPos]*level.Chunk
+	entities            map[int32]*Entity
+	parsedBlockEntities map[protocol.Position]level.BlockEntityData
 
 	entityLock sync.Mutex
 	chunkLock  sync.Mutex
+	beLock     sync.Mutex
 }
 
 func NewWorld(c bot.Client) *World {
 	w := &World{
-		c:        c,
-		columns:  make(map[level.ChunkPos]*level.Chunk),
-		entities: make(map[int32]*Entity),
+		c:                   c,
+		columns:             make(map[level.ChunkPos]*level.Chunk),
+		entities:            make(map[int32]*Entity),
+		parsedBlockEntities: make(map[protocol.Position]level.BlockEntityData),
 	}
 
 	bot.AddHandler(c, func(ctx context.Context, p *cp.MapChunk) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
+		w.beLock.Lock()
+		defer w.beLock.Unlock()
 
 		pos2d := level.ChunkPos{p.X, p.Z}
 		chunk := level.EmptyChunk(24)
@@ -54,7 +60,7 @@ func NewWorld(c bot.Client) *World {
 				Data: toLongSlice(hm.Data),
 			})
 		}
-		// 方塊實體（從 NBT 讀取絕對 x/z）
+		// 方塊實體
 		for _, be := range p.BlockEntities {
 			var raw map[string]interface{}
 			buf := &bytes.Buffer{}
@@ -62,24 +68,34 @@ func NewWorld(c bot.Client) *World {
 			dataBytes := buf.Bytes()
 			if err := nbt.Unmarshal(dataBytes, &raw); err == nil {
 				var x, z int32
+				var y int16
 				switch v := raw["x"].(type) {
 				case int32:
 					x = v
 				case int:
 					x = int32(v)
 				}
+				y = be.Y
 				switch v := raw["z"].(type) {
 				case int32:
 					z = v
 				case int:
 					z = int32(v)
 				}
-				chunk.BlockEntity = append(chunk.BlockEntity, level.BlockEntity{
+				beType := block.EntityType(be.Type)
+				lb := level.BlockEntity{
 					XZ:   int8(((x & 0xF) << 4) | (z & 0xF)),
-					Y:    be.Y,
-					Type: block.EntityType(be.Type),
+					Y:    y,
+					Type: beType,
 					Data: nbt.RawMessage{Type: 0, Data: dataBytes},
-				})
+				}
+				chunk.BlockEntity = append(chunk.BlockEntity, lb)
+
+				// 解析 NBT 資料
+				if parsedData, err := parseBlockEntityData(beType, lb.Data); err == nil {
+					pos := protocol.Position{int32(x), int32(y), int32(z)}
+					w.parsedBlockEntities[pos] = parsedData
+				}
 			}
 		}
 		// 光照
@@ -113,8 +129,22 @@ func NewWorld(c bot.Client) *World {
 	bot.AddHandler(c, func(ctx context.Context, p *cp.UnloadChunk) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
+		w.beLock.Lock()
+		defer w.beLock.Unlock()
 
 		pos2d := level.ChunkPos{p.ChunkX, p.ChunkZ}
+
+		// 移除被卸載 chunk 中的 block entities
+		if chunk, ok := w.columns[pos2d]; ok {
+			for _, be := range chunk.BlockEntity {
+				x, z := be.UnpackXZ()
+				posX := p.ChunkX*16 + int32(x)
+				posZ := p.ChunkZ*16 + int32(z)
+				pos := protocol.Position{posX, int32(be.Y), posZ}
+				delete(w.parsedBlockEntities, pos)
+			}
+		}
+
 		delete(w.columns, pos2d)
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *cp.Respawn) {
@@ -122,6 +152,7 @@ func NewWorld(c bot.Client) *World {
 		defer w.chunkLock.Unlock()
 
 		w.columns = make(map[level.ChunkPos]*level.Chunk)
+		w.parsedBlockEntities = make(map[protocol.Position]level.BlockEntityData)
 	})
 
 	bot.AddHandler(c, func(ctx context.Context, p *cp.SpawnEntity) {
@@ -282,6 +313,46 @@ func NewWorld(c bot.Client) *World {
 	})
 
 	return w
+}
+
+func (w *World) GetBlockEntity(pos protocol.Position) (level.BlockEntityData, bool) {
+	w.beLock.Lock()
+	defer w.beLock.Unlock()
+	be, ok := w.parsedBlockEntities[pos]
+	return be, ok
+}
+
+func parseBlockEntityData(entityType block.EntityType, data nbt.RawMessage) (level.BlockEntityData, error) {
+	var v level.BlockEntityData
+	var err error
+
+	dataBytes := data.Data
+
+	if int(entityType) >= len(block.EntityList) {
+		return nil, fmt.Errorf("unknown block entity type: %d", entityType)
+	}
+	id := block.EntityList[entityType].ID()
+
+	switch id {
+	case "minecraft:sign", "minecraft:hanging_sign":
+		var sign level.SignEntity
+		err = nbt.Unmarshal(dataBytes, &sign)
+		v = sign
+	case "minecraft:chest", "minecraft:trapped_chest":
+		var chest level.ChestEntity
+		err = nbt.Unmarshal(dataBytes, &chest)
+		v = chest
+	default:
+		var base level.BaseBlockEntity
+		err = nbt.Unmarshal(dataBytes, &base)
+		base.RawData = data
+		v = base
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("nbt unmarshal error for %s: %w", id, err)
+	}
+	return v, nil
 }
 
 func (w *World) GetBlock(pos protocol.Position) (block.Block, error) {
