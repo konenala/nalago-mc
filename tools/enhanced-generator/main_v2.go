@@ -85,23 +85,7 @@ var structCounter = make(map[string]int)
 var structFlagMaps = make(map[string]map[string]map[string]int) // struct -> field -> flagName->pos
 var structParent = make(map[string]string)
 var structFields = make(map[string][]PacketField) // struct -> fields
-var skipPackets = map[string]bool{
-	// client manual implementations
-	"packet_player_chat": true,
-	// server manual implementations
-	"packet_chat_command_signed": true,
-	"packet_chat":                true,
-	"packet_chat_ack":            true,
-	"packet_move_player_pos":     true,
-	"packet_move_player_pos_rot": true,
-	"packet_move_player_rot":     true,
-	"packet_player_action":       true,
-	"packet_use_item_on":         true,
-	"packet_use_item":            true,
-	"packet_container_click":     true,
-	"packet_container_close":     true,
-	"packet_keep_alive":          true,
-}
+var skipPackets = map[string]bool{}
 
 func main() {
 	flag.Parse()
