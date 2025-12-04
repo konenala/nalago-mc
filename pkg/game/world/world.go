@@ -345,7 +345,6 @@ func parseBlockEntityData(entityType block.EntityType, data nbt.RawMessage) (lev
 	default:
 		var base level.BaseBlockEntity
 		err = nbt.Unmarshal(dataBytes, &base)
-		base.RawData = data
 		v = base
 	}
 

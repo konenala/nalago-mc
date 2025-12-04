@@ -8,5 +8,5 @@ import (
 // the parsed NBT data in a structured format.
 type ParsedBlockEntity struct {
 	level.BlockEntity
-	ParsedData level.BlockEntity
+	ParsedData level.BlockEntityData
 }
