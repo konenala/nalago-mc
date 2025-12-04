@@ -34,14 +34,14 @@ func (p *ChangeGamemode) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 2:
-		p.Mode = "adventure"
-	case 3:
-		p.Mode = "spectator"
 	case 0:
 		p.Mode = "survival"
 	case 1:
 		p.Mode = "creative"
+	case 2:
+		p.Mode = "adventure"
+	case 3:
+		p.Mode = "spectator"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Mode", mapperVal)
 	}
@@ -55,18 +55,6 @@ func (p ChangeGamemode) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Mode {
-	case "adventure":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "spectator":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "survival":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
@@ -75,6 +63,18 @@ func (p ChangeGamemode) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "creative":
 		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "adventure":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "spectator":
+		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

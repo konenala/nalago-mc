@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ChunkBatchFinished represents the Clientbound ChunkBatchFinished packet.
 
@@ -20,6 +21,7 @@ func (*ChunkBatchFinished) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundChunkBatchFinished
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ChunkBatchFinished) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *ChunkBatchFinished) ReadFrom(r io.Reader) (n int64, err error) {
 	var batchSize pk.VarInt
 	temp, err = batchSize.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BatchSize = int32(batchSize)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p ChunkBatchFinished) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.BatchSize).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundChunkBatchFinished, func() ClientboundPacket {
 		return &ChunkBatchFinished{}
 	})
 }
+

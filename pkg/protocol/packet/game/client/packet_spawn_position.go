@@ -4,23 +4,25 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SpawnPosition represents the Clientbound SpawnPosition packet.
 
 type SpawnPosition struct {
 	// Bitfield - see protocol spec for bit layout
 	Location int32
-	Angle    float32
+	Angle float32
 }
 
 // PacketID returns the packet ID for this packet.
 func (*SpawnPosition) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSpawnPosition
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SpawnPosition) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,15 +31,11 @@ func (p *SpawnPosition) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Angle).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -49,21 +47,19 @@ func (p SpawnPosition) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Angle).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSpawnPosition, func() ClientboundPacket {
 		return &SpawnPosition{}
 	})
 }
+

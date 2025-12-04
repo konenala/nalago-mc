@@ -4,15 +4,16 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ResourcePackReceive represents the Serverbound ResourcePackReceive packet.
 
 type ResourcePackReceive struct {
-	Uuid   pk.UUID
+	Uuid pk.UUID
 	Result int32 `mc:"VarInt"`
 }
 
@@ -21,6 +22,7 @@ func (*ResourcePackReceive) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundResourcePackReceive
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ResourcePackReceive) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,16 +30,12 @@ func (p *ResourcePackReceive) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.UUID)(&p.Uuid).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var result pk.VarInt
 	temp, err = result.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Result = int32(result)
 
 	return n, nil
@@ -50,21 +48,19 @@ func (p ResourcePackReceive) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Uuid.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Result).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundResourcePackReceive, func() ServerboundPacket {
 		return &ResourcePackReceive{}
 	})
 }
+

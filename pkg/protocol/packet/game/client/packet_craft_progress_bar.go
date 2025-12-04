@@ -4,23 +4,25 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // CraftProgressBar represents the Clientbound CraftProgressBar packet.
 
 type CraftProgressBar struct {
 	WindowId int32 `mc:"VarInt"`
 	Property int16
-	Value    int16
+	Value int16
 }
 
 // PacketID returns the packet ID for this packet.
 func (*CraftProgressBar) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundCraftProgressBar
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *CraftProgressBar) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,22 +32,16 @@ func (p *CraftProgressBar) ReadFrom(r io.Reader) (n int64, err error) {
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WindowId = int32(windowId)
 
 	temp, err = (*pk.Short)(&p.Property).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Short)(&p.Value).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -57,27 +53,23 @@ func (p CraftProgressBar) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Short(p.Property).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Short(p.Value).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundCraftProgressBar, func() ClientboundPacket {
 		return &CraftProgressBar{}
 	})
 }
+

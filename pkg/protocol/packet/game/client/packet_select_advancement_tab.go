@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SelectAdvancementTab represents the Clientbound SelectAdvancementTab packet.
 
@@ -20,6 +21,7 @@ func (*SelectAdvancementTab) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSelectAdvancementTab
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *SelectAdvancementTab) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,17 +30,13 @@ func (p *SelectAdvancementTab) ReadFrom(r io.Reader) (n int64, err error) {
 	var hasId pk.Boolean
 	temp, err = hasId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasId {
 		var val string
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
 		p.Id = &val
 	}
@@ -54,27 +52,23 @@ func (p SelectAdvancementTab) WriteTo(w io.Writer) (n int64, err error) {
 	if p.Id != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.String(*p.Id).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSelectAdvancementTab, func() ClientboundPacket {
 		return &SelectAdvancementTab{}
 	})
 }
+

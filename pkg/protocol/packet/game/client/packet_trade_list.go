@@ -5,10 +5,10 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // TradeListTradesEntryInputItem1Temp is a sub-structure used in the packet.
@@ -16,105 +16,106 @@ type TradeListTradesEntryInputItem1Temp struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
-	//   glider -> void
-	//   dyed_color -> i32
-	//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
-	//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
-	//   rabbit/variant -> varint
-	//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   map_id -> varint
-	//   map_decorations -> anonymousNbt
-	//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
-	//   wolf/collar -> varint
-	//   llama/variant -> varint
-	//   cat/collar -> varint
-	//   repair_cost -> varint
-	//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   tooltip_style -> string
-	//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   potion_duration_scale -> f32
-	//   recipes -> anonymousNbt
-	//   pig/variant -> varint
-	//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
-	//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
-	//   axolotl/variant -> varint
-	//   sheep/color -> varint
-	//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   enchantment_glint_override -> bool
-	//   intangible_projectile -> void
-	//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
-	//   item_model -> string
-	//   repairable -> [container [map[name:items type:IDSet]]]
-	//   provides_banner_patterns -> string
-	//   base_color -> varint
-	//   lock -> anonymousNbt
-	//   max_damage -> varint
-	//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
-	//   tropical_fish/pattern -> varint
-	//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
-	//   bucket_entity_data -> anonymousNbt
-	//   creative_slot_lock -> void
-	//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
-	//   map_post_processing -> varint
-	//   mooshroom/variant -> varint
-	//   frog/variant -> varint
-	//   entity_data -> anonymousNbt
-	//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
-	//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
-	//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
-	//   map_color -> i32
-	//   break_sound -> ItemSoundHolder
-	//   shulker/color -> varint
-	//   lore -> [array map[countType:varint type:anonymousNbt]]
-	//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
-	//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
-	//   ominous_bottle_amplifier -> varint
-	//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
-	//   cat/variant -> varint
-	//   custom_data -> anonymousNbt
-	//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
-	//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
-	//   wolf/sound_variant -> varint
-	//   tropical_fish/base_color -> varint
-	//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
-	//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
-	//   container_loot -> anonymousNbt
-	//   custom_name -> anonymousNbt
-	//   damage_resistant -> string
-	//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
-	//   block_entity_data -> anonymousNbt
-	//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
-	//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
-	//   salmon/size -> varint
-	//   item_name -> anonymousNbt
-	//   use_remainder -> Slot
-	//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
-	//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
-	//   firework_explosion -> ItemFireworkExplosion
-	//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
-	//   fox/variant -> varint
-	//   tropical_fish/pattern_color -> varint
-	//   max_stack_size -> varint
-	//   damage -> varint
-	//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
-	//   villager/variant -> varint
-	//   parrot/variant -> varint
-	//   cow/variant -> varint
-	//   horse/variant -> varint
-	//   unbreakable -> void
-	//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
-	//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
-	//   enchantable -> varint
-	//   debug_stick_state -> anonymousNbt
-	//   note_block_sound -> string
-	//   wolf/variant -> varint
-	//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
+//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
+//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
+//   lock -> anonymousNbt
+//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
+//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
+//   dyed_color -> i32
+//   potion_duration_scale -> f32
+//   ominous_bottle_amplifier -> varint
+//   parrot/variant -> varint
+//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
+//   custom_name -> anonymousNbt
+//   item_model -> string
+//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
+//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
+//   debug_stick_state -> anonymousNbt
+//   recipes -> anonymousNbt
+//   container_loot -> anonymousNbt
+//   max_stack_size -> varint
+//   lore -> [array map[countType:varint type:anonymousNbt]]
+//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   entity_data -> anonymousNbt
+//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
+//   firework_explosion -> ItemFireworkExplosion
+//   base_color -> varint
+//   wolf/sound_variant -> varint
+//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   map_id -> varint
+//   fox/variant -> varint
+//   frog/variant -> varint
+//   shulker/color -> varint
+//   max_damage -> varint
+//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
+//   bucket_entity_data -> anonymousNbt
+//   cat/variant -> varint
+//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
+//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
+//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
+//   note_block_sound -> string
+//   villager/variant -> varint
+//   cow/variant -> varint
+//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
+//   intangible_projectile -> void
+//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
+//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
+//   break_sound -> ItemSoundHolder
+//   wolf/collar -> varint
+//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
+//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
+//   block_entity_data -> anonymousNbt
+//   tropical_fish/pattern -> varint
+//   enchantable -> varint
+//   repairable -> [container [map[name:items type:IDSet]]]
+//   map_decorations -> anonymousNbt
+//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
+//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
+//   llama/variant -> varint
+//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   tooltip_style -> string
+//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
+//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
+//   tropical_fish/pattern_color -> varint
+//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
+//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
+//   glider -> void
+//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   provides_banner_patterns -> string
+//   salmon/size -> varint
+//   axolotl/variant -> varint
+//   cat/collar -> varint
+//   custom_data -> anonymousNbt
+//   enchantment_glint_override -> bool
+//   damage_resistant -> string
+//   sheep/color -> varint
+//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
+//   repair_cost -> varint
+//   use_remainder -> Slot
+//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
+//   wolf/variant -> varint
+//   tropical_fish/base_color -> varint
+//   mooshroom/variant -> varint
+//   pig/variant -> varint
+//   damage -> varint
+//   unbreakable -> void
+//   item_name -> anonymousNbt
+//   map_color -> i32
+//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
+//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
+//   horse/variant -> varint
+//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   creative_slot_lock -> void
+//   map_post_processing -> varint
+//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
+//   rabbit/variant -> varint
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err error) {
@@ -124,263 +125,241 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 81:
-		p.Type = "tropical_fish/pattern_color"
-	case 23:
-		p.Type = "use_cooldown"
-	case 3:
-		p.Type = "damage"
-	case 15:
-		p.Type = "tooltip_display"
-	case 20:
-		p.Type = "food"
-	case 35:
-		p.Type = "dyed_color"
-	case 46:
-		p.Type = "written_book_content"
-	case 62:
-		p.Type = "note_block_sound"
-	case 79:
-		p.Type = "tropical_fish/pattern"
-	case 10:
-		p.Type = "enchantments"
-	case 18:
-		p.Type = "enchantment_glint_override"
-	case 37:
-		p.Type = "map_id"
-	case 48:
-		p.Type = "debug_stick_state"
-	case 70:
-		p.Type = "container_loot"
-	case 76:
-		p.Type = "fox/variant"
-	case 82:
-		p.Type = "mooshroom/variant"
-	case 85:
-		p.Type = "cow/variant"
-	case 4:
-		p.Type = "unbreakable"
-	case 47:
-		p.Type = "trim"
-	case 58:
-		p.Type = "lodestone_tracker"
-	case 61:
-		p.Type = "profile"
-	case 64:
-		p.Type = "base_color"
-	case 93:
-		p.Type = "cat/collar"
-	case 16:
-		p.Type = "repair_cost"
-	case 21:
-		p.Type = "consumable"
-	case 29:
-		p.Type = "repairable"
-	case 44:
-		p.Type = "suspicious_stew_effects"
-	case 71:
-		p.Type = "break_sound"
-	case 87:
-		p.Type = "frog/variant"
-	case 1:
-		p.Type = "max_stack_size"
-	case 8:
-		p.Type = "lore"
-	case 13:
-		p.Type = "attribute_modifiers"
-	case 31:
-		p.Type = "tooltip_style"
-	case 6:
-		p.Type = "item_name"
-	case 22:
-		p.Type = "use_remainder"
-	case 34:
-		p.Type = "stored_enchantments"
-	case 57:
-		p.Type = "recipes"
-	case 60:
-		p.Type = "fireworks"
-	case 75:
-		p.Type = "wolf/collar"
-	case 50:
-		p.Type = "bucket_entity_data"
-	case 53:
-		p.Type = "provides_trim_material"
-	case 84:
-		p.Type = "pig/variant"
-	case 43:
-		p.Type = "potion_contents"
-	case 69:
-		p.Type = "lock"
-	case 83:
-		p.Type = "rabbit/variant"
-	case 88:
-		p.Type = "horse/variant"
-	case 90:
-		p.Type = "llama/variant"
-	case 0:
-		p.Type = "custom_data"
-	case 17:
-		p.Type = "creative_slot_lock"
-	case 19:
-		p.Type = "intangible_projectile"
-	case 30:
-		p.Type = "glider"
-	case 52:
-		p.Type = "instrument"
-	case 72:
-		p.Type = "villager/variant"
-	case 74:
-		p.Type = "wolf/sound_variant"
-	case 54:
-		p.Type = "ominous_bottle_amplifier"
-	case 55:
-		p.Type = "jukebox_playable"
+	case 5:
+		p.Type = "custom_name"
 	case 9:
 		p.Type = "rarity"
-	case 25:
-		p.Type = "tool"
+	case 30:
+		p.Type = "glider"
+	case 35:
+		p.Type = "dyed_color"
+	case 62:
+		p.Type = "note_block_sound"
+	case 65:
+		p.Type = "pot_decorations"
+	case 87:
+		p.Type = "frog/variant"
 	case 27:
 		p.Type = "enchantable"
+	case 29:
+		p.Type = "repairable"
+	case 31:
+		p.Type = "tooltip_style"
+	case 55:
+		p.Type = "jukebox_playable"
+	case 73:
+		p.Type = "wolf/variant"
+	case 19:
+		p.Type = "intangible_projectile"
+	case 21:
+		p.Type = "consumable"
+	case 25:
+		p.Type = "tool"
+	case 60:
+		p.Type = "fireworks"
+	case 8:
+		p.Type = "lore"
+	case 10:
+		p.Type = "enchantments"
+	case 15:
+		p.Type = "tooltip_display"
+	case 18:
+		p.Type = "enchantment_glint_override"
+	case 43:
+		p.Type = "potion_contents"
+	case 51:
+		p.Type = "block_entity_data"
+	case 52:
+		p.Type = "instrument"
+	case 53:
+		p.Type = "provides_trim_material"
+	case 26:
+		p.Type = "weapon"
+	case 40:
+		p.Type = "potion_duration_scale"
+	case 45:
+		p.Type = "writable_book_content"
+	case 47:
+		p.Type = "trim"
+	case 54:
+		p.Type = "ominous_bottle_amplifier"
+	case 59:
+		p.Type = "firework_explosion"
+	case 61:
+		p.Type = "profile"
+	case 88:
+		p.Type = "horse/variant"
+	case 1:
+		p.Type = "max_stack_size"
+	case 23:
+		p.Type = "use_cooldown"
+	case 41:
+		p.Type = "charged_projectiles"
+	case 46:
+		p.Type = "written_book_content"
+	case 78:
+		p.Type = "parrot/variant"
+	case 90:
+		p.Type = "llama/variant"
+	case 20:
+		p.Type = "food"
 	case 32:
 		p.Type = "death_protection"
-	case 38:
-		p.Type = "map_decorations"
+	case 50:
+		p.Type = "bucket_entity_data"
 	case 68:
 		p.Type = "bees"
-	case 11:
-		p.Type = "can_place_on"
+	case 76:
+		p.Type = "fox/variant"
+	case 4:
+		p.Type = "unbreakable"
+	case 7:
+		p.Type = "item_model"
 	case 24:
 		p.Type = "damage_resistant"
 	case 33:
 		p.Type = "blocks_attacks"
-	case 45:
-		p.Type = "writable_book_content"
-	case 94:
-		p.Type = "sheep/color"
-	case 7:
-		p.Type = "item_model"
-	case 26:
-		p.Type = "weapon"
-	case 28:
-		p.Type = "equippable"
-	case 67:
-		p.Type = "block_state"
-	case 86:
-		p.Type = "chicken/variant"
+	case 85:
+		p.Type = "cow/variant"
 	case 91:
 		p.Type = "axolotl/variant"
-	case 95:
-		p.Type = "shulker/color"
-	case 14:
-		p.Type = "custom_model_data"
-	case 36:
-		p.Type = "map_color"
-	case 39:
-		p.Type = "map_post_processing"
-	case 41:
-		p.Type = "charged_projectiles"
-	case 56:
-		p.Type = "provides_banner_patterns"
-	case 59:
-		p.Type = "firework_explosion"
-	case 89:
-		p.Type = "painting/variant"
-	case 5:
-		p.Type = "custom_name"
-	case 49:
-		p.Type = "entity_data"
-	case 73:
-		p.Type = "wolf/variant"
 	case 92:
 		p.Type = "cat/variant"
-	case 40:
-		p.Type = "potion_duration_scale"
+	case 17:
+		p.Type = "creative_slot_lock"
+	case 22:
+		p.Type = "use_remainder"
+	case 38:
+		p.Type = "map_decorations"
 	case 42:
 		p.Type = "bundle_contents"
-	case 63:
-		p.Type = "banner_patterns"
-	case 65:
-		p.Type = "pot_decorations"
-	case 66:
-		p.Type = "container"
+	case 48:
+		p.Type = "debug_stick_state"
+	case 49:
+		p.Type = "entity_data"
 	case 77:
 		p.Type = "salmon/size"
-	case 78:
-		p.Type = "parrot/variant"
-	case 2:
-		p.Type = "max_damage"
-	case 12:
-		p.Type = "can_break"
-	case 51:
-		p.Type = "block_entity_data"
+	case 11:
+		p.Type = "can_place_on"
+	case 57:
+		p.Type = "recipes"
+	case 71:
+		p.Type = "break_sound"
+	case 83:
+		p.Type = "rabbit/variant"
+	case 0:
+		p.Type = "custom_data"
+	case 6:
+		p.Type = "item_name"
+	case 13:
+		p.Type = "attribute_modifiers"
+	case 16:
+		p.Type = "repair_cost"
+	case 28:
+		p.Type = "equippable"
+	case 63:
+		p.Type = "banner_patterns"
+	case 67:
+		p.Type = "block_state"
 	case 80:
 		p.Type = "tropical_fish/base_color"
+	case 3:
+		p.Type = "damage"
+	case 56:
+		p.Type = "provides_banner_patterns"
+	case 66:
+		p.Type = "container"
+	case 82:
+		p.Type = "mooshroom/variant"
+	case 84:
+		p.Type = "pig/variant"
+	case 86:
+		p.Type = "chicken/variant"
+	case 89:
+		p.Type = "painting/variant"
+	case 37:
+		p.Type = "map_id"
+	case 58:
+		p.Type = "lodestone_tracker"
+	case 69:
+		p.Type = "lock"
+	case 74:
+		p.Type = "wolf/sound_variant"
+	case 75:
+		p.Type = "wolf/collar"
+	case 12:
+		p.Type = "can_break"
+	case 2:
+		p.Type = "max_damage"
+	case 14:
+		p.Type = "custom_model_data"
+	case 44:
+		p.Type = "suspicious_stew_effects"
+	case 93:
+		p.Type = "cat/collar"
+	case 34:
+		p.Type = "stored_enchantments"
+	case 39:
+		p.Type = "map_post_processing"
+	case 72:
+		p.Type = "villager/variant"
+	case 94:
+		p.Type = "sheep/color"
+	case 36:
+		p.Type = "map_color"
+	case 64:
+		p.Type = "base_color"
+	case 70:
+		p.Type = "container_loot"
+	case 79:
+		p.Type = "tropical_fish/pattern"
+	case 81:
+		p.Type = "tropical_fish/pattern_color"
+	case 95:
+		p.Type = "shulker/color"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
 
 	switch p.Type {
-	case "rabbit/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "map_id":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "map_decorations":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "wolf/collar":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "llama/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
 	case "cat/collar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "custom_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "enchantment_glint_override":
+		var val bool
+		var elem pk.Boolean
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = bool(elem)
+		p.Data = val
+	case "damage_resistant":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "sheep/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "repair_cost":
@@ -388,145 +367,77 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "tooltip_style":
-		var val string
-		var elem pk.String
+	case "use_remainder":
+		var val slot.Slot
+		temp, err = (*slot.Slot)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "wolf/variant":
+		var val int32
+		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
+		if err != nil { return n, err }
+		val = int32(elem)
 		p.Data = val
-	case "potion_duration_scale":
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
+	case "tropical_fish/base_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
 		p.Data = val
-	case "recipes":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+	case "mooshroom/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
 		p.Data = val
 	case "pig/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "axolotl/variant":
+	case "damage":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "sheep/color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "enchantment_glint_override":
-		var val bool
-		var elem pk.Boolean
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = bool(elem)
-		p.Data = val
-	case "intangible_projectile":
+	case "unbreakable":
 		var val struct{}
 		p.Data = val
-	case "item_model":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "provides_banner_patterns":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "lock":
+	case "item_name":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "max_damage":
+	case "map_color":
+		var val int32
+		temp, err = (*pk.Int)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "horse/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "bucket_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 		p.Data = val
 	case "creative_slot_lock":
 		var val struct{}
@@ -536,229 +447,41 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "mooshroom/variant":
+	case "rabbit/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "frog/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "entity_data":
+	case "lock":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "map_color":
+	case "dyed_color":
 		var val int32
 		temp, err = (*pk.Int)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "break_sound":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+	case "potion_duration_scale":
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "shulker/color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
+		if err != nil { return n, err }
 		p.Data = val
 	case "ominous_bottle_amplifier":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cat/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "custom_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "wolf/sound_variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "container_loot":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "custom_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "damage_resistant":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "block_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "salmon/size":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "item_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "use_remainder":
-		var val slot.Slot
-		temp, err = (*slot.Slot)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "firework_explosion":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "fox/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "max_stack_size":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "damage":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "villager/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "parrot/variant":
@@ -766,9 +489,145 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "custom_name":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "item_model":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "debug_stick_state":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "recipes":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "container_loot":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "max_stack_size":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "firework_explosion":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "base_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "wolf/sound_variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "map_id":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "fox/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "frog/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "shulker/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "max_damage":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "bucket_entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "cat/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "note_block_sound":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "villager/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "cow/variant":
@@ -776,72 +635,104 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "horse/variant":
+	case "intangible_projectile":
+		var val struct{}
+		p.Data = val
+	case "break_sound":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "wolf/collar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "unbreakable":
-		var val struct{}
+	case "block_entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "tropical_fish/pattern":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
 		p.Data = val
 	case "enchantable":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "debug_stick_state":
+	case "map_decorations":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "note_block_sound":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "wolf/variant":
+	case "llama/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "tooltip_style":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "tropical_fish/pattern_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "glider":
 		var val struct{}
 		p.Data = val
-	case "dyed_color":
-		var val int32
-		temp, err = (*pk.Int)(&val).ReadFrom(r)
+	case "provides_banner_patterns":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "salmon/size":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "axolotl/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
 		p.Data = val
 	default:
 		// 無對應負載
@@ -850,633 +741,429 @@ func (p *TradeListTradesEntryInputItem1Temp) ReadFrom(r io.Reader) (n int64, err
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryInputItem1Temp) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "tropical_fish/pattern_color":
-		temp, err = pk.VarInt(81).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_cooldown":
-		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_display":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "food":
-		temp, err = pk.VarInt(20).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dyed_color":
-		temp, err = pk.VarInt(35).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "written_book_content":
-		temp, err = pk.VarInt(46).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "note_block_sound":
-		temp, err = pk.VarInt(62).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern":
-		temp, err = pk.VarInt(79).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantments":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantment_glint_override":
-		temp, err = pk.VarInt(18).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_id":
-		temp, err = pk.VarInt(37).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "debug_stick_state":
-		temp, err = pk.VarInt(48).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container_loot":
-		temp, err = pk.VarInt(70).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fox/variant":
-		temp, err = pk.VarInt(76).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "mooshroom/variant":
-		temp, err = pk.VarInt(82).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cow/variant":
-		temp, err = pk.VarInt(85).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "unbreakable":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trim":
-		temp, err = pk.VarInt(47).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lodestone_tracker":
-		temp, err = pk.VarInt(58).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "profile":
-		temp, err = pk.VarInt(61).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "base_color":
-		temp, err = pk.VarInt(64).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/collar":
-		temp, err = pk.VarInt(93).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repair_cost":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "consumable":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repairable":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "suspicious_stew_effects":
-		temp, err = pk.VarInt(44).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "break_sound":
-		temp, err = pk.VarInt(71).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "frog/variant":
-		temp, err = pk.VarInt(87).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_stack_size":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lore":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "attribute_modifiers":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_style":
-		temp, err = pk.VarInt(31).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_name":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_remainder":
-		temp, err = pk.VarInt(22).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stored_enchantments":
-		temp, err = pk.VarInt(34).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "recipes":
-		temp, err = pk.VarInt(57).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fireworks":
-		temp, err = pk.VarInt(60).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/collar":
-		temp, err = pk.VarInt(75).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bucket_entity_data":
-		temp, err = pk.VarInt(50).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_trim_material":
-		temp, err = pk.VarInt(53).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pig/variant":
-		temp, err = pk.VarInt(84).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_contents":
-		temp, err = pk.VarInt(43).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lock":
-		temp, err = pk.VarInt(69).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rabbit/variant":
-		temp, err = pk.VarInt(83).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "horse/variant":
-		temp, err = pk.VarInt(88).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "llama/variant":
-		temp, err = pk.VarInt(90).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_data":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "creative_slot_lock":
-		temp, err = pk.VarInt(17).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "intangible_projectile":
-		temp, err = pk.VarInt(19).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glider":
-		temp, err = pk.VarInt(30).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "instrument":
-		temp, err = pk.VarInt(52).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "villager/variant":
-		temp, err = pk.VarInt(72).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/sound_variant":
-		temp, err = pk.VarInt(74).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ominous_bottle_amplifier":
-		temp, err = pk.VarInt(54).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "jukebox_playable":
-		temp, err = pk.VarInt(55).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rarity":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tool":
-		temp, err = pk.VarInt(25).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantable":
-		temp, err = pk.VarInt(27).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "death_protection":
-		temp, err = pk.VarInt(32).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_decorations":
-		temp, err = pk.VarInt(38).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bees":
-		temp, err = pk.VarInt(68).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_place_on":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage_resistant":
-		temp, err = pk.VarInt(24).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blocks_attacks":
-		temp, err = pk.VarInt(33).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "writable_book_content":
-		temp, err = pk.VarInt(45).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sheep/color":
-		temp, err = pk.VarInt(94).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_model":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "weapon":
-		temp, err = pk.VarInt(26).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "equippable":
-		temp, err = pk.VarInt(28).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_state":
-		temp, err = pk.VarInt(67).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "chicken/variant":
-		temp, err = pk.VarInt(86).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "axolotl/variant":
-		temp, err = pk.VarInt(91).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "shulker/color":
-		temp, err = pk.VarInt(95).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_model_data":
-		temp, err = pk.VarInt(14).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_color":
-		temp, err = pk.VarInt(36).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_post_processing":
-		temp, err = pk.VarInt(39).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "charged_projectiles":
-		temp, err = pk.VarInt(41).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_banner_patterns":
-		temp, err = pk.VarInt(56).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "firework_explosion":
-		temp, err = pk.VarInt(59).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "painting/variant":
-		temp, err = pk.VarInt(89).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "custom_name":
 		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "entity_data":
-		temp, err = pk.VarInt(49).WriteTo(w)
+		if err != nil { return n, err }
+	case "rarity":
+		temp, err = pk.VarInt(9).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/variant":
-		temp, err = pk.VarInt(73).WriteTo(w)
+		if err != nil { return n, err }
+	case "glider":
+		temp, err = pk.VarInt(30).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/variant":
-		temp, err = pk.VarInt(92).WriteTo(w)
+		if err != nil { return n, err }
+	case "dyed_color":
+		temp, err = pk.VarInt(35).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_duration_scale":
-		temp, err = pk.VarInt(40).WriteTo(w)
+		if err != nil { return n, err }
+	case "note_block_sound":
+		temp, err = pk.VarInt(62).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bundle_contents":
-		temp, err = pk.VarInt(42).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "banner_patterns":
-		temp, err = pk.VarInt(63).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "pot_decorations":
 		temp, err = pk.VarInt(65).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container":
-		temp, err = pk.VarInt(66).WriteTo(w)
+		if err != nil { return n, err }
+	case "frog/variant":
+		temp, err = pk.VarInt(87).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "salmon/size":
-		temp, err = pk.VarInt(77).WriteTo(w)
+		if err != nil { return n, err }
+	case "enchantable":
+		temp, err = pk.VarInt(27).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "parrot/variant":
-		temp, err = pk.VarInt(78).WriteTo(w)
+		if err != nil { return n, err }
+	case "repairable":
+		temp, err = pk.VarInt(29).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_damage":
-		temp, err = pk.VarInt(2).WriteTo(w)
+		if err != nil { return n, err }
+	case "tooltip_style":
+		temp, err = pk.VarInt(31).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_break":
-		temp, err = pk.VarInt(12).WriteTo(w)
+		if err != nil { return n, err }
+	case "jukebox_playable":
+		temp, err = pk.VarInt(55).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "wolf/variant":
+		temp, err = pk.VarInt(73).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "intangible_projectile":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "consumable":
+		temp, err = pk.VarInt(21).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tool":
+		temp, err = pk.VarInt(25).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fireworks":
+		temp, err = pk.VarInt(60).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lore":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantments":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tooltip_display":
+		temp, err = pk.VarInt(15).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantment_glint_override":
+		temp, err = pk.VarInt(18).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_contents":
+		temp, err = pk.VarInt(43).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "block_entity_data":
 		temp, err = pk.VarInt(51).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "instrument":
+		temp, err = pk.VarInt(52).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_trim_material":
+		temp, err = pk.VarInt(53).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "weapon":
+		temp, err = pk.VarInt(26).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_duration_scale":
+		temp, err = pk.VarInt(40).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "writable_book_content":
+		temp, err = pk.VarInt(45).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "trim":
+		temp, err = pk.VarInt(47).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ominous_bottle_amplifier":
+		temp, err = pk.VarInt(54).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "firework_explosion":
+		temp, err = pk.VarInt(59).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "profile":
+		temp, err = pk.VarInt(61).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "horse/variant":
+		temp, err = pk.VarInt(88).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_stack_size":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_cooldown":
+		temp, err = pk.VarInt(23).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "charged_projectiles":
+		temp, err = pk.VarInt(41).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "written_book_content":
+		temp, err = pk.VarInt(46).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "parrot/variant":
+		temp, err = pk.VarInt(78).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "llama/variant":
+		temp, err = pk.VarInt(90).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "food":
+		temp, err = pk.VarInt(20).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "death_protection":
+		temp, err = pk.VarInt(32).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bucket_entity_data":
+		temp, err = pk.VarInt(50).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bees":
+		temp, err = pk.VarInt(68).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fox/variant":
+		temp, err = pk.VarInt(76).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "unbreakable":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_model":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage_resistant":
+		temp, err = pk.VarInt(24).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blocks_attacks":
+		temp, err = pk.VarInt(33).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cow/variant":
+		temp, err = pk.VarInt(85).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "axolotl/variant":
+		temp, err = pk.VarInt(91).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/variant":
+		temp, err = pk.VarInt(92).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "creative_slot_lock":
+		temp, err = pk.VarInt(17).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_remainder":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_decorations":
+		temp, err = pk.VarInt(38).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bundle_contents":
+		temp, err = pk.VarInt(42).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "debug_stick_state":
+		temp, err = pk.VarInt(48).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "entity_data":
+		temp, err = pk.VarInt(49).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "salmon/size":
+		temp, err = pk.VarInt(77).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_place_on":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "recipes":
+		temp, err = pk.VarInt(57).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "break_sound":
+		temp, err = pk.VarInt(71).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rabbit/variant":
+		temp, err = pk.VarInt(83).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_data":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_name":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "attribute_modifiers":
+		temp, err = pk.VarInt(13).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repair_cost":
+		temp, err = pk.VarInt(16).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "equippable":
+		temp, err = pk.VarInt(28).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "banner_patterns":
+		temp, err = pk.VarInt(63).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "block_state":
+		temp, err = pk.VarInt(67).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "tropical_fish/base_color":
 		temp, err = pk.VarInt(80).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "damage":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_banner_patterns":
+		temp, err = pk.VarInt(56).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container":
+		temp, err = pk.VarInt(66).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "mooshroom/variant":
+		temp, err = pk.VarInt(82).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pig/variant":
+		temp, err = pk.VarInt(84).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "chicken/variant":
+		temp, err = pk.VarInt(86).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "painting/variant":
+		temp, err = pk.VarInt(89).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_id":
+		temp, err = pk.VarInt(37).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lodestone_tracker":
+		temp, err = pk.VarInt(58).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lock":
+		temp, err = pk.VarInt(69).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/sound_variant":
+		temp, err = pk.VarInt(74).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/collar":
+		temp, err = pk.VarInt(75).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_break":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_damage":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_model_data":
+		temp, err = pk.VarInt(14).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "suspicious_stew_effects":
+		temp, err = pk.VarInt(44).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/collar":
+		temp, err = pk.VarInt(93).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "stored_enchantments":
+		temp, err = pk.VarInt(34).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_post_processing":
+		temp, err = pk.VarInt(39).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "villager/variant":
+		temp, err = pk.VarInt(72).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "sheep/color":
+		temp, err = pk.VarInt(94).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_color":
+		temp, err = pk.VarInt(36).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "base_color":
+		temp, err = pk.VarInt(64).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container_loot":
+		temp, err = pk.VarInt(70).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern":
+		temp, err = pk.VarInt(79).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern_color":
+		temp, err = pk.VarInt(81).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "shulker/color":
+		temp, err = pk.VarInt(95).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	switch v := p.Data.(type) {
-	case int32:
-		temp, err = pk.VarInt(v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case slot.Slot:
-		temp, err = (v).WriteTo(w)
+		if err != nil { return n, err }
+	case int32:
+		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case struct{}:
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case string:
 		temp, err = pk.String(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case struct{}:
+		if err != nil { return n, err }
 	case bool:
 		temp, err = pk.Boolean(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case slot.Slot:
+		temp, err = (v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
 	}
@@ -1484,12 +1171,15 @@ func (p TradeListTradesEntryInputItem1Temp) WriteTo(w io.Writer) (n int64, err e
 	return n, nil
 }
 
+
+
 // TradeListTradesEntryInputItem1 is a sub-structure used in the packet.
 type TradeListTradesEntryInputItem1 struct {
-	ItemId     int32 `mc:"VarInt"`
-	ItemCount  int32 `mc:"VarInt"`
+	ItemId int32 `mc:"VarInt"`
+	ItemCount int32 `mc:"VarInt"`
 	Components []TradeListTradesEntryInputItem1Temp
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err error) {
@@ -1499,36 +1189,30 @@ func (p *TradeListTradesEntryInputItem1) ReadFrom(r io.Reader) (n int64, err err
 	var itemId pk.VarInt
 	temp, err = itemId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemId = int32(itemId)
 
 	var itemCount pk.VarInt
 	temp, err = itemCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemCount = int32(itemCount)
 
 	var componentsCount pk.VarInt
 	temp, err = componentsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Components = make([]TradeListTradesEntryInputItem1Temp, componentsCount)
 	for i := 0; i < int(componentsCount); i++ {
 		temp, err = p.Components[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryInputItem1) WriteTo(w io.Writer) (n int64, err error) {
@@ -1537,136 +1221,131 @@ func (p TradeListTradesEntryInputItem1) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.VarInt(p.ItemId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.ItemCount).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Components)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Components {
 		temp, err = p.Components[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
+
 
 // TradeListTradesEntryOutputItemTemp is a sub-structure used in the packet.
 type TradeListTradesEntryOutputItemTemp struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   rabbit/variant -> varint
-	//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   map_id -> varint
-	//   map_decorations -> anonymousNbt
-	//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
-	//   wolf/collar -> varint
-	//   llama/variant -> varint
-	//   cat/collar -> varint
-	//   repair_cost -> varint
-	//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   tooltip_style -> string
-	//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   potion_duration_scale -> f32
-	//   recipes -> anonymousNbt
-	//   pig/variant -> varint
-	//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
-	//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
-	//   axolotl/variant -> varint
-	//   sheep/color -> varint
-	//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   enchantment_glint_override -> bool
-	//   intangible_projectile -> void
-	//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
-	//   item_model -> string
-	//   repairable -> [container [map[name:items type:IDSet]]]
-	//   provides_banner_patterns -> string
-	//   base_color -> varint
-	//   lock -> anonymousNbt
-	//   max_damage -> varint
-	//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
-	//   tropical_fish/pattern -> varint
-	//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
-	//   bucket_entity_data -> anonymousNbt
-	//   creative_slot_lock -> void
-	//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
-	//   map_post_processing -> varint
-	//   mooshroom/variant -> varint
-	//   frog/variant -> varint
-	//   entity_data -> anonymousNbt
-	//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
-	//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
-	//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
-	//   map_color -> i32
-	//   break_sound -> ItemSoundHolder
-	//   shulker/color -> varint
-	//   lore -> [array map[countType:varint type:anonymousNbt]]
-	//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
-	//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
-	//   ominous_bottle_amplifier -> varint
-	//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
-	//   cat/variant -> varint
-	//   custom_data -> anonymousNbt
-	//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
-	//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
-	//   wolf/sound_variant -> varint
-	//   tropical_fish/base_color -> varint
-	//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
-	//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
-	//   container_loot -> anonymousNbt
-	//   custom_name -> anonymousNbt
-	//   damage_resistant -> string
-	//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
-	//   block_entity_data -> anonymousNbt
-	//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
-	//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
-	//   salmon/size -> varint
-	//   item_name -> anonymousNbt
-	//   use_remainder -> Slot
-	//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
-	//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
-	//   firework_explosion -> ItemFireworkExplosion
-	//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
-	//   fox/variant -> varint
-	//   tropical_fish/pattern_color -> varint
-	//   max_stack_size -> varint
-	//   damage -> varint
-	//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
-	//   villager/variant -> varint
-	//   parrot/variant -> varint
-	//   cow/variant -> varint
-	//   horse/variant -> varint
-	//   unbreakable -> void
-	//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
-	//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
-	//   enchantable -> varint
-	//   debug_stick_state -> anonymousNbt
-	//   note_block_sound -> string
-	//   wolf/variant -> varint
-	//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
-	//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
-	//   glider -> void
-	//   dyed_color -> i32
-	//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
-	//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   custom_data -> anonymousNbt
+//   enchantment_glint_override -> bool
+//   damage_resistant -> string
+//   sheep/color -> varint
+//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
+//   repair_cost -> varint
+//   use_remainder -> Slot
+//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
+//   wolf/variant -> varint
+//   tropical_fish/base_color -> varint
+//   mooshroom/variant -> varint
+//   pig/variant -> varint
+//   damage -> varint
+//   unbreakable -> void
+//   item_name -> anonymousNbt
+//   map_color -> i32
+//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
+//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
+//   horse/variant -> varint
+//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   creative_slot_lock -> void
+//   map_post_processing -> varint
+//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
+//   rabbit/variant -> varint
+//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
+//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
+//   lock -> anonymousNbt
+//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
+//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
+//   dyed_color -> i32
+//   potion_duration_scale -> f32
+//   ominous_bottle_amplifier -> varint
+//   parrot/variant -> varint
+//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
+//   custom_name -> anonymousNbt
+//   item_model -> string
+//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
+//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
+//   debug_stick_state -> anonymousNbt
+//   recipes -> anonymousNbt
+//   container_loot -> anonymousNbt
+//   max_stack_size -> varint
+//   lore -> [array map[countType:varint type:anonymousNbt]]
+//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   entity_data -> anonymousNbt
+//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
+//   firework_explosion -> ItemFireworkExplosion
+//   base_color -> varint
+//   wolf/sound_variant -> varint
+//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   map_id -> varint
+//   fox/variant -> varint
+//   frog/variant -> varint
+//   shulker/color -> varint
+//   max_damage -> varint
+//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
+//   bucket_entity_data -> anonymousNbt
+//   cat/variant -> varint
+//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
+//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
+//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
+//   note_block_sound -> string
+//   villager/variant -> varint
+//   cow/variant -> varint
+//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
+//   intangible_projectile -> void
+//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
+//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
+//   break_sound -> ItemSoundHolder
+//   wolf/collar -> varint
+//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
+//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
+//   block_entity_data -> anonymousNbt
+//   tropical_fish/pattern -> varint
+//   enchantable -> varint
+//   repairable -> [container [map[name:items type:IDSet]]]
+//   map_decorations -> anonymousNbt
+//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
+//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
+//   llama/variant -> varint
+//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   tooltip_style -> string
+//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
+//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
+//   tropical_fish/pattern_color -> varint
+//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
+//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
+//   glider -> void
+//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   provides_banner_patterns -> string
+//   salmon/size -> varint
+//   axolotl/variant -> varint
+//   cat/collar -> varint
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryOutputItemTemp) ReadFrom(r io.Reader) (n int64, err error) {
@@ -1676,601 +1355,230 @@ func (p *TradeListTradesEntryOutputItemTemp) ReadFrom(r io.Reader) (n int64, err
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
+	case 88:
+		p.Type = "horse/variant"
+	case 1:
+		p.Type = "max_stack_size"
+	case 23:
+		p.Type = "use_cooldown"
+	case 41:
+		p.Type = "charged_projectiles"
+	case 46:
+		p.Type = "written_book_content"
+	case 78:
+		p.Type = "parrot/variant"
+	case 90:
+		p.Type = "llama/variant"
+	case 20:
+		p.Type = "food"
+	case 32:
+		p.Type = "death_protection"
+	case 50:
+		p.Type = "bucket_entity_data"
 	case 68:
 		p.Type = "bees"
-	case 11:
-		p.Type = "can_place_on"
+	case 76:
+		p.Type = "fox/variant"
+	case 4:
+		p.Type = "unbreakable"
+	case 7:
+		p.Type = "item_model"
 	case 24:
 		p.Type = "damage_resistant"
 	case 33:
 		p.Type = "blocks_attacks"
-	case 45:
-		p.Type = "writable_book_content"
-	case 94:
-		p.Type = "sheep/color"
-	case 7:
-		p.Type = "item_model"
-	case 26:
-		p.Type = "weapon"
-	case 28:
-		p.Type = "equippable"
-	case 67:
-		p.Type = "block_state"
-	case 86:
-		p.Type = "chicken/variant"
-	case 91:
-		p.Type = "axolotl/variant"
-	case 95:
-		p.Type = "shulker/color"
-	case 14:
-		p.Type = "custom_model_data"
-	case 36:
-		p.Type = "map_color"
-	case 39:
-		p.Type = "map_post_processing"
-	case 41:
-		p.Type = "charged_projectiles"
-	case 56:
-		p.Type = "provides_banner_patterns"
-	case 59:
-		p.Type = "firework_explosion"
-	case 89:
-		p.Type = "painting/variant"
-	case 5:
-		p.Type = "custom_name"
-	case 49:
-		p.Type = "entity_data"
-	case 73:
-		p.Type = "wolf/variant"
-	case 92:
-		p.Type = "cat/variant"
-	case 40:
-		p.Type = "potion_duration_scale"
-	case 42:
-		p.Type = "bundle_contents"
-	case 63:
-		p.Type = "banner_patterns"
-	case 65:
-		p.Type = "pot_decorations"
-	case 66:
-		p.Type = "container"
-	case 77:
-		p.Type = "salmon/size"
-	case 78:
-		p.Type = "parrot/variant"
-	case 2:
-		p.Type = "max_damage"
-	case 12:
-		p.Type = "can_break"
-	case 51:
-		p.Type = "block_entity_data"
-	case 80:
-		p.Type = "tropical_fish/base_color"
-	case 81:
-		p.Type = "tropical_fish/pattern_color"
-	case 23:
-		p.Type = "use_cooldown"
-	case 3:
-		p.Type = "damage"
-	case 15:
-		p.Type = "tooltip_display"
-	case 20:
-		p.Type = "food"
-	case 35:
-		p.Type = "dyed_color"
-	case 46:
-		p.Type = "written_book_content"
-	case 62:
-		p.Type = "note_block_sound"
-	case 79:
-		p.Type = "tropical_fish/pattern"
-	case 10:
-		p.Type = "enchantments"
-	case 18:
-		p.Type = "enchantment_glint_override"
-	case 37:
-		p.Type = "map_id"
-	case 48:
-		p.Type = "debug_stick_state"
-	case 70:
-		p.Type = "container_loot"
-	case 76:
-		p.Type = "fox/variant"
-	case 82:
-		p.Type = "mooshroom/variant"
 	case 85:
 		p.Type = "cow/variant"
-	case 4:
-		p.Type = "unbreakable"
-	case 47:
-		p.Type = "trim"
-	case 58:
-		p.Type = "lodestone_tracker"
-	case 61:
-		p.Type = "profile"
-	case 64:
-		p.Type = "base_color"
-	case 93:
-		p.Type = "cat/collar"
-	case 16:
-		p.Type = "repair_cost"
-	case 21:
-		p.Type = "consumable"
-	case 29:
-		p.Type = "repairable"
-	case 44:
-		p.Type = "suspicious_stew_effects"
-	case 71:
-		p.Type = "break_sound"
-	case 87:
-		p.Type = "frog/variant"
-	case 1:
-		p.Type = "max_stack_size"
-	case 8:
-		p.Type = "lore"
-	case 13:
-		p.Type = "attribute_modifiers"
-	case 31:
-		p.Type = "tooltip_style"
-	case 6:
-		p.Type = "item_name"
-	case 22:
-		p.Type = "use_remainder"
-	case 34:
-		p.Type = "stored_enchantments"
-	case 57:
-		p.Type = "recipes"
-	case 60:
-		p.Type = "fireworks"
-	case 75:
-		p.Type = "wolf/collar"
-	case 50:
-		p.Type = "bucket_entity_data"
-	case 53:
-		p.Type = "provides_trim_material"
-	case 84:
-		p.Type = "pig/variant"
-	case 43:
-		p.Type = "potion_contents"
-	case 69:
-		p.Type = "lock"
-	case 83:
-		p.Type = "rabbit/variant"
-	case 88:
-		p.Type = "horse/variant"
-	case 90:
-		p.Type = "llama/variant"
-	case 0:
-		p.Type = "custom_data"
+	case 91:
+		p.Type = "axolotl/variant"
+	case 92:
+		p.Type = "cat/variant"
 	case 17:
 		p.Type = "creative_slot_lock"
-	case 19:
-		p.Type = "intangible_projectile"
-	case 30:
-		p.Type = "glider"
-	case 52:
-		p.Type = "instrument"
-	case 72:
-		p.Type = "villager/variant"
-	case 74:
-		p.Type = "wolf/sound_variant"
-	case 54:
-		p.Type = "ominous_bottle_amplifier"
-	case 55:
-		p.Type = "jukebox_playable"
-	case 9:
-		p.Type = "rarity"
-	case 25:
-		p.Type = "tool"
-	case 27:
-		p.Type = "enchantable"
-	case 32:
-		p.Type = "death_protection"
+	case 22:
+		p.Type = "use_remainder"
 	case 38:
 		p.Type = "map_decorations"
+	case 42:
+		p.Type = "bundle_contents"
+	case 48:
+		p.Type = "debug_stick_state"
+	case 49:
+		p.Type = "entity_data"
+	case 77:
+		p.Type = "salmon/size"
+	case 11:
+		p.Type = "can_place_on"
+	case 57:
+		p.Type = "recipes"
+	case 71:
+		p.Type = "break_sound"
+	case 83:
+		p.Type = "rabbit/variant"
+	case 0:
+		p.Type = "custom_data"
+	case 6:
+		p.Type = "item_name"
+	case 13:
+		p.Type = "attribute_modifiers"
+	case 16:
+		p.Type = "repair_cost"
+	case 28:
+		p.Type = "equippable"
+	case 63:
+		p.Type = "banner_patterns"
+	case 67:
+		p.Type = "block_state"
+	case 80:
+		p.Type = "tropical_fish/base_color"
+	case 3:
+		p.Type = "damage"
+	case 56:
+		p.Type = "provides_banner_patterns"
+	case 66:
+		p.Type = "container"
+	case 82:
+		p.Type = "mooshroom/variant"
+	case 84:
+		p.Type = "pig/variant"
+	case 86:
+		p.Type = "chicken/variant"
+	case 89:
+		p.Type = "painting/variant"
+	case 37:
+		p.Type = "map_id"
+	case 58:
+		p.Type = "lodestone_tracker"
+	case 69:
+		p.Type = "lock"
+	case 74:
+		p.Type = "wolf/sound_variant"
+	case 75:
+		p.Type = "wolf/collar"
+	case 12:
+		p.Type = "can_break"
+	case 2:
+		p.Type = "max_damage"
+	case 14:
+		p.Type = "custom_model_data"
+	case 44:
+		p.Type = "suspicious_stew_effects"
+	case 93:
+		p.Type = "cat/collar"
+	case 34:
+		p.Type = "stored_enchantments"
+	case 39:
+		p.Type = "map_post_processing"
+	case 72:
+		p.Type = "villager/variant"
+	case 94:
+		p.Type = "sheep/color"
+	case 36:
+		p.Type = "map_color"
+	case 64:
+		p.Type = "base_color"
+	case 70:
+		p.Type = "container_loot"
+	case 79:
+		p.Type = "tropical_fish/pattern"
+	case 81:
+		p.Type = "tropical_fish/pattern_color"
+	case 95:
+		p.Type = "shulker/color"
+	case 5:
+		p.Type = "custom_name"
+	case 9:
+		p.Type = "rarity"
+	case 30:
+		p.Type = "glider"
+	case 35:
+		p.Type = "dyed_color"
+	case 62:
+		p.Type = "note_block_sound"
+	case 65:
+		p.Type = "pot_decorations"
+	case 87:
+		p.Type = "frog/variant"
+	case 27:
+		p.Type = "enchantable"
+	case 29:
+		p.Type = "repairable"
+	case 31:
+		p.Type = "tooltip_style"
+	case 55:
+		p.Type = "jukebox_playable"
+	case 73:
+		p.Type = "wolf/variant"
+	case 19:
+		p.Type = "intangible_projectile"
+	case 21:
+		p.Type = "consumable"
+	case 25:
+		p.Type = "tool"
+	case 60:
+		p.Type = "fireworks"
+	case 8:
+		p.Type = "lore"
+	case 10:
+		p.Type = "enchantments"
+	case 15:
+		p.Type = "tooltip_display"
+	case 18:
+		p.Type = "enchantment_glint_override"
+	case 43:
+		p.Type = "potion_contents"
+	case 51:
+		p.Type = "block_entity_data"
+	case 52:
+		p.Type = "instrument"
+	case 53:
+		p.Type = "provides_trim_material"
+	case 26:
+		p.Type = "weapon"
+	case 40:
+		p.Type = "potion_duration_scale"
+	case 45:
+		p.Type = "writable_book_content"
+	case 47:
+		p.Type = "trim"
+	case 54:
+		p.Type = "ominous_bottle_amplifier"
+	case 59:
+		p.Type = "firework_explosion"
+	case 61:
+		p.Type = "profile"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
 
 	switch p.Type {
-	case "frog/variant":
+	case "tropical_fish/pattern_color":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+	case "glider":
+		var val struct{}
 		p.Data = val
-	case "map_color":
-		var val int32
-		temp, err = (*pk.Int)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "break_sound":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "shulker/color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "ominous_bottle_amplifier":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cat/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "custom_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "wolf/sound_variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "container_loot":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "custom_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "damage_resistant":
+	case "provides_banner_patterns":
 		var val string
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
-		p.Data = val
-	case "block_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 		p.Data = val
 	case "salmon/size":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "item_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "use_remainder":
-		var val slot.Slot
-		temp, err = (*slot.Slot)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "firework_explosion":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "fox/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "max_stack_size":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "damage":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "villager/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "parrot/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cow/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "horse/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "unbreakable":
-		var val struct{}
-		p.Data = val
-	case "enchantable":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "debug_stick_state":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "note_block_sound":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "wolf/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "glider":
-		var val struct{}
-		p.Data = val
-	case "dyed_color":
-		var val int32
-		temp, err = (*pk.Int)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "rabbit/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "map_id":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "map_decorations":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "wolf/collar":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "llama/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cat/collar":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "repair_cost":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tooltip_style":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "potion_duration_scale":
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "recipes":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "pig/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "axolotl/variant":
@@ -2278,99 +1586,123 @@ func (p *TradeListTradesEntryOutputItemTemp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "sheep/color":
+	case "cat/collar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
+		p.Data = val
+	case "custom_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Data = val
 	case "enchantment_glint_override":
 		var val bool
 		var elem pk.Boolean
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = bool(elem)
 		p.Data = val
-	case "intangible_projectile":
+	case "damage_resistant":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "sheep/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "repair_cost":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "use_remainder":
+		var val slot.Slot
+		temp, err = (*slot.Slot)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "wolf/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "tropical_fish/base_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "mooshroom/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "pig/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "damage":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "unbreakable":
 		var val struct{}
 		p.Data = val
-	case "item_model":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "provides_banner_patterns":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "lock":
+	case "item_name":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "max_damage":
+	case "map_color":
+		var val int32
+		temp, err = (*pk.Int)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "horse/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "bucket_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 		p.Data = val
 	case "creative_slot_lock":
 		var val struct{}
@@ -2380,20 +1712,257 @@ func (p *TradeListTradesEntryOutputItemTemp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "mooshroom/variant":
+	case "rabbit/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
+		p.Data = val
+	case "lock":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "dyed_color":
+		var val int32
+		temp, err = (*pk.Int)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "potion_duration_scale":
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "ominous_bottle_amplifier":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "parrot/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "custom_name":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "item_model":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "debug_stick_state":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "recipes":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "container_loot":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "max_stack_size":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "firework_explosion":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "base_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "wolf/sound_variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "map_id":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "fox/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "frog/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "shulker/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "max_damage":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "bucket_entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "cat/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "note_block_sound":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "villager/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "cow/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "intangible_projectile":
+		var val struct{}
+		p.Data = val
+	case "break_sound":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "wolf/collar":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "block_entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "tropical_fish/pattern":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "enchantable":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "map_decorations":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "llama/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "tooltip_style":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
 		p.Data = val
 	default:
 		// 無對應負載
@@ -2402,633 +1971,429 @@ func (p *TradeListTradesEntryOutputItemTemp) ReadFrom(r io.Reader) (n int64, err
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryOutputItemTemp) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "bees":
-		temp, err = pk.VarInt(68).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_place_on":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage_resistant":
-		temp, err = pk.VarInt(24).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blocks_attacks":
-		temp, err = pk.VarInt(33).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "writable_book_content":
-		temp, err = pk.VarInt(45).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sheep/color":
-		temp, err = pk.VarInt(94).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_model":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "weapon":
-		temp, err = pk.VarInt(26).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "equippable":
-		temp, err = pk.VarInt(28).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_state":
-		temp, err = pk.VarInt(67).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "chicken/variant":
-		temp, err = pk.VarInt(86).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "axolotl/variant":
-		temp, err = pk.VarInt(91).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "shulker/color":
-		temp, err = pk.VarInt(95).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_model_data":
-		temp, err = pk.VarInt(14).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_color":
-		temp, err = pk.VarInt(36).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_post_processing":
-		temp, err = pk.VarInt(39).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "charged_projectiles":
-		temp, err = pk.VarInt(41).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_banner_patterns":
-		temp, err = pk.VarInt(56).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "firework_explosion":
-		temp, err = pk.VarInt(59).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "painting/variant":
-		temp, err = pk.VarInt(89).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_name":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "entity_data":
-		temp, err = pk.VarInt(49).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/variant":
-		temp, err = pk.VarInt(73).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/variant":
-		temp, err = pk.VarInt(92).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_duration_scale":
-		temp, err = pk.VarInt(40).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bundle_contents":
-		temp, err = pk.VarInt(42).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "banner_patterns":
-		temp, err = pk.VarInt(63).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pot_decorations":
-		temp, err = pk.VarInt(65).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container":
-		temp, err = pk.VarInt(66).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "salmon/size":
-		temp, err = pk.VarInt(77).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "parrot/variant":
-		temp, err = pk.VarInt(78).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_damage":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_break":
-		temp, err = pk.VarInt(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_entity_data":
-		temp, err = pk.VarInt(51).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/base_color":
-		temp, err = pk.VarInt(80).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern_color":
-		temp, err = pk.VarInt(81).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_cooldown":
-		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_display":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "food":
-		temp, err = pk.VarInt(20).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dyed_color":
-		temp, err = pk.VarInt(35).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "written_book_content":
-		temp, err = pk.VarInt(46).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "note_block_sound":
-		temp, err = pk.VarInt(62).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern":
-		temp, err = pk.VarInt(79).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantments":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantment_glint_override":
-		temp, err = pk.VarInt(18).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_id":
-		temp, err = pk.VarInt(37).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "debug_stick_state":
-		temp, err = pk.VarInt(48).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container_loot":
-		temp, err = pk.VarInt(70).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fox/variant":
-		temp, err = pk.VarInt(76).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "mooshroom/variant":
-		temp, err = pk.VarInt(82).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cow/variant":
-		temp, err = pk.VarInt(85).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "unbreakable":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trim":
-		temp, err = pk.VarInt(47).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lodestone_tracker":
-		temp, err = pk.VarInt(58).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "profile":
-		temp, err = pk.VarInt(61).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "base_color":
-		temp, err = pk.VarInt(64).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/collar":
-		temp, err = pk.VarInt(93).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repair_cost":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "consumable":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repairable":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "suspicious_stew_effects":
-		temp, err = pk.VarInt(44).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "break_sound":
-		temp, err = pk.VarInt(71).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "frog/variant":
-		temp, err = pk.VarInt(87).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_stack_size":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lore":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "attribute_modifiers":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_style":
-		temp, err = pk.VarInt(31).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_name":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_remainder":
-		temp, err = pk.VarInt(22).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stored_enchantments":
-		temp, err = pk.VarInt(34).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "recipes":
-		temp, err = pk.VarInt(57).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fireworks":
-		temp, err = pk.VarInt(60).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/collar":
-		temp, err = pk.VarInt(75).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bucket_entity_data":
-		temp, err = pk.VarInt(50).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_trim_material":
-		temp, err = pk.VarInt(53).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pig/variant":
-		temp, err = pk.VarInt(84).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_contents":
-		temp, err = pk.VarInt(43).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lock":
-		temp, err = pk.VarInt(69).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rabbit/variant":
-		temp, err = pk.VarInt(83).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "horse/variant":
 		temp, err = pk.VarInt(88).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "max_stack_size":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_cooldown":
+		temp, err = pk.VarInt(23).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "charged_projectiles":
+		temp, err = pk.VarInt(41).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "written_book_content":
+		temp, err = pk.VarInt(46).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "parrot/variant":
+		temp, err = pk.VarInt(78).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "llama/variant":
 		temp, err = pk.VarInt(90).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_data":
-		temp, err = pk.VarInt(0).WriteTo(w)
+		if err != nil { return n, err }
+	case "food":
+		temp, err = pk.VarInt(20).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "creative_slot_lock":
-		temp, err = pk.VarInt(17).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "intangible_projectile":
-		temp, err = pk.VarInt(19).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glider":
-		temp, err = pk.VarInt(30).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "instrument":
-		temp, err = pk.VarInt(52).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "villager/variant":
-		temp, err = pk.VarInt(72).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/sound_variant":
-		temp, err = pk.VarInt(74).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ominous_bottle_amplifier":
-		temp, err = pk.VarInt(54).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "jukebox_playable":
-		temp, err = pk.VarInt(55).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rarity":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tool":
-		temp, err = pk.VarInt(25).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantable":
-		temp, err = pk.VarInt(27).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "death_protection":
 		temp, err = pk.VarInt(32).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "bucket_entity_data":
+		temp, err = pk.VarInt(50).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bees":
+		temp, err = pk.VarInt(68).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fox/variant":
+		temp, err = pk.VarInt(76).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "unbreakable":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_model":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage_resistant":
+		temp, err = pk.VarInt(24).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blocks_attacks":
+		temp, err = pk.VarInt(33).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cow/variant":
+		temp, err = pk.VarInt(85).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "axolotl/variant":
+		temp, err = pk.VarInt(91).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/variant":
+		temp, err = pk.VarInt(92).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "creative_slot_lock":
+		temp, err = pk.VarInt(17).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_remainder":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "map_decorations":
 		temp, err = pk.VarInt(38).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "bundle_contents":
+		temp, err = pk.VarInt(42).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "debug_stick_state":
+		temp, err = pk.VarInt(48).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "entity_data":
+		temp, err = pk.VarInt(49).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "salmon/size":
+		temp, err = pk.VarInt(77).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_place_on":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "recipes":
+		temp, err = pk.VarInt(57).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "break_sound":
+		temp, err = pk.VarInt(71).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rabbit/variant":
+		temp, err = pk.VarInt(83).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_data":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_name":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "attribute_modifiers":
+		temp, err = pk.VarInt(13).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repair_cost":
+		temp, err = pk.VarInt(16).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "equippable":
+		temp, err = pk.VarInt(28).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "banner_patterns":
+		temp, err = pk.VarInt(63).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "block_state":
+		temp, err = pk.VarInt(67).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/base_color":
+		temp, err = pk.VarInt(80).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_banner_patterns":
+		temp, err = pk.VarInt(56).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container":
+		temp, err = pk.VarInt(66).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "mooshroom/variant":
+		temp, err = pk.VarInt(82).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pig/variant":
+		temp, err = pk.VarInt(84).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "chicken/variant":
+		temp, err = pk.VarInt(86).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "painting/variant":
+		temp, err = pk.VarInt(89).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_id":
+		temp, err = pk.VarInt(37).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lodestone_tracker":
+		temp, err = pk.VarInt(58).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lock":
+		temp, err = pk.VarInt(69).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/sound_variant":
+		temp, err = pk.VarInt(74).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/collar":
+		temp, err = pk.VarInt(75).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_break":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_damage":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_model_data":
+		temp, err = pk.VarInt(14).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "suspicious_stew_effects":
+		temp, err = pk.VarInt(44).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/collar":
+		temp, err = pk.VarInt(93).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "stored_enchantments":
+		temp, err = pk.VarInt(34).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_post_processing":
+		temp, err = pk.VarInt(39).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "villager/variant":
+		temp, err = pk.VarInt(72).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "sheep/color":
+		temp, err = pk.VarInt(94).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_color":
+		temp, err = pk.VarInt(36).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "base_color":
+		temp, err = pk.VarInt(64).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container_loot":
+		temp, err = pk.VarInt(70).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern":
+		temp, err = pk.VarInt(79).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern_color":
+		temp, err = pk.VarInt(81).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "shulker/color":
+		temp, err = pk.VarInt(95).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_name":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rarity":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "glider":
+		temp, err = pk.VarInt(30).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "dyed_color":
+		temp, err = pk.VarInt(35).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "note_block_sound":
+		temp, err = pk.VarInt(62).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pot_decorations":
+		temp, err = pk.VarInt(65).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "frog/variant":
+		temp, err = pk.VarInt(87).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantable":
+		temp, err = pk.VarInt(27).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repairable":
+		temp, err = pk.VarInt(29).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tooltip_style":
+		temp, err = pk.VarInt(31).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "jukebox_playable":
+		temp, err = pk.VarInt(55).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/variant":
+		temp, err = pk.VarInt(73).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "intangible_projectile":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "consumable":
+		temp, err = pk.VarInt(21).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tool":
+		temp, err = pk.VarInt(25).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fireworks":
+		temp, err = pk.VarInt(60).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lore":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantments":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tooltip_display":
+		temp, err = pk.VarInt(15).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantment_glint_override":
+		temp, err = pk.VarInt(18).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_contents":
+		temp, err = pk.VarInt(43).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "block_entity_data":
+		temp, err = pk.VarInt(51).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "instrument":
+		temp, err = pk.VarInt(52).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_trim_material":
+		temp, err = pk.VarInt(53).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "weapon":
+		temp, err = pk.VarInt(26).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_duration_scale":
+		temp, err = pk.VarInt(40).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "writable_book_content":
+		temp, err = pk.VarInt(45).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "trim":
+		temp, err = pk.VarInt(47).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ominous_bottle_amplifier":
+		temp, err = pk.VarInt(54).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "firework_explosion":
+		temp, err = pk.VarInt(59).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "profile":
+		temp, err = pk.VarInt(61).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	switch v := p.Data.(type) {
-	case int32:
-		temp, err = pk.VarInt(v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case struct{}:
-		if err != nil {
-			return n, err
-		}
-	case string:
-		temp, err = pk.String(v).WriteTo(w)
+		if err != nil { return n, err }
+	case int32:
+		temp, err = pk.Int(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case slot.Slot:
-		temp, err = (v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case float32:
 		temp, err = pk.Float(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case string:
+		temp, err = pk.String(v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case struct{}:
+		if err != nil { return n, err }
 	case bool:
 		temp, err = pk.Boolean(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case slot.Slot:
+		temp, err = (v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
 	}
@@ -3036,11 +2401,14 @@ func (p TradeListTradesEntryOutputItemTemp) WriteTo(w io.Writer) (n int64, err e
 	return n, nil
 }
 
+
+
 // TradeListTradesEntryOutputItemRemoveComponentsEntry is a sub-structure used in the packet.
 type TradeListTradesEntryOutputItemRemoveComponentsEntry struct {
 	// Mapper to string
 	Type string
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryOutputItemRemoveComponentsEntry) ReadFrom(r io.Reader) (n int64, err error) {
@@ -3050,202 +2418,200 @@ func (p *TradeListTradesEntryOutputItemRemoveComponentsEntry) ReadFrom(r io.Read
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 39:
-		p.Type = "map_post_processing"
-	case 41:
-		p.Type = "charged_projectiles"
-	case 56:
-		p.Type = "provides_banner_patterns"
-	case 59:
-		p.Type = "firework_explosion"
-	case 89:
-		p.Type = "painting/variant"
-	case 5:
-		p.Type = "custom_name"
-	case 49:
-		p.Type = "entity_data"
-	case 73:
-		p.Type = "wolf/variant"
-	case 92:
-		p.Type = "cat/variant"
-	case 40:
-		p.Type = "potion_duration_scale"
-	case 42:
-		p.Type = "bundle_contents"
-	case 63:
-		p.Type = "banner_patterns"
-	case 65:
-		p.Type = "pot_decorations"
-	case 66:
-		p.Type = "container"
-	case 77:
-		p.Type = "salmon/size"
-	case 78:
-		p.Type = "parrot/variant"
-	case 2:
-		p.Type = "max_damage"
-	case 12:
-		p.Type = "can_break"
-	case 51:
-		p.Type = "block_entity_data"
-	case 80:
-		p.Type = "tropical_fish/base_color"
-	case 81:
-		p.Type = "tropical_fish/pattern_color"
-	case 23:
-		p.Type = "use_cooldown"
-	case 3:
-		p.Type = "damage"
-	case 15:
-		p.Type = "tooltip_display"
-	case 20:
-		p.Type = "food"
-	case 35:
-		p.Type = "dyed_color"
-	case 46:
-		p.Type = "written_book_content"
-	case 62:
-		p.Type = "note_block_sound"
-	case 79:
-		p.Type = "tropical_fish/pattern"
-	case 10:
-		p.Type = "enchantments"
-	case 18:
-		p.Type = "enchantment_glint_override"
-	case 37:
-		p.Type = "map_id"
-	case 48:
-		p.Type = "debug_stick_state"
-	case 70:
-		p.Type = "container_loot"
-	case 76:
-		p.Type = "fox/variant"
-	case 82:
-		p.Type = "mooshroom/variant"
-	case 85:
-		p.Type = "cow/variant"
-	case 4:
-		p.Type = "unbreakable"
-	case 47:
-		p.Type = "trim"
-	case 58:
-		p.Type = "lodestone_tracker"
-	case 61:
-		p.Type = "profile"
-	case 64:
-		p.Type = "base_color"
-	case 93:
-		p.Type = "cat/collar"
-	case 16:
-		p.Type = "repair_cost"
-	case 21:
-		p.Type = "consumable"
-	case 29:
-		p.Type = "repairable"
-	case 44:
-		p.Type = "suspicious_stew_effects"
-	case 71:
-		p.Type = "break_sound"
-	case 87:
-		p.Type = "frog/variant"
-	case 1:
-		p.Type = "max_stack_size"
-	case 8:
-		p.Type = "lore"
-	case 13:
-		p.Type = "attribute_modifiers"
 	case 31:
 		p.Type = "tooltip_style"
-	case 6:
-		p.Type = "item_name"
-	case 22:
-		p.Type = "use_remainder"
-	case 34:
-		p.Type = "stored_enchantments"
-	case 57:
-		p.Type = "recipes"
-	case 60:
-		p.Type = "fireworks"
-	case 75:
-		p.Type = "wolf/collar"
-	case 50:
-		p.Type = "bucket_entity_data"
-	case 53:
-		p.Type = "provides_trim_material"
-	case 84:
-		p.Type = "pig/variant"
-	case 43:
-		p.Type = "potion_contents"
-	case 69:
-		p.Type = "lock"
-	case 83:
-		p.Type = "rabbit/variant"
-	case 88:
-		p.Type = "horse/variant"
-	case 90:
-		p.Type = "llama/variant"
-	case 0:
-		p.Type = "custom_data"
-	case 17:
-		p.Type = "creative_slot_lock"
-	case 19:
-		p.Type = "intangible_projectile"
-	case 30:
-		p.Type = "glider"
-	case 52:
-		p.Type = "instrument"
-	case 72:
-		p.Type = "villager/variant"
-	case 74:
-		p.Type = "wolf/sound_variant"
-	case 54:
-		p.Type = "ominous_bottle_amplifier"
 	case 55:
 		p.Type = "jukebox_playable"
-	case 9:
-		p.Type = "rarity"
+	case 73:
+		p.Type = "wolf/variant"
+	case 19:
+		p.Type = "intangible_projectile"
+	case 21:
+		p.Type = "consumable"
 	case 25:
 		p.Type = "tool"
-	case 27:
-		p.Type = "enchantable"
+	case 60:
+		p.Type = "fireworks"
+	case 8:
+		p.Type = "lore"
+	case 10:
+		p.Type = "enchantments"
+	case 15:
+		p.Type = "tooltip_display"
+	case 18:
+		p.Type = "enchantment_glint_override"
+	case 43:
+		p.Type = "potion_contents"
+	case 51:
+		p.Type = "block_entity_data"
+	case 52:
+		p.Type = "instrument"
+	case 53:
+		p.Type = "provides_trim_material"
+	case 26:
+		p.Type = "weapon"
+	case 40:
+		p.Type = "potion_duration_scale"
+	case 45:
+		p.Type = "writable_book_content"
+	case 47:
+		p.Type = "trim"
+	case 54:
+		p.Type = "ominous_bottle_amplifier"
+	case 59:
+		p.Type = "firework_explosion"
+	case 61:
+		p.Type = "profile"
+	case 88:
+		p.Type = "horse/variant"
+	case 1:
+		p.Type = "max_stack_size"
+	case 23:
+		p.Type = "use_cooldown"
+	case 41:
+		p.Type = "charged_projectiles"
+	case 46:
+		p.Type = "written_book_content"
+	case 78:
+		p.Type = "parrot/variant"
+	case 90:
+		p.Type = "llama/variant"
+	case 20:
+		p.Type = "food"
 	case 32:
 		p.Type = "death_protection"
-	case 38:
-		p.Type = "map_decorations"
+	case 50:
+		p.Type = "bucket_entity_data"
 	case 68:
 		p.Type = "bees"
-	case 11:
-		p.Type = "can_place_on"
+	case 76:
+		p.Type = "fox/variant"
+	case 4:
+		p.Type = "unbreakable"
+	case 7:
+		p.Type = "item_model"
 	case 24:
 		p.Type = "damage_resistant"
 	case 33:
 		p.Type = "blocks_attacks"
-	case 45:
-		p.Type = "writable_book_content"
-	case 94:
-		p.Type = "sheep/color"
-	case 7:
-		p.Type = "item_model"
-	case 26:
-		p.Type = "weapon"
-	case 28:
-		p.Type = "equippable"
-	case 67:
-		p.Type = "block_state"
-	case 86:
-		p.Type = "chicken/variant"
+	case 85:
+		p.Type = "cow/variant"
 	case 91:
 		p.Type = "axolotl/variant"
-	case 95:
-		p.Type = "shulker/color"
+	case 92:
+		p.Type = "cat/variant"
+	case 17:
+		p.Type = "creative_slot_lock"
+	case 22:
+		p.Type = "use_remainder"
+	case 38:
+		p.Type = "map_decorations"
+	case 42:
+		p.Type = "bundle_contents"
+	case 48:
+		p.Type = "debug_stick_state"
+	case 49:
+		p.Type = "entity_data"
+	case 77:
+		p.Type = "salmon/size"
+	case 11:
+		p.Type = "can_place_on"
+	case 57:
+		p.Type = "recipes"
+	case 71:
+		p.Type = "break_sound"
+	case 83:
+		p.Type = "rabbit/variant"
+	case 0:
+		p.Type = "custom_data"
+	case 6:
+		p.Type = "item_name"
+	case 13:
+		p.Type = "attribute_modifiers"
+	case 16:
+		p.Type = "repair_cost"
+	case 28:
+		p.Type = "equippable"
+	case 63:
+		p.Type = "banner_patterns"
+	case 67:
+		p.Type = "block_state"
+	case 80:
+		p.Type = "tropical_fish/base_color"
+	case 3:
+		p.Type = "damage"
+	case 56:
+		p.Type = "provides_banner_patterns"
+	case 66:
+		p.Type = "container"
+	case 82:
+		p.Type = "mooshroom/variant"
+	case 84:
+		p.Type = "pig/variant"
+	case 86:
+		p.Type = "chicken/variant"
+	case 89:
+		p.Type = "painting/variant"
+	case 37:
+		p.Type = "map_id"
+	case 58:
+		p.Type = "lodestone_tracker"
+	case 69:
+		p.Type = "lock"
+	case 74:
+		p.Type = "wolf/sound_variant"
+	case 75:
+		p.Type = "wolf/collar"
+	case 12:
+		p.Type = "can_break"
+	case 2:
+		p.Type = "max_damage"
 	case 14:
 		p.Type = "custom_model_data"
+	case 44:
+		p.Type = "suspicious_stew_effects"
+	case 93:
+		p.Type = "cat/collar"
+	case 34:
+		p.Type = "stored_enchantments"
+	case 39:
+		p.Type = "map_post_processing"
+	case 72:
+		p.Type = "villager/variant"
+	case 94:
+		p.Type = "sheep/color"
 	case 36:
 		p.Type = "map_color"
+	case 64:
+		p.Type = "base_color"
+	case 70:
+		p.Type = "container_loot"
+	case 79:
+		p.Type = "tropical_fish/pattern"
+	case 81:
+		p.Type = "tropical_fish/pattern_color"
+	case 95:
+		p.Type = "shulker/color"
+	case 5:
+		p.Type = "custom_name"
+	case 9:
+		p.Type = "rarity"
+	case 30:
+		p.Type = "glider"
+	case 35:
+		p.Type = "dyed_color"
+	case 62:
+		p.Type = "note_block_sound"
+	case 65:
+		p.Type = "pot_decorations"
+	case 87:
+		p.Type = "frog/variant"
+	case 27:
+		p.Type = "enchantable"
+	case 29:
+		p.Type = "repairable"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -3253,588 +2619,398 @@ func (p *TradeListTradesEntryOutputItemRemoveComponentsEntry) ReadFrom(r io.Read
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryOutputItemRemoveComponentsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "map_post_processing":
-		temp, err = pk.VarInt(39).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "charged_projectiles":
-		temp, err = pk.VarInt(41).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_banner_patterns":
-		temp, err = pk.VarInt(56).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "firework_explosion":
-		temp, err = pk.VarInt(59).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "painting/variant":
-		temp, err = pk.VarInt(89).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_name":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "entity_data":
-		temp, err = pk.VarInt(49).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/variant":
-		temp, err = pk.VarInt(73).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/variant":
-		temp, err = pk.VarInt(92).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_duration_scale":
-		temp, err = pk.VarInt(40).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bundle_contents":
-		temp, err = pk.VarInt(42).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "banner_patterns":
-		temp, err = pk.VarInt(63).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pot_decorations":
-		temp, err = pk.VarInt(65).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container":
-		temp, err = pk.VarInt(66).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "salmon/size":
-		temp, err = pk.VarInt(77).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "parrot/variant":
-		temp, err = pk.VarInt(78).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_damage":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_break":
-		temp, err = pk.VarInt(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_entity_data":
-		temp, err = pk.VarInt(51).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/base_color":
-		temp, err = pk.VarInt(80).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern_color":
-		temp, err = pk.VarInt(81).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_cooldown":
-		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_display":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "food":
-		temp, err = pk.VarInt(20).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dyed_color":
-		temp, err = pk.VarInt(35).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "written_book_content":
-		temp, err = pk.VarInt(46).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "note_block_sound":
-		temp, err = pk.VarInt(62).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern":
-		temp, err = pk.VarInt(79).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantments":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantment_glint_override":
-		temp, err = pk.VarInt(18).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_id":
-		temp, err = pk.VarInt(37).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "debug_stick_state":
-		temp, err = pk.VarInt(48).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container_loot":
-		temp, err = pk.VarInt(70).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fox/variant":
-		temp, err = pk.VarInt(76).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "mooshroom/variant":
-		temp, err = pk.VarInt(82).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cow/variant":
-		temp, err = pk.VarInt(85).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "unbreakable":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trim":
-		temp, err = pk.VarInt(47).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lodestone_tracker":
-		temp, err = pk.VarInt(58).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "profile":
-		temp, err = pk.VarInt(61).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "base_color":
-		temp, err = pk.VarInt(64).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/collar":
-		temp, err = pk.VarInt(93).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repair_cost":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "consumable":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repairable":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "suspicious_stew_effects":
-		temp, err = pk.VarInt(44).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "break_sound":
-		temp, err = pk.VarInt(71).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "frog/variant":
-		temp, err = pk.VarInt(87).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_stack_size":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lore":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "attribute_modifiers":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "tooltip_style":
 		temp, err = pk.VarInt(31).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_name":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_remainder":
-		temp, err = pk.VarInt(22).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stored_enchantments":
-		temp, err = pk.VarInt(34).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "recipes":
-		temp, err = pk.VarInt(57).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fireworks":
-		temp, err = pk.VarInt(60).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/collar":
-		temp, err = pk.VarInt(75).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bucket_entity_data":
-		temp, err = pk.VarInt(50).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_trim_material":
-		temp, err = pk.VarInt(53).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pig/variant":
-		temp, err = pk.VarInt(84).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_contents":
-		temp, err = pk.VarInt(43).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lock":
-		temp, err = pk.VarInt(69).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rabbit/variant":
-		temp, err = pk.VarInt(83).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "horse/variant":
-		temp, err = pk.VarInt(88).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "llama/variant":
-		temp, err = pk.VarInt(90).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_data":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "creative_slot_lock":
-		temp, err = pk.VarInt(17).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "intangible_projectile":
-		temp, err = pk.VarInt(19).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glider":
-		temp, err = pk.VarInt(30).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "instrument":
-		temp, err = pk.VarInt(52).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "villager/variant":
-		temp, err = pk.VarInt(72).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/sound_variant":
-		temp, err = pk.VarInt(74).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ominous_bottle_amplifier":
-		temp, err = pk.VarInt(54).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "jukebox_playable":
 		temp, err = pk.VarInt(55).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rarity":
-		temp, err = pk.VarInt(9).WriteTo(w)
+		if err != nil { return n, err }
+	case "wolf/variant":
+		temp, err = pk.VarInt(73).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "intangible_projectile":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "consumable":
+		temp, err = pk.VarInt(21).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "tool":
 		temp, err = pk.VarInt(25).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantable":
-		temp, err = pk.VarInt(27).WriteTo(w)
+		if err != nil { return n, err }
+	case "fireworks":
+		temp, err = pk.VarInt(60).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "death_protection":
-		temp, err = pk.VarInt(32).WriteTo(w)
+		if err != nil { return n, err }
+	case "lore":
+		temp, err = pk.VarInt(8).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_decorations":
-		temp, err = pk.VarInt(38).WriteTo(w)
+		if err != nil { return n, err }
+	case "enchantments":
+		temp, err = pk.VarInt(10).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bees":
-		temp, err = pk.VarInt(68).WriteTo(w)
+		if err != nil { return n, err }
+	case "tooltip_display":
+		temp, err = pk.VarInt(15).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_place_on":
-		temp, err = pk.VarInt(11).WriteTo(w)
+		if err != nil { return n, err }
+	case "enchantment_glint_override":
+		temp, err = pk.VarInt(18).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage_resistant":
-		temp, err = pk.VarInt(24).WriteTo(w)
+		if err != nil { return n, err }
+	case "potion_contents":
+		temp, err = pk.VarInt(43).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blocks_attacks":
-		temp, err = pk.VarInt(33).WriteTo(w)
+		if err != nil { return n, err }
+	case "block_entity_data":
+		temp, err = pk.VarInt(51).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "writable_book_content":
-		temp, err = pk.VarInt(45).WriteTo(w)
+		if err != nil { return n, err }
+	case "instrument":
+		temp, err = pk.VarInt(52).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sheep/color":
-		temp, err = pk.VarInt(94).WriteTo(w)
+		if err != nil { return n, err }
+	case "provides_trim_material":
+		temp, err = pk.VarInt(53).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_model":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "weapon":
 		temp, err = pk.VarInt(26).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "equippable":
-		temp, err = pk.VarInt(28).WriteTo(w)
+		if err != nil { return n, err }
+	case "potion_duration_scale":
+		temp, err = pk.VarInt(40).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_state":
-		temp, err = pk.VarInt(67).WriteTo(w)
+		if err != nil { return n, err }
+	case "writable_book_content":
+		temp, err = pk.VarInt(45).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "chicken/variant":
-		temp, err = pk.VarInt(86).WriteTo(w)
+		if err != nil { return n, err }
+	case "trim":
+		temp, err = pk.VarInt(47).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "ominous_bottle_amplifier":
+		temp, err = pk.VarInt(54).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "firework_explosion":
+		temp, err = pk.VarInt(59).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "profile":
+		temp, err = pk.VarInt(61).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "horse/variant":
+		temp, err = pk.VarInt(88).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_stack_size":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_cooldown":
+		temp, err = pk.VarInt(23).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "charged_projectiles":
+		temp, err = pk.VarInt(41).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "written_book_content":
+		temp, err = pk.VarInt(46).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "parrot/variant":
+		temp, err = pk.VarInt(78).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "llama/variant":
+		temp, err = pk.VarInt(90).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "food":
+		temp, err = pk.VarInt(20).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "death_protection":
+		temp, err = pk.VarInt(32).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bucket_entity_data":
+		temp, err = pk.VarInt(50).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bees":
+		temp, err = pk.VarInt(68).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fox/variant":
+		temp, err = pk.VarInt(76).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "unbreakable":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_model":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage_resistant":
+		temp, err = pk.VarInt(24).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blocks_attacks":
+		temp, err = pk.VarInt(33).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cow/variant":
+		temp, err = pk.VarInt(85).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "axolotl/variant":
 		temp, err = pk.VarInt(91).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "shulker/color":
-		temp, err = pk.VarInt(95).WriteTo(w)
+		if err != nil { return n, err }
+	case "cat/variant":
+		temp, err = pk.VarInt(92).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "creative_slot_lock":
+		temp, err = pk.VarInt(17).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_remainder":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_decorations":
+		temp, err = pk.VarInt(38).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bundle_contents":
+		temp, err = pk.VarInt(42).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "debug_stick_state":
+		temp, err = pk.VarInt(48).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "entity_data":
+		temp, err = pk.VarInt(49).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "salmon/size":
+		temp, err = pk.VarInt(77).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_place_on":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "recipes":
+		temp, err = pk.VarInt(57).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "break_sound":
+		temp, err = pk.VarInt(71).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rabbit/variant":
+		temp, err = pk.VarInt(83).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_data":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_name":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "attribute_modifiers":
+		temp, err = pk.VarInt(13).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repair_cost":
+		temp, err = pk.VarInt(16).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "equippable":
+		temp, err = pk.VarInt(28).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "banner_patterns":
+		temp, err = pk.VarInt(63).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "block_state":
+		temp, err = pk.VarInt(67).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/base_color":
+		temp, err = pk.VarInt(80).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_banner_patterns":
+		temp, err = pk.VarInt(56).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container":
+		temp, err = pk.VarInt(66).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "mooshroom/variant":
+		temp, err = pk.VarInt(82).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pig/variant":
+		temp, err = pk.VarInt(84).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "chicken/variant":
+		temp, err = pk.VarInt(86).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "painting/variant":
+		temp, err = pk.VarInt(89).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_id":
+		temp, err = pk.VarInt(37).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lodestone_tracker":
+		temp, err = pk.VarInt(58).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lock":
+		temp, err = pk.VarInt(69).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/sound_variant":
+		temp, err = pk.VarInt(74).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/collar":
+		temp, err = pk.VarInt(75).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_break":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_damage":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "custom_model_data":
 		temp, err = pk.VarInt(14).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "suspicious_stew_effects":
+		temp, err = pk.VarInt(44).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/collar":
+		temp, err = pk.VarInt(93).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "stored_enchantments":
+		temp, err = pk.VarInt(34).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_post_processing":
+		temp, err = pk.VarInt(39).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "villager/variant":
+		temp, err = pk.VarInt(72).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "sheep/color":
+		temp, err = pk.VarInt(94).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "map_color":
 		temp, err = pk.VarInt(36).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "base_color":
+		temp, err = pk.VarInt(64).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container_loot":
+		temp, err = pk.VarInt(70).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern":
+		temp, err = pk.VarInt(79).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern_color":
+		temp, err = pk.VarInt(81).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "shulker/color":
+		temp, err = pk.VarInt(95).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_name":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rarity":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "glider":
+		temp, err = pk.VarInt(30).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "dyed_color":
+		temp, err = pk.VarInt(35).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "note_block_sound":
+		temp, err = pk.VarInt(62).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pot_decorations":
+		temp, err = pk.VarInt(65).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "frog/variant":
+		temp, err = pk.VarInt(87).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantable":
+		temp, err = pk.VarInt(27).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repairable":
+		temp, err = pk.VarInt(29).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
@@ -3842,15 +3018,18 @@ func (p TradeListTradesEntryOutputItemRemoveComponentsEntry) WriteTo(w io.Writer
 	return n, nil
 }
 
+
+
 // TradeListTradesEntryOutputItem is a sub-structure used in the packet.
 type TradeListTradesEntryOutputItem struct {
-	ItemCount             int32 `mc:"VarInt"`
-	ItemId                int32 `mc:"VarInt"`
-	AddedComponentCount   int32 `mc:"VarInt"`
+	ItemCount int32 `mc:"VarInt"`
+	ItemId int32 `mc:"VarInt"`
+	AddedComponentCount int32 `mc:"VarInt"`
 	RemovedComponentCount int32 `mc:"VarInt"`
-	Components            []TradeListTradesEntryOutputItemTemp
-	RemoveComponents      []TradeListTradesEntryOutputItemRemoveComponentsEntry
+	Components []TradeListTradesEntryOutputItemTemp
+	RemoveComponents []TradeListTradesEntryOutputItemRemoveComponentsEntry
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err error) {
@@ -3860,18 +3039,14 @@ func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err err
 	var itemCount pk.VarInt
 	temp, err = itemCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemCount = int32(itemCount)
 
 	if p.ItemCount != 0 {
 		var itemId pk.VarInt
 		temp, err = itemId.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.ItemId = int32(itemId)
 	}
 
@@ -3879,9 +3054,7 @@ func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err err
 		var addedComponentCount pk.VarInt
 		temp, err = addedComponentCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.AddedComponentCount = int32(addedComponentCount)
 	}
 
@@ -3889,9 +3062,7 @@ func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err err
 		var removedComponentCount pk.VarInt
 		temp, err = removedComponentCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.RemovedComponentCount = int32(removedComponentCount)
 	}
 
@@ -3899,16 +3070,12 @@ func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err err
 		var componentsCount pk.VarInt
 		temp, err = componentsCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Components = make([]TradeListTradesEntryOutputItemTemp, componentsCount)
 		for i := 0; i < int(componentsCount); i++ {
 			temp, err = p.Components[i].ReadFrom(r)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
@@ -3916,21 +3083,19 @@ func (p *TradeListTradesEntryOutputItem) ReadFrom(r io.Reader) (n int64, err err
 		var removeComponentsCount pk.VarInt
 		temp, err = removeComponentsCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.RemoveComponents = make([]TradeListTradesEntryOutputItemRemoveComponentsEntry, removeComponentsCount)
 		for i := 0; i < int(removeComponentsCount); i++ {
 			temp, err = p.RemoveComponents[i].ReadFrom(r)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryOutputItem) WriteTo(w io.Writer) (n int64, err error) {
@@ -3939,171 +3104,158 @@ func (p TradeListTradesEntryOutputItem) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.VarInt(p.ItemCount).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.ItemCount != 0 {
 		temp, err = pk.VarInt(p.ItemId).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.ItemCount != 0 {
 		temp, err = pk.VarInt(p.AddedComponentCount).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.ItemCount != 0 {
 		temp, err = pk.VarInt(p.RemovedComponentCount).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.ItemCount != 0 {
 		temp, err = pk.VarInt(len(p.Components)).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		for i := range p.Components {
 			temp, err = p.Components[i].WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	if p.ItemCount != 0 {
 		temp, err = pk.VarInt(len(p.RemoveComponents)).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		for i := range p.RemoveComponents {
 			temp, err = p.RemoveComponents[i].WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	return n, nil
 }
 
+
+
 // TradeListTradesEntryInputItem2Temp is a sub-structure used in the packet.
 type TradeListTradesEntryInputItem2Temp struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   llama/variant -> varint
-	//   cat/collar -> varint
-	//   repair_cost -> varint
-	//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   tooltip_style -> string
-	//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
-	//   potion_duration_scale -> f32
-	//   recipes -> anonymousNbt
-	//   pig/variant -> varint
-	//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
-	//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
-	//   axolotl/variant -> varint
-	//   sheep/color -> varint
-	//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   enchantment_glint_override -> bool
-	//   intangible_projectile -> void
-	//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
-	//   item_model -> string
-	//   repairable -> [container [map[name:items type:IDSet]]]
-	//   provides_banner_patterns -> string
-	//   base_color -> varint
-	//   lock -> anonymousNbt
-	//   max_damage -> varint
-	//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
-	//   tropical_fish/pattern -> varint
-	//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
-	//   bucket_entity_data -> anonymousNbt
-	//   creative_slot_lock -> void
-	//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
-	//   map_post_processing -> varint
-	//   mooshroom/variant -> varint
-	//   frog/variant -> varint
-	//   entity_data -> anonymousNbt
-	//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
-	//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
-	//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
-	//   map_color -> i32
-	//   break_sound -> ItemSoundHolder
-	//   shulker/color -> varint
-	//   lore -> [array map[countType:varint type:anonymousNbt]]
-	//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
-	//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
-	//   ominous_bottle_amplifier -> varint
-	//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
-	//   cat/variant -> varint
-	//   custom_data -> anonymousNbt
-	//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
-	//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
-	//   wolf/sound_variant -> varint
-	//   tropical_fish/base_color -> varint
-	//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
-	//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
-	//   container_loot -> anonymousNbt
-	//   custom_name -> anonymousNbt
-	//   damage_resistant -> string
-	//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
-	//   block_entity_data -> anonymousNbt
-	//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
-	//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
-	//   salmon/size -> varint
-	//   item_name -> anonymousNbt
-	//   use_remainder -> Slot
-	//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
-	//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
-	//   firework_explosion -> ItemFireworkExplosion
-	//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
-	//   fox/variant -> varint
-	//   tropical_fish/pattern_color -> varint
-	//   max_stack_size -> varint
-	//   damage -> varint
-	//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
-	//   villager/variant -> varint
-	//   parrot/variant -> varint
-	//   cow/variant -> varint
-	//   horse/variant -> varint
-	//   unbreakable -> void
-	//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
-	//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
-	//   enchantable -> varint
-	//   debug_stick_state -> anonymousNbt
-	//   note_block_sound -> string
-	//   wolf/variant -> varint
-	//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
-	//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
-	//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
-	//   glider -> void
-	//   dyed_color -> i32
-	//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
-	//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
-	//   rabbit/variant -> varint
-	//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
-	//   map_id -> varint
-	//   map_decorations -> anonymousNbt
-	//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
-	//   wolf/collar -> varint
+//   base_color -> varint
+//   wolf/sound_variant -> varint
+//   can_break -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   map_id -> varint
+//   fox/variant -> varint
+//   frog/variant -> varint
+//   shulker/color -> varint
+//   max_damage -> varint
+//   potion_contents -> [container [map[name:potionId type:[option varint]] map[name:customColor type:[option i32]] map[name:customEffects type:[array map[countType:varint type:ItemPotionEffect]]] map[name:customName type:[option string]]]]
+//   bucket_entity_data -> anonymousNbt
+//   cat/variant -> varint
+//   rarity -> [mapper map[mappings:map[0:common 1:uncommon 2:rare 3:epic] type:varint]]
+//   blocks_attacks -> [container [map[name:blockDelaySeconds type:f32] map[name:disableCooldownScale type:f32] map[name:damageReductions type:[array map[countType:varint type:[container [map[name:horizontalBlockingAngle type:f32] map[name:type type:[option IDSet]] map[name:base type:f32] map[name:factor type:f32]]]]]] map[name:itemDamage type:[container [map[name:threshold type:f32] map[name:base type:f32] map[name:factor type:f32]]]] map[name:bypassedBy type:[option string]] map[name:blockSound type:[option ItemSoundHolder]] map[name:disableSound type:[option ItemSoundHolder]]]]
+//   fireworks -> [container [map[name:flightDuration type:varint] map[name:explosions type:[array map[countType:varint type:ItemFireworkExplosion]]]]]
+//   note_block_sound -> string
+//   villager/variant -> varint
+//   cow/variant -> varint
+//   use_cooldown -> [container [map[name:seconds type:f32] map[name:cooldownGroup type:[option string]]]]
+//   intangible_projectile -> void
+//   charged_projectiles -> [container [map[name:projectiles type:[array map[countType:varint type:Slot]]]]]
+//   bundle_contents -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   container -> [container [map[name:contents type:[array map[countType:varint type:Slot]]]]]
+//   block_state -> [container [map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string]]]]]]]]
+//   break_sound -> ItemSoundHolder
+//   wolf/collar -> varint
+//   suspicious_stew_effects -> [container [map[name:effects type:[array map[countType:varint type:[container [map[name:effect type:varint] map[name:duration type:varint]]]]]]]]
+//   written_book_content -> [container [map[name:rawTitle type:string] map[name:filteredTitle type:[option string]] map[name:author type:string] map[name:generation type:varint] map[name:pages type:[array map[countType:varint type:ItemWrittenBookPage]]] map[name:resolved type:bool]]]
+//   block_entity_data -> anonymousNbt
+//   tropical_fish/pattern -> varint
+//   enchantable -> varint
+//   repairable -> [container [map[name:items type:IDSet]]]
+//   map_decorations -> anonymousNbt
+//   lodestone_tracker -> [container [map[name:globalPosition type:[option [container [map[name:dimension type:string] map[name:position type:position]]]]] map[name:tracked type:bool]]]
+//   pot_decorations -> [container [map[name:decorations type:[array map[countType:varint type:varint]]]]]
+//   llama/variant -> varint
+//   stored_enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   tooltip_style -> string
+//   provides_trim_material -> [container [map[name:hasHolder type:bool] map[name:material type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]]]]]]]
+//   bees -> [container [map[name:bees type:[array map[countType:varint type:[container [map[name:nbtData type:anonymousNbt] map[name:ticksInHive type:varint] map[name:minTicksInHive type:varint]]]]]]]]
+//   tropical_fish/pattern_color -> varint
+//   painting/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:data type:EntityMetadataPaintingVariant]]]
+//   weapon -> [container [map[name:itemDamagePerAttack type:varint] map[name:disableBlockingForSeconds type:f32]]]
+//   glider -> void
+//   death_protection -> [container [map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   provides_banner_patterns -> string
+//   salmon/size -> varint
+//   axolotl/variant -> varint
+//   cat/collar -> varint
+//   custom_data -> anonymousNbt
+//   enchantment_glint_override -> bool
+//   damage_resistant -> string
+//   sheep/color -> varint
+//   custom_model_data -> [container [map[name:floats type:[array map[countType:varint type:f32]]] map[name:flags type:[array map[countType:varint type:bool]]] map[name:strings type:[array map[countType:varint type:string]]] map[name:colors type:[array map[countType:varint type:i32]]]]]
+//   repair_cost -> varint
+//   use_remainder -> Slot
+//   tool -> [container [map[name:rules type:[array map[countType:varint type:[container [map[name:blocks type:IDSet] map[name:speed type:[option f32]] map[name:correctDropForBlocks type:[option bool]]]]]]] map[name:defaultMiningSpeed type:f32] map[name:damagePerBlock type:varint] map[name:canDestroyBlocksInCreative type:bool]]]
+//   wolf/variant -> varint
+//   tropical_fish/base_color -> varint
+//   mooshroom/variant -> varint
+//   pig/variant -> varint
+//   damage -> varint
+//   unbreakable -> void
+//   item_name -> anonymousNbt
+//   map_color -> i32
+//   trim -> [container [map[name:material type:[registryEntryHolder map[baseName:materialId otherwise:map[name:data type:ArmorTrimMaterial]]]] map[name:pattern type:[registryEntryHolder map[baseName:patternId otherwise:map[name:data type:ArmorTrimPattern]]]]]]
+//   profile -> [container [map[name:name type:[option string]] map[name:uuid type:[option UUID]] map[name:properties type:[array map[countType:varint type:[container [map[name:name type:string] map[name:value type:string] map[name:signature type:[option string]]]]]]]]]
+//   horse/variant -> varint
+//   enchantments -> [container [map[name:enchantments type:[array map[countType:varint type:[container [map[name:id type:varint] map[name:level type:varint]]]]]]]]
+//   can_place_on -> [container [map[name:predicates type:[array map[countType:varint type:ItemBlockPredicate]]]]]
+//   creative_slot_lock -> void
+//   map_post_processing -> varint
+//   banner_patterns -> [container [map[name:layers type:[array map[countType:varint type:BannerPatternLayer]]]]]
+//   rabbit/variant -> varint
+//   writable_book_content -> [container [map[name:pages type:[array map[countType:varint type:ItemBookPage]]]]]
+//   instrument -> [container [map[name:hasHolder type:bool] map[name:data type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:instrumentId otherwise:map[name:data type:InstrumentData]]]]]]]]]
+//   lock -> anonymousNbt
+//   tooltip_display -> [container [map[name:hideTooltip type:bool] map[name:hiddenComponents type:[array map[countType:varint type:varint]]]]]
+//   food -> [container [map[name:nutrition type:varint] map[name:saturationModifier type:f32] map[name:canAlwaysEat type:bool]]]
+//   dyed_color -> i32
+//   potion_duration_scale -> f32
+//   ominous_bottle_amplifier -> varint
+//   parrot/variant -> varint
+//   chicken/variant -> [registryEntryHolder map[baseName:variantId otherwise:map[name:variantData type:string]]]
+//   custom_name -> anonymousNbt
+//   item_model -> string
+//   attribute_modifiers -> [container [map[name:attributes type:[array map[countType:varint type:[container [map[name:typeId type:varint] map[name:name type:string] map[name:value type:f64] map[name:operation type:[mapper map[mappings:map[0:add 1:multiply_base 2:multiply_total] type:varint]]] map[name:slot type:[mapper map[mappings:map[0:any 1:main_hand 10:saddle 2:off_hand 3:hand 4:feet 5:legs 6:chest 7:head 8:armor 9:body] type:varint]]]]]]]] map[name:display type:[container [map[name:type type:[mapper map[mappings:map[0:default 1:hidden 2:override] type:varint]]] map[name:component type:[switch map[compareTo:type fields:map[override:anonymousNbt]]]]]]]]]
+//   equippable -> [container [map[name:slot type:[mapper map[mappings:map[0:main_hand 1:off_hand 2:feet 3:legs 4:chest 5:head 6:body 7:saddle] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:model type:[option string]] map[name:cameraOverlay type:[option string]] map[name:allowedEntities type:[option IDSet]] map[name:dispensable type:bool] map[name:swappable type:bool] map[name:damageable type:bool] map[name:equipOnInteract type:bool] map[name:shearable type:bool] map[name:shearingSound type:ItemSoundHolder]]]
+//   debug_stick_state -> anonymousNbt
+//   recipes -> anonymousNbt
+//   container_loot -> anonymousNbt
+//   max_stack_size -> varint
+//   lore -> [array map[countType:varint type:anonymousNbt]]
+//   consumable -> [container [map[name:consume_seconds type:f32] map[name:animation type:[mapper map[mappings:map[0:none 1:eat 10:bundle 2:drink 3:block 4:bow 5:spear 6:crossbow 7:spyglass 8:toot_horn 9:brush] type:varint]]] map[name:sound type:ItemSoundHolder] map[name:makes_particles type:bool] map[name:effects type:[array map[countType:varint type:ItemConsumeEffect]]]]]
+//   entity_data -> anonymousNbt
+//   jukebox_playable -> [container [map[name:hasHolder type:bool] map[name:song type:[switch map[compareTo:hasHolder fields:map[false:string true:[registryEntryHolder map[baseName:songId otherwise:map[name:data type:JukeboxSongData]]]]]]]]]
+//   firework_explosion -> ItemFireworkExplosion
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err error) {
@@ -4113,215 +3265,230 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 54:
-		p.Type = "ominous_bottle_amplifier"
-	case 55:
-		p.Type = "jukebox_playable"
+	case 0:
+		p.Type = "custom_data"
+	case 6:
+		p.Type = "item_name"
+	case 13:
+		p.Type = "attribute_modifiers"
+	case 16:
+		p.Type = "repair_cost"
+	case 28:
+		p.Type = "equippable"
+	case 63:
+		p.Type = "banner_patterns"
+	case 67:
+		p.Type = "block_state"
+	case 80:
+		p.Type = "tropical_fish/base_color"
+	case 3:
+		p.Type = "damage"
+	case 56:
+		p.Type = "provides_banner_patterns"
+	case 66:
+		p.Type = "container"
+	case 82:
+		p.Type = "mooshroom/variant"
+	case 84:
+		p.Type = "pig/variant"
+	case 86:
+		p.Type = "chicken/variant"
+	case 89:
+		p.Type = "painting/variant"
+	case 37:
+		p.Type = "map_id"
+	case 58:
+		p.Type = "lodestone_tracker"
+	case 69:
+		p.Type = "lock"
+	case 74:
+		p.Type = "wolf/sound_variant"
+	case 75:
+		p.Type = "wolf/collar"
+	case 12:
+		p.Type = "can_break"
+	case 2:
+		p.Type = "max_damage"
+	case 14:
+		p.Type = "custom_model_data"
+	case 44:
+		p.Type = "suspicious_stew_effects"
+	case 93:
+		p.Type = "cat/collar"
+	case 34:
+		p.Type = "stored_enchantments"
+	case 39:
+		p.Type = "map_post_processing"
+	case 72:
+		p.Type = "villager/variant"
+	case 94:
+		p.Type = "sheep/color"
+	case 36:
+		p.Type = "map_color"
+	case 64:
+		p.Type = "base_color"
+	case 70:
+		p.Type = "container_loot"
+	case 79:
+		p.Type = "tropical_fish/pattern"
+	case 81:
+		p.Type = "tropical_fish/pattern_color"
+	case 95:
+		p.Type = "shulker/color"
+	case 5:
+		p.Type = "custom_name"
 	case 9:
 		p.Type = "rarity"
-	case 25:
-		p.Type = "tool"
+	case 30:
+		p.Type = "glider"
+	case 35:
+		p.Type = "dyed_color"
+	case 62:
+		p.Type = "note_block_sound"
+	case 65:
+		p.Type = "pot_decorations"
+	case 87:
+		p.Type = "frog/variant"
 	case 27:
 		p.Type = "enchantable"
+	case 29:
+		p.Type = "repairable"
+	case 31:
+		p.Type = "tooltip_style"
+	case 55:
+		p.Type = "jukebox_playable"
+	case 73:
+		p.Type = "wolf/variant"
+	case 19:
+		p.Type = "intangible_projectile"
+	case 21:
+		p.Type = "consumable"
+	case 25:
+		p.Type = "tool"
+	case 60:
+		p.Type = "fireworks"
+	case 8:
+		p.Type = "lore"
+	case 10:
+		p.Type = "enchantments"
+	case 15:
+		p.Type = "tooltip_display"
+	case 18:
+		p.Type = "enchantment_glint_override"
+	case 43:
+		p.Type = "potion_contents"
+	case 51:
+		p.Type = "block_entity_data"
+	case 52:
+		p.Type = "instrument"
+	case 53:
+		p.Type = "provides_trim_material"
+	case 26:
+		p.Type = "weapon"
+	case 40:
+		p.Type = "potion_duration_scale"
+	case 45:
+		p.Type = "writable_book_content"
+	case 47:
+		p.Type = "trim"
+	case 54:
+		p.Type = "ominous_bottle_amplifier"
+	case 59:
+		p.Type = "firework_explosion"
+	case 61:
+		p.Type = "profile"
+	case 88:
+		p.Type = "horse/variant"
+	case 1:
+		p.Type = "max_stack_size"
+	case 23:
+		p.Type = "use_cooldown"
+	case 41:
+		p.Type = "charged_projectiles"
+	case 46:
+		p.Type = "written_book_content"
+	case 78:
+		p.Type = "parrot/variant"
+	case 90:
+		p.Type = "llama/variant"
+	case 20:
+		p.Type = "food"
 	case 32:
 		p.Type = "death_protection"
-	case 38:
-		p.Type = "map_decorations"
+	case 50:
+		p.Type = "bucket_entity_data"
 	case 68:
 		p.Type = "bees"
-	case 11:
-		p.Type = "can_place_on"
+	case 76:
+		p.Type = "fox/variant"
+	case 4:
+		p.Type = "unbreakable"
+	case 7:
+		p.Type = "item_model"
 	case 24:
 		p.Type = "damage_resistant"
 	case 33:
 		p.Type = "blocks_attacks"
-	case 45:
-		p.Type = "writable_book_content"
-	case 94:
-		p.Type = "sheep/color"
-	case 7:
-		p.Type = "item_model"
-	case 26:
-		p.Type = "weapon"
-	case 28:
-		p.Type = "equippable"
-	case 67:
-		p.Type = "block_state"
-	case 86:
-		p.Type = "chicken/variant"
-	case 91:
-		p.Type = "axolotl/variant"
-	case 95:
-		p.Type = "shulker/color"
-	case 14:
-		p.Type = "custom_model_data"
-	case 36:
-		p.Type = "map_color"
-	case 39:
-		p.Type = "map_post_processing"
-	case 41:
-		p.Type = "charged_projectiles"
-	case 56:
-		p.Type = "provides_banner_patterns"
-	case 59:
-		p.Type = "firework_explosion"
-	case 89:
-		p.Type = "painting/variant"
-	case 5:
-		p.Type = "custom_name"
-	case 49:
-		p.Type = "entity_data"
-	case 73:
-		p.Type = "wolf/variant"
-	case 92:
-		p.Type = "cat/variant"
-	case 40:
-		p.Type = "potion_duration_scale"
-	case 42:
-		p.Type = "bundle_contents"
-	case 63:
-		p.Type = "banner_patterns"
-	case 65:
-		p.Type = "pot_decorations"
-	case 66:
-		p.Type = "container"
-	case 77:
-		p.Type = "salmon/size"
-	case 78:
-		p.Type = "parrot/variant"
-	case 2:
-		p.Type = "max_damage"
-	case 12:
-		p.Type = "can_break"
-	case 51:
-		p.Type = "block_entity_data"
-	case 80:
-		p.Type = "tropical_fish/base_color"
-	case 81:
-		p.Type = "tropical_fish/pattern_color"
-	case 23:
-		p.Type = "use_cooldown"
-	case 3:
-		p.Type = "damage"
-	case 15:
-		p.Type = "tooltip_display"
-	case 20:
-		p.Type = "food"
-	case 35:
-		p.Type = "dyed_color"
-	case 46:
-		p.Type = "written_book_content"
-	case 62:
-		p.Type = "note_block_sound"
-	case 79:
-		p.Type = "tropical_fish/pattern"
-	case 10:
-		p.Type = "enchantments"
-	case 18:
-		p.Type = "enchantment_glint_override"
-	case 37:
-		p.Type = "map_id"
-	case 48:
-		p.Type = "debug_stick_state"
-	case 70:
-		p.Type = "container_loot"
-	case 76:
-		p.Type = "fox/variant"
-	case 82:
-		p.Type = "mooshroom/variant"
 	case 85:
 		p.Type = "cow/variant"
-	case 4:
-		p.Type = "unbreakable"
-	case 47:
-		p.Type = "trim"
-	case 58:
-		p.Type = "lodestone_tracker"
-	case 61:
-		p.Type = "profile"
-	case 64:
-		p.Type = "base_color"
-	case 93:
-		p.Type = "cat/collar"
-	case 16:
-		p.Type = "repair_cost"
-	case 21:
-		p.Type = "consumable"
-	case 29:
-		p.Type = "repairable"
-	case 44:
-		p.Type = "suspicious_stew_effects"
-	case 71:
-		p.Type = "break_sound"
-	case 87:
-		p.Type = "frog/variant"
-	case 1:
-		p.Type = "max_stack_size"
-	case 8:
-		p.Type = "lore"
-	case 13:
-		p.Type = "attribute_modifiers"
-	case 31:
-		p.Type = "tooltip_style"
-	case 6:
-		p.Type = "item_name"
-	case 22:
-		p.Type = "use_remainder"
-	case 34:
-		p.Type = "stored_enchantments"
-	case 57:
-		p.Type = "recipes"
-	case 60:
-		p.Type = "fireworks"
-	case 75:
-		p.Type = "wolf/collar"
-	case 50:
-		p.Type = "bucket_entity_data"
-	case 53:
-		p.Type = "provides_trim_material"
-	case 84:
-		p.Type = "pig/variant"
-	case 43:
-		p.Type = "potion_contents"
-	case 69:
-		p.Type = "lock"
-	case 83:
-		p.Type = "rabbit/variant"
-	case 88:
-		p.Type = "horse/variant"
-	case 90:
-		p.Type = "llama/variant"
-	case 0:
-		p.Type = "custom_data"
+	case 91:
+		p.Type = "axolotl/variant"
+	case 92:
+		p.Type = "cat/variant"
 	case 17:
 		p.Type = "creative_slot_lock"
-	case 19:
-		p.Type = "intangible_projectile"
-	case 30:
-		p.Type = "glider"
-	case 52:
-		p.Type = "instrument"
-	case 72:
-		p.Type = "villager/variant"
-	case 74:
-		p.Type = "wolf/sound_variant"
+	case 22:
+		p.Type = "use_remainder"
+	case 38:
+		p.Type = "map_decorations"
+	case 42:
+		p.Type = "bundle_contents"
+	case 48:
+		p.Type = "debug_stick_state"
+	case 49:
+		p.Type = "entity_data"
+	case 77:
+		p.Type = "salmon/size"
+	case 11:
+		p.Type = "can_place_on"
+	case 57:
+		p.Type = "recipes"
+	case 71:
+		p.Type = "break_sound"
+	case 83:
+		p.Type = "rabbit/variant"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
 
 	switch p.Type {
-	case "pig/variant":
+	case "tropical_fish/pattern_color":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "glider":
+		var val struct{}
+		p.Data = val
+	case "provides_banner_patterns":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "salmon/size":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "axolotl/variant":
@@ -4329,99 +3496,123 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "sheep/color":
+	case "cat/collar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
+		p.Data = val
+	case "custom_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Data = val
 	case "enchantment_glint_override":
 		var val bool
 		var elem pk.Boolean
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = bool(elem)
 		p.Data = val
-	case "intangible_projectile":
+	case "damage_resistant":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "sheep/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "repair_cost":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "use_remainder":
+		var val slot.Slot
+		temp, err = (*slot.Slot)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "wolf/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "tropical_fish/base_color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "mooshroom/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "pig/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "damage":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "unbreakable":
 		var val struct{}
 		p.Data = val
-	case "item_model":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "provides_banner_patterns":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "lock":
+	case "item_name":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "max_damage":
+	case "map_color":
+		var val int32
+		temp, err = (*pk.Int)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "horse/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "bucket_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 		p.Data = val
 	case "creative_slot_lock":
 		var val struct{}
@@ -4431,229 +3622,41 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "mooshroom/variant":
+	case "rabbit/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "frog/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "entity_data":
+	case "lock":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "map_color":
+	case "dyed_color":
 		var val int32
 		temp, err = (*pk.Int)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "break_sound":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+	case "potion_duration_scale":
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "shulker/color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
+		if err != nil { return n, err }
 		p.Data = val
 	case "ominous_bottle_amplifier":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cat/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "custom_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "wolf/sound_variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/base_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "container_loot":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "custom_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "damage_resistant":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
-		p.Data = val
-	case "block_entity_data":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "salmon/size":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "item_name":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "use_remainder":
-		var val slot.Slot
-		temp, err = (*slot.Slot)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "firework_explosion":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "fox/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "tropical_fish/pattern_color":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "max_stack_size":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "damage":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "villager/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "parrot/variant":
@@ -4661,91 +3664,75 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "cow/variant":
-		var val int32
-		var elem pk.VarInt
+	case "custom_name":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "item_model":
+		var val string
+		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "horse/variant":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "unbreakable":
-		var val struct{}
-		p.Data = val
-	case "enchantable":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
+		if err != nil { return n, err }
+		val = string(elem)
 		p.Data = val
 	case "debug_stick_state":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "note_block_sound":
-		var val string
-		var elem pk.String
-		temp, err = elem.ReadFrom(r)
+	case "recipes":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = string(elem)
+		if err != nil { return n, err }
 		p.Data = val
-	case "wolf/variant":
+	case "container_loot":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "max_stack_size":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "glider":
-		var val struct{}
-		p.Data = val
-	case "dyed_color":
-		var val int32
-		temp, err = (*pk.Int)(&val).ReadFrom(r)
+	case "entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data = val
-	case "rabbit/variant":
+	case "firework_explosion":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "base_color":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "wolf/sound_variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "map_id":
@@ -4753,57 +3740,130 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
-	case "map_decorations":
+	case "fox/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "frog/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "shulker/color":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "max_damage":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "bucket_entity_data":
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		p.Data = val
+	case "cat/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "note_block_sound":
+		var val string
+		var elem pk.String
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = string(elem)
+		p.Data = val
+	case "villager/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "cow/variant":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "intangible_projectile":
+		var val struct{}
+		p.Data = val
+	case "break_sound":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Data = val
 	case "wolf/collar":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
+		p.Data = val
+	case "block_entity_data":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		p.Data = val
+	case "tropical_fish/pattern":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "enchantable":
+		var val int32
+		var elem pk.VarInt
+		temp, err = elem.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		val = int32(elem)
+		p.Data = val
+	case "map_decorations":
+		var val pk.NBTField
+		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Data = val
 	case "llama/variant":
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "cat/collar":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		val = int32(elem)
-		p.Data = val
-	case "repair_cost":
-		var val int32
-		var elem pk.VarInt
-		temp, err = elem.ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Data = val
 	case "tooltip_style":
@@ -4811,26 +3871,8 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
-		p.Data = val
-	case "potion_duration_scale":
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
-	case "recipes":
-		var val pk.NBTField
-		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 		p.Data = val
 	default:
 		// 無對應負載
@@ -4839,588 +3881,398 @@ func (p *TradeListTradesEntryInputItem2Temp) ReadFrom(r io.Reader) (n int64, err
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryInputItem2Temp) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "ominous_bottle_amplifier":
-		temp, err = pk.VarInt(54).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "jukebox_playable":
-		temp, err = pk.VarInt(55).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rarity":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tool":
-		temp, err = pk.VarInt(25).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantable":
-		temp, err = pk.VarInt(27).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "death_protection":
-		temp, err = pk.VarInt(32).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_decorations":
-		temp, err = pk.VarInt(38).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bees":
-		temp, err = pk.VarInt(68).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_place_on":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage_resistant":
-		temp, err = pk.VarInt(24).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blocks_attacks":
-		temp, err = pk.VarInt(33).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "writable_book_content":
-		temp, err = pk.VarInt(45).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "sheep/color":
-		temp, err = pk.VarInt(94).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_model":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "weapon":
-		temp, err = pk.VarInt(26).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "equippable":
-		temp, err = pk.VarInt(28).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_state":
-		temp, err = pk.VarInt(67).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "chicken/variant":
-		temp, err = pk.VarInt(86).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "axolotl/variant":
-		temp, err = pk.VarInt(91).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "shulker/color":
-		temp, err = pk.VarInt(95).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_model_data":
-		temp, err = pk.VarInt(14).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_color":
-		temp, err = pk.VarInt(36).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_post_processing":
-		temp, err = pk.VarInt(39).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "charged_projectiles":
-		temp, err = pk.VarInt(41).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_banner_patterns":
-		temp, err = pk.VarInt(56).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "firework_explosion":
-		temp, err = pk.VarInt(59).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "painting/variant":
-		temp, err = pk.VarInt(89).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "custom_name":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "entity_data":
-		temp, err = pk.VarInt(49).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/variant":
-		temp, err = pk.VarInt(73).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/variant":
-		temp, err = pk.VarInt(92).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_duration_scale":
-		temp, err = pk.VarInt(40).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bundle_contents":
-		temp, err = pk.VarInt(42).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "banner_patterns":
-		temp, err = pk.VarInt(63).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pot_decorations":
-		temp, err = pk.VarInt(65).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container":
-		temp, err = pk.VarInt(66).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "salmon/size":
-		temp, err = pk.VarInt(77).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "parrot/variant":
-		temp, err = pk.VarInt(78).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_damage":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "can_break":
-		temp, err = pk.VarInt(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "block_entity_data":
-		temp, err = pk.VarInt(51).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/base_color":
-		temp, err = pk.VarInt(80).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern_color":
-		temp, err = pk.VarInt(81).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_cooldown":
-		temp, err = pk.VarInt(23).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "damage":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_display":
-		temp, err = pk.VarInt(15).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "food":
-		temp, err = pk.VarInt(20).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "dyed_color":
-		temp, err = pk.VarInt(35).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "written_book_content":
-		temp, err = pk.VarInt(46).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "note_block_sound":
-		temp, err = pk.VarInt(62).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tropical_fish/pattern":
-		temp, err = pk.VarInt(79).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantments":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "enchantment_glint_override":
-		temp, err = pk.VarInt(18).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "map_id":
-		temp, err = pk.VarInt(37).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "debug_stick_state":
-		temp, err = pk.VarInt(48).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "container_loot":
-		temp, err = pk.VarInt(70).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fox/variant":
-		temp, err = pk.VarInt(76).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "mooshroom/variant":
-		temp, err = pk.VarInt(82).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cow/variant":
-		temp, err = pk.VarInt(85).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "unbreakable":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "trim":
-		temp, err = pk.VarInt(47).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lodestone_tracker":
-		temp, err = pk.VarInt(58).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "profile":
-		temp, err = pk.VarInt(61).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "base_color":
-		temp, err = pk.VarInt(64).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "cat/collar":
-		temp, err = pk.VarInt(93).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repair_cost":
-		temp, err = pk.VarInt(16).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "consumable":
-		temp, err = pk.VarInt(21).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "repairable":
-		temp, err = pk.VarInt(29).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "suspicious_stew_effects":
-		temp, err = pk.VarInt(44).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "break_sound":
-		temp, err = pk.VarInt(71).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "frog/variant":
-		temp, err = pk.VarInt(87).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "max_stack_size":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lore":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "attribute_modifiers":
-		temp, err = pk.VarInt(13).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "tooltip_style":
-		temp, err = pk.VarInt(31).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "item_name":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "use_remainder":
-		temp, err = pk.VarInt(22).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stored_enchantments":
-		temp, err = pk.VarInt(34).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "recipes":
-		temp, err = pk.VarInt(57).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "fireworks":
-		temp, err = pk.VarInt(60).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "wolf/collar":
-		temp, err = pk.VarInt(75).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "bucket_entity_data":
-		temp, err = pk.VarInt(50).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "provides_trim_material":
-		temp, err = pk.VarInt(53).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "pig/variant":
-		temp, err = pk.VarInt(84).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "potion_contents":
-		temp, err = pk.VarInt(43).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "lock":
-		temp, err = pk.VarInt(69).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "rabbit/variant":
-		temp, err = pk.VarInt(83).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "horse/variant":
-		temp, err = pk.VarInt(88).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "llama/variant":
-		temp, err = pk.VarInt(90).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "custom_data":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "creative_slot_lock":
-		temp, err = pk.VarInt(17).WriteTo(w)
+		if err != nil { return n, err }
+	case "item_name":
+		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "intangible_projectile":
-		temp, err = pk.VarInt(19).WriteTo(w)
+		if err != nil { return n, err }
+	case "attribute_modifiers":
+		temp, err = pk.VarInt(13).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "glider":
-		temp, err = pk.VarInt(30).WriteTo(w)
+		if err != nil { return n, err }
+	case "repair_cost":
+		temp, err = pk.VarInt(16).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "instrument":
-		temp, err = pk.VarInt(52).WriteTo(w)
+		if err != nil { return n, err }
+	case "equippable":
+		temp, err = pk.VarInt(28).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "villager/variant":
-		temp, err = pk.VarInt(72).WriteTo(w)
+		if err != nil { return n, err }
+	case "banner_patterns":
+		temp, err = pk.VarInt(63).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "block_state":
+		temp, err = pk.VarInt(67).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/base_color":
+		temp, err = pk.VarInt(80).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_banner_patterns":
+		temp, err = pk.VarInt(56).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container":
+		temp, err = pk.VarInt(66).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "mooshroom/variant":
+		temp, err = pk.VarInt(82).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pig/variant":
+		temp, err = pk.VarInt(84).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "chicken/variant":
+		temp, err = pk.VarInt(86).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "painting/variant":
+		temp, err = pk.VarInt(89).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_id":
+		temp, err = pk.VarInt(37).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lodestone_tracker":
+		temp, err = pk.VarInt(58).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lock":
+		temp, err = pk.VarInt(69).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case "wolf/sound_variant":
 		temp, err = pk.VarInt(74).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "wolf/collar":
+		temp, err = pk.VarInt(75).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_break":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_damage":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_model_data":
+		temp, err = pk.VarInt(14).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "suspicious_stew_effects":
+		temp, err = pk.VarInt(44).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/collar":
+		temp, err = pk.VarInt(93).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "stored_enchantments":
+		temp, err = pk.VarInt(34).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_post_processing":
+		temp, err = pk.VarInt(39).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "villager/variant":
+		temp, err = pk.VarInt(72).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "sheep/color":
+		temp, err = pk.VarInt(94).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_color":
+		temp, err = pk.VarInt(36).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "base_color":
+		temp, err = pk.VarInt(64).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "container_loot":
+		temp, err = pk.VarInt(70).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern":
+		temp, err = pk.VarInt(79).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tropical_fish/pattern_color":
+		temp, err = pk.VarInt(81).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "shulker/color":
+		temp, err = pk.VarInt(95).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "custom_name":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rarity":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "glider":
+		temp, err = pk.VarInt(30).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "dyed_color":
+		temp, err = pk.VarInt(35).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "note_block_sound":
+		temp, err = pk.VarInt(62).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "pot_decorations":
+		temp, err = pk.VarInt(65).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "frog/variant":
+		temp, err = pk.VarInt(87).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantable":
+		temp, err = pk.VarInt(27).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "repairable":
+		temp, err = pk.VarInt(29).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tooltip_style":
+		temp, err = pk.VarInt(31).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "jukebox_playable":
+		temp, err = pk.VarInt(55).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "wolf/variant":
+		temp, err = pk.VarInt(73).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "intangible_projectile":
+		temp, err = pk.VarInt(19).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "consumable":
+		temp, err = pk.VarInt(21).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tool":
+		temp, err = pk.VarInt(25).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fireworks":
+		temp, err = pk.VarInt(60).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "lore":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantments":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "tooltip_display":
+		temp, err = pk.VarInt(15).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "enchantment_glint_override":
+		temp, err = pk.VarInt(18).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_contents":
+		temp, err = pk.VarInt(43).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "block_entity_data":
+		temp, err = pk.VarInt(51).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "instrument":
+		temp, err = pk.VarInt(52).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "provides_trim_material":
+		temp, err = pk.VarInt(53).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "weapon":
+		temp, err = pk.VarInt(26).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "potion_duration_scale":
+		temp, err = pk.VarInt(40).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "writable_book_content":
+		temp, err = pk.VarInt(45).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "trim":
+		temp, err = pk.VarInt(47).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ominous_bottle_amplifier":
+		temp, err = pk.VarInt(54).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "firework_explosion":
+		temp, err = pk.VarInt(59).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "profile":
+		temp, err = pk.VarInt(61).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "horse/variant":
+		temp, err = pk.VarInt(88).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "max_stack_size":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_cooldown":
+		temp, err = pk.VarInt(23).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "charged_projectiles":
+		temp, err = pk.VarInt(41).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "written_book_content":
+		temp, err = pk.VarInt(46).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "parrot/variant":
+		temp, err = pk.VarInt(78).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "llama/variant":
+		temp, err = pk.VarInt(90).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "food":
+		temp, err = pk.VarInt(20).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "death_protection":
+		temp, err = pk.VarInt(32).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bucket_entity_data":
+		temp, err = pk.VarInt(50).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bees":
+		temp, err = pk.VarInt(68).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "fox/variant":
+		temp, err = pk.VarInt(76).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "unbreakable":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "item_model":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "damage_resistant":
+		temp, err = pk.VarInt(24).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blocks_attacks":
+		temp, err = pk.VarInt(33).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cow/variant":
+		temp, err = pk.VarInt(85).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "axolotl/variant":
+		temp, err = pk.VarInt(91).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "cat/variant":
+		temp, err = pk.VarInt(92).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "creative_slot_lock":
+		temp, err = pk.VarInt(17).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "use_remainder":
+		temp, err = pk.VarInt(22).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "map_decorations":
+		temp, err = pk.VarInt(38).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "bundle_contents":
+		temp, err = pk.VarInt(42).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "debug_stick_state":
+		temp, err = pk.VarInt(48).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "entity_data":
+		temp, err = pk.VarInt(49).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "salmon/size":
+		temp, err = pk.VarInt(77).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "can_place_on":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "recipes":
+		temp, err = pk.VarInt(57).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "break_sound":
+		temp, err = pk.VarInt(71).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "rabbit/variant":
+		temp, err = pk.VarInt(83).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
@@ -5429,43 +4281,29 @@ func (p TradeListTradesEntryInputItem2Temp) WriteTo(w io.Writer) (n int64, err e
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case struct{}:
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case string:
 		temp, err = pk.String(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case struct{}:
+		if err != nil { return n, err }
 	case bool:
 		temp, err = pk.Boolean(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case slot.Slot:
 		temp, err = (v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
 	}
@@ -5473,12 +4311,15 @@ func (p TradeListTradesEntryInputItem2Temp) WriteTo(w io.Writer) (n int64, err e
 	return n, nil
 }
 
+
+
 // TradeListTradesEntryInputItem2 is a sub-structure used in the packet.
 type TradeListTradesEntryInputItem2 struct {
-	ItemId     int32 `mc:"VarInt"`
-	ItemCount  int32 `mc:"VarInt"`
+	ItemId int32 `mc:"VarInt"`
+	ItemCount int32 `mc:"VarInt"`
 	Components []TradeListTradesEntryInputItem2Temp
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err error) {
@@ -5488,36 +4329,30 @@ func (p *TradeListTradesEntryInputItem2) ReadFrom(r io.Reader) (n int64, err err
 	var itemId pk.VarInt
 	temp, err = itemId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemId = int32(itemId)
 
 	var itemCount pk.VarInt
 	temp, err = itemCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemCount = int32(itemCount)
 
 	var componentsCount pk.VarInt
 	temp, err = componentsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Components = make([]TradeListTradesEntryInputItem2Temp, componentsCount)
 	for i := 0; i < int(componentsCount); i++ {
 		temp, err = p.Components[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error) {
@@ -5526,45 +4361,40 @@ func (p TradeListTradesEntryInputItem2) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.VarInt(p.ItemId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.ItemCount).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Components)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Components {
 		temp, err = p.Components[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
 
+
+
 // TradeListTradesEntry is a sub-structure used in the packet.
 type TradeListTradesEntry struct {
-	InputItem1         TradeListTradesEntryInputItem1
-	OutputItem         TradeListTradesEntryOutputItem
-	InputItem2         *TradeListTradesEntryInputItem2
-	TradeDisabled      bool
-	NbTradeUses        int32
+	InputItem1 TradeListTradesEntryInputItem1
+	OutputItem TradeListTradesEntryOutputItem
+	InputItem2 *TradeListTradesEntryInputItem2
+	TradeDisabled bool
+	NbTradeUses int32
 	MaximumNbTradeUses int32
-	Xp                 int32
-	SpecialPrice       int32
-	PriceMultiplier    float32
-	Demand             int32
+	Xp int32
+	SpecialPrice int32
+	PriceMultiplier float32
+	Demand int32
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
@@ -5573,77 +4403,57 @@ func (p *TradeListTradesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.InputItem1.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.OutputItem.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var hasInputItem2 pk.Boolean
 	temp, err = hasInputItem2.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasInputItem2 {
 		p.InputItem2 = &TradeListTradesEntryInputItem2{}
 		temp, err = p.InputItem2.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	var tradeDisabled pk.Boolean
 	temp, err = tradeDisabled.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.TradeDisabled = bool(tradeDisabled)
 
 	temp, err = (*pk.Int)(&p.NbTradeUses).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.MaximumNbTradeUses).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.Xp).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.SpecialPrice).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.PriceMultiplier).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.Demand).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p TradeListTradesEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -5652,95 +4462,75 @@ func (p TradeListTradesEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.InputItem1.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.OutputItem.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.InputItem2 != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = p.InputItem2.WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.Boolean(p.TradeDisabled).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.NbTradeUses).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.MaximumNbTradeUses).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.Xp).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.SpecialPrice).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.PriceMultiplier).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.Demand).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
+
 // TradeList represents the Clientbound TradeList packet.
 
 type TradeList struct {
-	WindowId          int32 `mc:"VarInt"`
-	Trades            []TradeListTradesEntry
-	VillagerLevel     int32 `mc:"VarInt"`
-	Experience        int32 `mc:"VarInt"`
+	WindowId int32 `mc:"VarInt"`
+	Trades []TradeListTradesEntry
+	VillagerLevel int32 `mc:"VarInt"`
+	Experience int32 `mc:"VarInt"`
 	IsRegularVillager bool
-	CanRestock        bool
+	CanRestock bool
 }
 
 // PacketID returns the packet ID for this packet.
 func (*TradeList) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundTradeList
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
@@ -5750,56 +4540,42 @@ func (p *TradeList) ReadFrom(r io.Reader) (n int64, err error) {
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WindowId = int32(windowId)
 
 	var tradesCount pk.VarInt
 	temp, err = tradesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Trades = make([]TradeListTradesEntry, tradesCount)
 	for i := 0; i < int(tradesCount); i++ {
 		temp, err = p.Trades[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	var villagerLevel pk.VarInt
 	temp, err = villagerLevel.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.VillagerLevel = int32(villagerLevel)
 
 	var experience pk.VarInt
 	temp, err = experience.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Experience = int32(experience)
 
 	var isRegularVillager pk.Boolean
 	temp, err = isRegularVillager.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IsRegularVillager = bool(isRegularVillager)
 
 	var canRestock pk.Boolean
 	temp, err = canRestock.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.CanRestock = bool(canRestock)
 
 	return n, nil
@@ -5812,52 +4588,40 @@ func (p TradeList) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Trades)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Trades {
 		temp, err = p.Trades[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(p.VillagerLevel).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Experience).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IsRegularVillager).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.CanRestock).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundTradeList, func() ClientboundPacket {
 		return &TradeList{}
 	})
 }
+

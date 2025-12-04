@@ -4,24 +4,26 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetTestBlock represents the Serverbound SetTestBlock packet.
 
 type SetTestBlock struct {
 	// Bitfield - see protocol spec for bit layout
 	Position int32
-	Mode     int32  `mc:"VarInt"`
-	Message  string `mc:"String"`
+	Mode int32 `mc:"VarInt"`
+	Message string `mc:"String"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*SetTestBlock) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSetTestBlock
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SetTestBlock) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,24 +32,18 @@ func (p *SetTestBlock) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Position).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var mode pk.VarInt
 	temp, err = mode.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Mode = int32(mode)
 
 	var message pk.String
 	temp, err = message.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Message = string(message)
 
 	return n, nil
@@ -60,27 +56,23 @@ func (p SetTestBlock) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Position).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Mode).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Message).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSetTestBlock, func() ServerboundPacket {
 		return &SetTestBlock{}
 	})
 }
+

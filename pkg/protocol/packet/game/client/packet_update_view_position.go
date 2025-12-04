@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateViewPosition represents the Clientbound UpdateViewPosition packet.
 
@@ -21,6 +22,7 @@ func (*UpdateViewPosition) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundUpdateViewPosition
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateViewPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -29,17 +31,13 @@ func (p *UpdateViewPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var chunkX pk.VarInt
 	temp, err = chunkX.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ChunkX = int32(chunkX)
 
 	var chunkZ pk.VarInt
 	temp, err = chunkZ.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ChunkZ = int32(chunkZ)
 
 	return n, nil
@@ -52,21 +50,19 @@ func (p UpdateViewPosition) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.ChunkX).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.ChunkZ).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundUpdateViewPosition, func() ClientboundPacket {
 		return &UpdateViewPosition{}
 	})
 }
+

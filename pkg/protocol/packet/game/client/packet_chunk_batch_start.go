@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+
 // ChunkBatchStart represents the Clientbound ChunkBatchStart packet.
 
 type ChunkBatchStart struct {
@@ -17,6 +18,7 @@ type ChunkBatchStart struct {
 func (*ChunkBatchStart) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundChunkBatchStart
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ChunkBatchStart) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,8 +32,10 @@ func (p ChunkBatchStart) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundChunkBatchStart, func() ClientboundPacket {
 		return &ChunkBatchStart{}
 	})
 }
+

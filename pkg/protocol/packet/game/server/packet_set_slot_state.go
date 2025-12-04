@@ -4,23 +4,25 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetSlotState represents the Serverbound SetSlotState packet.
 
 type SetSlotState struct {
-	SlotId   int32 `mc:"VarInt"`
+	SlotId int32 `mc:"VarInt"`
 	WindowId int32 `mc:"VarInt"`
-	State    bool
+	State bool
 }
 
 // PacketID returns the packet ID for this packet.
 func (*SetSlotState) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSetSlotState
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SetSlotState) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,25 +32,19 @@ func (p *SetSlotState) ReadFrom(r io.Reader) (n int64, err error) {
 	var slotId pk.VarInt
 	temp, err = slotId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SlotId = int32(slotId)
 
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WindowId = int32(windowId)
 
 	var state pk.Boolean
 	temp, err = state.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.State = bool(state)
 
 	return n, nil
@@ -61,27 +57,23 @@ func (p SetSlotState) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.SlotId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.State).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSetSlotState, func() ServerboundPacket {
 		return &SetSlotState{}
 	})
 }
+

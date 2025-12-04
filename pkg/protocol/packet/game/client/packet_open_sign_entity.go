@@ -4,16 +4,17 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // OpenSignEntity represents the Clientbound OpenSignEntity packet.
 
 type OpenSignEntity struct {
 	// Bitfield - see protocol spec for bit layout
-	Location    int32
+	Location int32
 	IsFrontText bool
 }
 
@@ -22,6 +23,7 @@ func (*OpenSignEntity) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundOpenSignEntity
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *OpenSignEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -29,16 +31,12 @@ func (p *OpenSignEntity) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var isFrontText pk.Boolean
 	temp, err = isFrontText.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IsFrontText = bool(isFrontText)
 
 	return n, nil
@@ -51,21 +49,19 @@ func (p OpenSignEntity) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IsFrontText).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundOpenSignEntity, func() ClientboundPacket {
 		return &OpenSignEntity{}
 	})
 }
+

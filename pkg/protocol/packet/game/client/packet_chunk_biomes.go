@@ -4,9 +4,9 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // ChunkBiomesBiomesEntryPosition is a sub-structure used in the packet.
@@ -15,6 +15,7 @@ type ChunkBiomesBiomesEntryPosition struct {
 	X int32
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *ChunkBiomesBiomesEntryPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -22,18 +23,16 @@ func (p *ChunkBiomesBiomesEntryPosition) ReadFrom(r io.Reader) (n int64, err err
 
 	temp, err = (*pk.Int)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p ChunkBiomesBiomesEntryPosition) WriteTo(w io.Writer) (n int64, err error) {
@@ -42,24 +41,23 @@ func (p ChunkBiomesBiomesEntryPosition) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.Int(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
 // ChunkBiomesBiomesEntry is a sub-structure used in the packet.
 type ChunkBiomesBiomesEntry struct {
 	Position ChunkBiomesBiomesEntryPosition
-	Data     []byte `mc:"ByteArray"`
+	Data []byte `mc:"ByteArray"`
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
@@ -68,18 +66,16 @@ func (p *ChunkBiomesBiomesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.Position.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.ByteArray)(&p.Data).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p ChunkBiomesBiomesEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -88,18 +84,17 @@ func (p ChunkBiomesBiomesEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Position.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.ByteArray)(&p.Data).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
+
 
 // ChunkBiomes represents the Clientbound ChunkBiomes packet.
 
@@ -112,6 +107,7 @@ func (*ChunkBiomes) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundChunkBiomes
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ChunkBiomes) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -120,16 +116,12 @@ func (p *ChunkBiomes) ReadFrom(r io.Reader) (n int64, err error) {
 	var biomesCount pk.VarInt
 	temp, err = biomesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Biomes = make([]ChunkBiomesBiomesEntry, biomesCount)
 	for i := 0; i < int(biomesCount); i++ {
 		temp, err = p.Biomes[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
@@ -142,22 +134,20 @@ func (p ChunkBiomes) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(len(p.Biomes)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Biomes {
 		temp, err = p.Biomes[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundChunkBiomes, func() ClientboundPacket {
 		return &ChunkBiomes{}
 	})
 }
+

@@ -5,9 +5,9 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // CraftRecipeResponseRecipeDisplay is a sub-structure used in the packet.
@@ -15,14 +15,15 @@ type CraftRecipeResponseRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
-	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *CraftRecipeResponseRecipeDisplay) ReadFrom(r io.Reader) (n int64, err error) {
@@ -32,20 +33,18 @@ func (p *CraftRecipeResponseRecipeDisplay) ReadFrom(r io.Reader) (n int64, err e
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 0:
-		p.Type = "crafting_shapeless"
-	case 1:
-		p.Type = "crafting_shaped"
 	case 2:
 		p.Type = "furnace"
 	case 3:
 		p.Type = "stonecutter"
 	case 4:
 		p.Type = "smithing"
+	case 0:
+		p.Type = "crafting_shapeless"
+	case 1:
+		p.Type = "crafting_shaped"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -58,42 +57,34 @@ func (p *CraftRecipeResponseRecipeDisplay) ReadFrom(r io.Reader) (n int64, err e
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p CraftRecipeResponseRecipeDisplay) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "crafting_shapeless":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crafting_shaped":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "furnace":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "stonecutter":
 		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "smithing":
 		temp, err = pk.VarInt(4).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "crafting_shapeless":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "crafting_shaped":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
@@ -106,10 +97,13 @@ func (p CraftRecipeResponseRecipeDisplay) WriteTo(w io.Writer) (n int64, err err
 	return n, nil
 }
 
+
+
+
 // CraftRecipeResponse represents the Clientbound CraftRecipeResponse packet.
 
 type CraftRecipeResponse struct {
-	WindowId      int32 `mc:"VarInt"`
+	WindowId int32 `mc:"VarInt"`
 	RecipeDisplay CraftRecipeResponseRecipeDisplay
 }
 
@@ -117,6 +111,7 @@ type CraftRecipeResponse struct {
 func (*CraftRecipeResponse) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundCraftRecipeResponse
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *CraftRecipeResponse) ReadFrom(r io.Reader) (n int64, err error) {
@@ -126,16 +121,12 @@ func (p *CraftRecipeResponse) ReadFrom(r io.Reader) (n int64, err error) {
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WindowId = int32(windowId)
 
 	temp, err = p.RecipeDisplay.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -147,21 +138,19 @@ func (p CraftRecipeResponse) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.RecipeDisplay.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundCraftRecipeResponse, func() ClientboundPacket {
 		return &CraftRecipeResponse{}
 	})
 }
+

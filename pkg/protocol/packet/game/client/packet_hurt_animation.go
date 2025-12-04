@@ -4,22 +4,24 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // HurtAnimation represents the Clientbound HurtAnimation packet.
 
 type HurtAnimation struct {
 	EntityId int32 `mc:"VarInt"`
-	Yaw      float32
+	Yaw float32
 }
 
 // PacketID returns the packet ID for this packet.
 func (*HurtAnimation) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundHurtAnimation
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *HurtAnimation) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,16 +31,12 @@ func (p *HurtAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -50,21 +48,19 @@ func (p HurtAnimation) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundHurtAnimation, func() ClientboundPacket {
 		return &HurtAnimation{}
 	})
 }
+

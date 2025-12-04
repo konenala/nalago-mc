@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+
 // PlayerLoaded represents the Serverbound PlayerLoaded packet.
 
 type PlayerLoaded struct {
@@ -17,6 +18,7 @@ type PlayerLoaded struct {
 func (*PlayerLoaded) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundPlayerLoaded
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerLoaded) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,8 +32,10 @@ func (p PlayerLoaded) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ServerboundPlayerLoaded, func() ServerboundPacket {
 		return &PlayerLoaded{}
 	})
 }
+

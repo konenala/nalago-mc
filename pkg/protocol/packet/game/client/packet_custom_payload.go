@@ -4,22 +4,24 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // CustomPayload represents the Clientbound CustomPayload packet.
 
 type CustomPayload struct {
 	Channel string `mc:"String"`
-	Data    pk.PluginMessageData
+	Data pk.PluginMessageData
 }
 
 // PacketID returns the packet ID for this packet.
 func (*CustomPayload) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundCustomPayload
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,16 +31,12 @@ func (p *CustomPayload) ReadFrom(r io.Reader) (n int64, err error) {
 	var channel pk.String
 	temp, err = channel.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Channel = string(channel)
 
 	temp, err = (*pk.PluginMessageData)(&p.Data).ReadFrom(r)
 	n += temp
-	if err != nil && err != io.EOF {
-		return n, err
-	}
+	if err != nil && err != io.EOF { return n, err }
 
 	return n, nil
 }
@@ -50,21 +48,19 @@ func (p CustomPayload) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Channel).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.PluginMessageData(p.Data).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundCustomPayload, func() ClientboundPacket {
 		return &CustomPayload{}
 	})
 }
+

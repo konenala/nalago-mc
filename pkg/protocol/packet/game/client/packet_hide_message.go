@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // HideMessage represents the Clientbound HideMessage packet.
 
@@ -22,6 +23,7 @@ func (*HideMessage) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundHideMessage
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *HideMessage) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -30,9 +32,7 @@ func (p *HideMessage) ReadFrom(r io.Reader) (n int64, err error) {
 	var id pk.VarInt
 	temp, err = id.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Id = int32(id)
 
 	// 當 Id == 0 時讀取 Signature
@@ -40,9 +40,7 @@ func (p *HideMessage) ReadFrom(r io.Reader) (n int64, err error) {
 		var val []byte
 		temp, err = (*pk.ByteArray)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Signature = &val
 	}
 
@@ -56,23 +54,21 @@ func (p HideMessage) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Id).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.Signature != nil {
 		temp, err = pk.ByteArray(*p.Signature).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundHideMessage, func() ClientboundPacket {
 		return &HideMessage{}
 	})
 }
+

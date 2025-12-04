@@ -4,22 +4,24 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // NbtQueryResponse represents the Clientbound NbtQueryResponse packet.
 
 type NbtQueryResponse struct {
 	TransactionId int32 `mc:"VarInt"`
-	Nbt           pk.NBTField
+	Nbt pk.NBTField
 }
 
 // PacketID returns the packet ID for this packet.
 func (*NbtQueryResponse) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundNbtQueryResponse
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *NbtQueryResponse) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,16 +31,12 @@ func (p *NbtQueryResponse) ReadFrom(r io.Reader) (n int64, err error) {
 	var transactionId pk.VarInt
 	temp, err = transactionId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.TransactionId = int32(transactionId)
 
 	temp, err = (*pk.NBTField)(&p.Nbt).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -50,21 +48,19 @@ func (p NbtQueryResponse) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.TransactionId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Nbt.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundNbtQueryResponse, func() ClientboundPacket {
 		return &NbtQueryResponse{}
 	})
 }
+

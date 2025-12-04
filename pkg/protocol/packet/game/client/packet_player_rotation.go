@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // PlayerRotation represents the Clientbound PlayerRotation packet.
 
 type PlayerRotation struct {
-	Yaw   float32
+	Yaw float32
 	Pitch float32
 }
 
@@ -21,6 +22,7 @@ func (*PlayerRotation) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundPlayerRotation
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerRotation) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,15 +30,11 @@ func (p *PlayerRotation) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -48,21 +46,19 @@ func (p PlayerRotation) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundPlayerRotation, func() ClientboundPacket {
 		return &PlayerRotation{}
 	})
 }
+

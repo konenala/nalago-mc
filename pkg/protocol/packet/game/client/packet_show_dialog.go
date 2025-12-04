@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ShowDialog represents the Clientbound ShowDialog packet.
 
@@ -20,6 +21,7 @@ func (*ShowDialog) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundShowDialog
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ShowDialog) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *ShowDialog) ReadFrom(r io.Reader) (n int64, err error) {
 	var dialog pk.String
 	temp, err = dialog.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Dialog = string(dialog)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p ShowDialog) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Dialog).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundShowDialog, func() ClientboundPacket {
 		return &ShowDialog{}
 	})
 }
+

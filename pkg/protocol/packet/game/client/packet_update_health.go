@@ -4,16 +4,17 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateHealth represents the Clientbound UpdateHealth packet.
 
 type UpdateHealth struct {
-	Health         float32
-	Food           int32 `mc:"VarInt"`
+	Health float32
+	Food int32 `mc:"VarInt"`
 	FoodSaturation float32
 }
 
@@ -22,6 +23,7 @@ func (*UpdateHealth) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundUpdateHealth
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateHealth) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -29,23 +31,17 @@ func (p *UpdateHealth) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Float)(&p.Health).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var food pk.VarInt
 	temp, err = food.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Food = int32(food)
 
 	temp, err = (*pk.Float)(&p.FoodSaturation).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -57,27 +53,23 @@ func (p UpdateHealth) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Float(p.Health).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Food).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.FoodSaturation).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundUpdateHealth, func() ClientboundPacket {
 		return &UpdateHealth{}
 	})
 }
+

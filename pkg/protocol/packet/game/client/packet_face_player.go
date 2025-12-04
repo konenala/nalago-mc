@@ -4,18 +4,19 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // FacePlayer represents the Clientbound FacePlayer packet.
 
 type FacePlayer struct {
 	FeetEyes int32 `mc:"VarInt"`
-	X        float64
-	Y        float64
-	Z        float64
+	X float64
+	Y float64
+	Z float64
 	IsEntity bool
 	// Optional，當 IsEntity 符合條件時出現
 	EntityId *int32
@@ -28,6 +29,7 @@ func (*FacePlayer) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundFacePlayer
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -36,35 +38,25 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 	var feetEyes pk.VarInt
 	temp, err = feetEyes.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.FeetEyes = int32(feetEyes)
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var isEntity pk.Boolean
 	temp, err = isEntity.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IsEntity = bool(isEntity)
 
 	// 當 IsEntity == true 時讀取 EntityId
@@ -73,9 +65,7 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.EntityId = &val
 	}
@@ -86,9 +76,7 @@ func (p *FacePlayer) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.EntityFeetEyes = &val
 	}
@@ -103,55 +91,43 @@ func (p FacePlayer) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.FeetEyes).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IsEntity).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.EntityId != nil {
 		temp, err = pk.VarInt(*p.EntityId).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.EntityFeetEyes != nil {
 		temp, err = pk.VarInt(*p.EntityFeetEyes).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundFacePlayer, func() ClientboundPacket {
 		return &FacePlayer{}
 	})
 }
+

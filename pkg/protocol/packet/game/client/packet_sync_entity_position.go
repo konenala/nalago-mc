@@ -4,23 +4,24 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SyncEntityPosition represents the Clientbound SyncEntityPosition packet.
 
 type SyncEntityPosition struct {
 	EntityId int32 `mc:"VarInt"`
-	X        float64
-	Y        float64
-	Z        float64
-	Dx       float64
-	Dy       float64
-	Dz       float64
-	Yaw      float32
-	Pitch    float32
+	X float64
+	Y float64
+	Z float64
+	Dx float64
+	Dy float64
+	Dz float64
+	Yaw float32
+	Pitch float32
 	OnGround bool
 }
 
@@ -28,6 +29,7 @@ type SyncEntityPosition struct {
 func (*SyncEntityPosition) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSyncEntityPosition
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SyncEntityPosition) ReadFrom(r io.Reader) (n int64, err error) {
@@ -37,65 +39,45 @@ func (p *SyncEntityPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Dx).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Dy).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Dz).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.OnGround = bool(onGround)
 
 	return n, nil
@@ -108,69 +90,51 @@ func (p SyncEntityPosition) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Dx).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Dy).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Dz).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.OnGround).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSyncEntityPosition, func() ClientboundPacket {
 		return &SyncEntityPosition{}
 	})
 }
+

@@ -4,10 +4,11 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SelectTrade represents the Serverbound SelectTrade packet.
 
@@ -20,6 +21,7 @@ func (*SelectTrade) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSelectTrade
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *SelectTrade) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *SelectTrade) ReadFrom(r io.Reader) (n int64, err error) {
 	var slot pk.VarInt
 	temp, err = slot.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Slot = int32(slot)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p SelectTrade) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Slot).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSelectTrade, func() ServerboundPacket {
 		return &SelectTrade{}
 	})
 }
+

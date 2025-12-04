@@ -4,28 +4,30 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // InitializeWorldBorder represents the Clientbound InitializeWorldBorder packet.
 
 type InitializeWorldBorder struct {
-	X                      float64
-	Z                      float64
-	OldDiameter            float64
-	NewDiameter            float64
-	Speed                  int32 `mc:"VarInt"`
+	X float64
+	Z float64
+	OldDiameter float64
+	NewDiameter float64
+	Speed int32 `mc:"VarInt"`
 	PortalTeleportBoundary int32 `mc:"VarInt"`
-	WarningBlocks          int32 `mc:"VarInt"`
-	WarningTime            int32 `mc:"VarInt"`
+	WarningBlocks int32 `mc:"VarInt"`
+	WarningTime int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*InitializeWorldBorder) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundInitializeWorldBorder
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
@@ -34,58 +36,42 @@ func (p *InitializeWorldBorder) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.OldDiameter).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.NewDiameter).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var speed pk.VarInt
 	temp, err = speed.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Speed = int32(speed)
 
 	var portalTeleportBoundary pk.VarInt
 	temp, err = portalTeleportBoundary.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.PortalTeleportBoundary = int32(portalTeleportBoundary)
 
 	var warningBlocks pk.VarInt
 	temp, err = warningBlocks.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WarningBlocks = int32(warningBlocks)
 
 	var warningTime pk.VarInt
 	temp, err = warningTime.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WarningTime = int32(warningTime)
 
 	return n, nil
@@ -98,57 +84,43 @@ func (p InitializeWorldBorder) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.OldDiameter).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.NewDiameter).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Speed).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.PortalTeleportBoundary).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.WarningBlocks).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.WarningTime).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundInitializeWorldBorder, func() ClientboundPacket {
 		return &InitializeWorldBorder{}
 	})
 }
+

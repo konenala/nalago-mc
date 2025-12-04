@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ResetScore represents the Clientbound ResetScore packet.
 
 type ResetScore struct {
-	EntityName    string `mc:"String"`
+	EntityName string `mc:"String"`
 	ObjectiveName *string
 }
 
@@ -20,6 +21,7 @@ type ResetScore struct {
 func (*ResetScore) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundResetScore
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,25 +31,19 @@ func (p *ResetScore) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityName pk.String
 	temp, err = entityName.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityName = string(entityName)
 
 	var hasObjectiveName pk.Boolean
 	temp, err = hasObjectiveName.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasObjectiveName {
 		var val string
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
 		p.ObjectiveName = &val
 	}
@@ -62,34 +58,28 @@ func (p ResetScore) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.EntityName).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.ObjectiveName != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.String(*p.ObjectiveName).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundResetScore, func() ClientboundPacket {
 		return &ResetScore{}
 	})
 }
+

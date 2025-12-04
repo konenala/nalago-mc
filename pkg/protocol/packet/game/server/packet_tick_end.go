@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+
 // TickEnd represents the Serverbound TickEnd packet.
 
 type TickEnd struct {
@@ -17,6 +18,7 @@ type TickEnd struct {
 func (*TickEnd) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundTickEnd
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *TickEnd) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,8 +32,10 @@ func (p TickEnd) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ServerboundTickEnd, func() ServerboundPacket {
 		return &TickEnd{}
 	})
 }
+

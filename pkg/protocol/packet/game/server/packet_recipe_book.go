@@ -4,16 +4,17 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // RecipeBook represents the Serverbound RecipeBook packet.
 
 type RecipeBook struct {
-	BookId       int32 `mc:"VarInt"`
-	BookOpen     bool
+	BookId int32 `mc:"VarInt"`
+	BookOpen bool
 	FilterActive bool
 }
 
@@ -21,6 +22,7 @@ type RecipeBook struct {
 func (*RecipeBook) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundRecipeBook
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBook) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,25 +32,19 @@ func (p *RecipeBook) ReadFrom(r io.Reader) (n int64, err error) {
 	var bookId pk.VarInt
 	temp, err = bookId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BookId = int32(bookId)
 
 	var bookOpen pk.Boolean
 	temp, err = bookOpen.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BookOpen = bool(bookOpen)
 
 	var filterActive pk.Boolean
 	temp, err = filterActive.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.FilterActive = bool(filterActive)
 
 	return n, nil
@@ -61,27 +57,23 @@ func (p RecipeBook) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.BookId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.BookOpen).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.FilterActive).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundRecipeBook, func() ServerboundPacket {
 		return &RecipeBook{}
 	})
 }
+

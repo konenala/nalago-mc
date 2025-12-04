@@ -4,15 +4,16 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // PickItemFromEntity represents the Serverbound PickItemFromEntity packet.
 
 type PickItemFromEntity struct {
-	EntityId    int32 `mc:"VarInt"`
+	EntityId int32 `mc:"VarInt"`
 	IncludeData bool
 }
 
@@ -20,6 +21,7 @@ type PickItemFromEntity struct {
 func (*PickItemFromEntity) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundPickItemFromEntity
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *PickItemFromEntity) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,17 +31,13 @@ func (p *PickItemFromEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var includeData pk.Boolean
 	temp, err = includeData.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IncludeData = bool(includeData)
 
 	return n, nil
@@ -52,21 +50,19 @@ func (p PickItemFromEntity) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IncludeData).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundPickItemFromEntity, func() ServerboundPacket {
 		return &PickItemFromEntity{}
 	})
 }
+

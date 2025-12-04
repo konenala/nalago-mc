@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetProjectilePower represents the Clientbound SetProjectilePower packet.
 
 type SetProjectilePower struct {
-	Id                int32 `mc:"VarInt"`
+	Id int32 `mc:"VarInt"`
 	AccelerationPower float64
 }
 
@@ -20,6 +21,7 @@ type SetProjectilePower struct {
 func (*SetProjectilePower) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSetProjectilePower
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SetProjectilePower) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,16 +31,12 @@ func (p *SetProjectilePower) ReadFrom(r io.Reader) (n int64, err error) {
 	var id pk.VarInt
 	temp, err = id.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Id = int32(id)
 
 	temp, err = (*pk.Double)(&p.AccelerationPower).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -50,21 +48,19 @@ func (p SetProjectilePower) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Id).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.AccelerationPower).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSetProjectilePower, func() ClientboundPacket {
 		return &SetProjectilePower{}
 	})
 }
+

@@ -4,9 +4,9 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // DamageEventTemp is a sub-structure used in the packet.
@@ -16,6 +16,7 @@ type DamageEventTemp struct {
 	Z float64
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *DamageEventTemp) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -23,24 +24,20 @@ func (p *DamageEventTemp) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p DamageEventTemp) WriteTo(w io.Writer) (n int64, err error) {
@@ -49,31 +46,28 @@ func (p DamageEventTemp) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
+
 // DamageEvent represents the Clientbound DamageEvent packet.
 
 type DamageEvent struct {
-	EntityId       int32 `mc:"VarInt"`
-	SourceTypeId   int32 `mc:"VarInt"`
-	SourceCauseId  int32 `mc:"VarInt"`
+	EntityId int32 `mc:"VarInt"`
+	SourceTypeId int32 `mc:"VarInt"`
+	SourceCauseId int32 `mc:"VarInt"`
 	SourceDirectId int32 `mc:"VarInt"`
 	SourcePosition *DamageEventTemp
 }
@@ -83,6 +77,7 @@ func (*DamageEvent) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundDamageEvent
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -91,48 +86,36 @@ func (p *DamageEvent) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var sourceTypeId pk.VarInt
 	temp, err = sourceTypeId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SourceTypeId = int32(sourceTypeId)
 
 	var sourceCauseId pk.VarInt
 	temp, err = sourceCauseId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SourceCauseId = int32(sourceCauseId)
 
 	var sourceDirectId pk.VarInt
 	temp, err = sourceDirectId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SourceDirectId = int32(sourceDirectId)
 
 	var hasSourcePosition pk.Boolean
 	temp, err = hasSourcePosition.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasSourcePosition {
 		p.SourcePosition = &DamageEventTemp{}
 		temp, err = p.SourcePosition.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
@@ -145,52 +128,40 @@ func (p DamageEvent) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.SourceTypeId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.SourceCauseId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.SourceDirectId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.SourcePosition != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = p.SourcePosition.WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundDamageEvent, func() ClientboundPacket {
 		return &DamageEvent{}
 	})
 }
+

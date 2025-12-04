@@ -5,40 +5,41 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // BossBar represents the Clientbound BossBar packet.
 
 type BossBar struct {
 	EntityUUID pk.UUID
-	Action     int32 `mc:"VarInt"`
+	Action int32 `mc:"VarInt"`
 	// Switch 基於 Action：
-	//   0 -> anonymousNbt
-	//   3 -> anonymousNbt
-	//   default -> void
+//   3 -> anonymousNbt
+//   0 -> anonymousNbt
+//   default -> void
 	Title interface{}
 	// Switch 基於 Action：
-	//   0 -> f32
-	//   2 -> f32
-	//   default -> void
+//   0 -> f32
+//   2 -> f32
+//   default -> void
 	Health interface{}
 	// Switch 基於 Action：
-	//   0 -> varint
-	//   4 -> varint
-	//   default -> void
+//   0 -> varint
+//   4 -> varint
+//   default -> void
 	Color interface{}
 	// Switch 基於 Action：
-	//   0 -> varint
-	//   4 -> varint
-	//   default -> void
+//   0 -> varint
+//   4 -> varint
+//   default -> void
 	Dividers interface{}
 	// Switch 基於 Action：
-	//   0 -> u8
-	//   5 -> u8
-	//   default -> void
+//   0 -> u8
+//   5 -> u8
+//   default -> void
 	Flags interface{}
 }
 
@@ -47,6 +48,7 @@ func (*BossBar) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundBossBar
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -54,16 +56,12 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.UUID)(&p.EntityUUID).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var action pk.VarInt
 	temp, err = action.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Action = int32(action)
 
 	switch p.Action {
@@ -71,38 +69,30 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Title = val
 	case 3:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Title = val
 	default:
 		// 無對應負載
 	}
 
 	switch p.Action {
-	case 2:
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Health = val
 	case 0:
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+		p.Health = val
+	case 2:
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Health = val
 	default:
 		// 無對應負載
@@ -114,9 +104,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Color = val
 	case 4:
@@ -124,9 +112,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Color = val
 	default:
@@ -139,9 +125,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Dividers = val
 	case 4:
@@ -149,9 +133,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Dividers = val
 	default:
@@ -164,9 +146,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.UnsignedByte
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = uint8(elem)
 		p.Flags = val
 	case 5:
@@ -174,9 +154,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.UnsignedByte
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = uint8(elem)
 		p.Flags = val
 	default:
@@ -193,23 +171,17 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.EntityUUID.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Action).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch v := p.Title.(type) {
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Title: %T", v)
 	}
@@ -218,9 +190,7 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	case float32:
 		temp, err = pk.Float(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Health: %T", v)
 	}
@@ -229,9 +199,7 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Color: %T", v)
 	}
@@ -240,9 +208,7 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Dividers: %T", v)
 	}
@@ -251,9 +217,7 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	case uint8:
 		temp, err = pk.UnsignedByte(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Flags: %T", v)
 	}
@@ -261,8 +225,10 @@ func (p BossBar) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundBossBar, func() ClientboundPacket {
 		return &BossBar{}
 	})
 }
+

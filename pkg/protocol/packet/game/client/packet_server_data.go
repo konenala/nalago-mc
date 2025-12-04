@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ServerData represents the Clientbound ServerData packet.
 
 type ServerData struct {
-	Motd      pk.NBTField `mc:"NBT"`
+	Motd pk.NBTField `mc:"NBT"`
 	IconBytes *[]byte
 }
 
@@ -21,6 +22,7 @@ func (*ServerData) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundServerData
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ServerData) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,23 +30,17 @@ func (p *ServerData) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.NBTField)(&p.Motd).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var hasIconBytes pk.Boolean
 	temp, err = hasIconBytes.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasIconBytes {
 		var val []byte
 		temp, err = (*pk.ByteArray)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.IconBytes = &val
 	}
 
@@ -58,34 +54,28 @@ func (p ServerData) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Motd.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.IconBytes != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.ByteArray(*p.IconBytes).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundServerData, func() ClientboundPacket {
 		return &ServerData{}
 	})
 }
+

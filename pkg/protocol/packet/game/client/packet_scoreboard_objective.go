@@ -5,35 +5,36 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ScoreboardObjective represents the Clientbound ScoreboardObjective packet.
 
 type ScoreboardObjective struct {
-	Name   string `mc:"String"`
+	Name string `mc:"String"`
 	Action int8
 	// Switch 基於 Action：
-	//   0 -> anonymousNbt
-	//   2 -> anonymousNbt
-	//   default -> void
+//   0 -> anonymousNbt
+//   2 -> anonymousNbt
+//   default -> void
 	DisplayText interface{}
 	// Switch 基於 Action：
-	//   0 -> varint
-	//   2 -> varint
-	//   default -> void
+//   0 -> varint
+//   2 -> varint
+//   default -> void
 	Type interface{}
 	// Switch 基於 Action：
-	//   0 -> [option varint]
-	//   2 -> [option varint]
-	//   default -> void
+//   0 -> [option varint]
+//   2 -> [option varint]
+//   default -> void
 	NumberFormat interface{}
 	// Switch 基於 Action：
-	//   0 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
-	//   2 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
-	//   default -> void
+//   0 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
+//   2 -> [switch map[compareTo:number_format default:void fields:map[1:anonymousNbt 2:anonymousNbt]]]
+//   default -> void
 	Styling interface{}
 }
 
@@ -41,6 +42,7 @@ type ScoreboardObjective struct {
 func (*ScoreboardObjective) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundScoreboardObjective
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
@@ -50,17 +52,13 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	var name pk.String
 	temp, err = name.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Name = string(name)
 
 	var action int8
 	temp, err = (*pk.Byte)(&action).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Action = action
 
 	switch p.Action {
@@ -68,17 +66,13 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.DisplayText = val
 	case 2:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.DisplayText = val
 	default:
 		// 無對應負載
@@ -90,9 +84,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Type = val
 	case 2:
@@ -100,9 +92,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Type = val
 	default:
@@ -129,23 +119,17 @@ func (p ScoreboardObjective) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Name).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.Action).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch v := p.DisplayText.(type) {
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for DisplayText: %T", v)
 	}
@@ -154,9 +138,7 @@ func (p ScoreboardObjective) WriteTo(w io.Writer) (n int64, err error) {
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Type: %T", v)
 	}
@@ -174,8 +156,10 @@ func (p ScoreboardObjective) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundScoreboardObjective, func() ClientboundPacket {
 		return &ScoreboardObjective{}
 	})
 }
+

@@ -4,10 +4,11 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Position represents the Serverbound Position packet.
 
@@ -24,6 +25,7 @@ func (*Position) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundPosition
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *Position) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -31,28 +33,20 @@ func (p *Position) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var flags pk.UnsignedByte
 	temp, err = flags.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Flags = uint8(flags)
 
 	return n, nil
@@ -65,33 +59,27 @@ func (p Position) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.UnsignedByte(p.Flags).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundPosition, func() ServerboundPacket {
 		return &Position{}
 	})
 }
+

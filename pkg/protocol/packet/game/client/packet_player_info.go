@@ -4,9 +4,9 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // PlayerInfoDataEntry is a sub-structure used in the packet.
@@ -30,11 +30,13 @@ type PlayerInfoDataEntry struct {
 	ShowHat *bool
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *PlayerInfoDataEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	// Parent context required; fallback calls ReadFromWithParent with nil (may error if accessed).
 	return p.ReadFromWithParent(r, nil)
 }
+
 
 // ReadFromWithParent reads the data from the reader with parent context.
 func (p *PlayerInfoDataEntry) ReadFromWithParent(r io.Reader, parent *PlayerInfo) (n int64, err error) {
@@ -44,80 +46,66 @@ func (p *PlayerInfoDataEntry) ReadFromWithParent(r io.Reader, parent *PlayerInfo
 
 	temp, err = (*pk.UUID)(&p.Uuid).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	// 旗標存在才讀取 Player
-	if parent != nil && parent.Action&(1<<0) != 0 {
+	if parent != nil && parent.Action & (1 << 0) != 0 {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Player = &val
 	}
 
 	// 旗標存在才讀取 ChatSession
-	if parent != nil && parent.Action&(1<<1) != 0 {
+	if parent != nil && parent.Action & (1 << 1) != 0 {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.ChatSession = &val
 	}
 
 	// 旗標存在才讀取 Gamemode
-	if parent != nil && parent.Action&(1<<2) != 0 {
+	if parent != nil && parent.Action & (1 << 2) != 0 {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Gamemode = &val
 	}
 
 	// 旗標存在才讀取 Listed
-	if parent != nil && parent.Action&(1<<3) != 0 {
+	if parent != nil && parent.Action & (1 << 3) != 0 {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Listed = &val
 	}
 
 	// 旗標存在才讀取 Latency
-	if parent != nil && parent.Action&(1<<4) != 0 {
+	if parent != nil && parent.Action & (1 << 4) != 0 {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Latency = &val
 	}
 
 	// 旗標存在才讀取 DisplayName
-	if parent != nil && parent.Action&(1<<5) != 0 {
+	if parent != nil && parent.Action & (1 << 5) != 0 {
 		var val interface{}
 		var present pk.Boolean
 		temp, err = present.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		if present {
 			// option payload omitted (unknown inner type)
 			var dummy interface{}
@@ -129,33 +117,30 @@ func (p *PlayerInfoDataEntry) ReadFromWithParent(r io.Reader, parent *PlayerInfo
 	}
 
 	// 旗標存在才讀取 ListPriority
-	if parent != nil && parent.Action&(1<<7) != 0 {
+	if parent != nil && parent.Action & (1 << 7) != 0 {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.ListPriority = &val
 	}
 
 	// 旗標存在才讀取 ShowHat
-	if parent != nil && parent.Action&(1<<6) != 0 {
+	if parent != nil && parent.Action & (1 << 6) != 0 {
 		var val bool
 		var elem pk.Boolean
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = bool(elem)
 		p.ShowHat = &val
 	}
 
 	return n, nil
 }
+
 
 // WriteTo writes the data to the writer.
 func (p PlayerInfoDataEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -170,53 +155,41 @@ func (p PlayerInfoDataEntry) WriteToWithParent(w io.Writer, parent *PlayerInfo) 
 
 	temp, err = p.Uuid.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	// 若欄位存在則寫入 Player
 	if p.Player != nil {
 		temp, err = pk.NBTField(*p.Player).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 ChatSession
 	if p.ChatSession != nil {
 		temp, err = pk.NBTField(*p.ChatSession).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 Gamemode
 	if p.Gamemode != nil {
 		temp, err = pk.VarInt(*p.Gamemode).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 Listed
 	if p.Listed != nil {
 		temp, err = pk.VarInt(*p.Listed).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 Latency
 	if p.Latency != nil {
 		temp, err = pk.VarInt(*p.Latency).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 DisplayName
@@ -224,55 +197,49 @@ func (p PlayerInfoDataEntry) WriteToWithParent(w io.Writer, parent *PlayerInfo) 
 		if *p.DisplayName != nil {
 			temp, err = pk.Boolean(true).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 			// option payload omitted (unknown inner type)
 		} else {
 			temp, err = pk.Boolean(false).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 ListPriority
 	if p.ListPriority != nil {
 		temp, err = pk.VarInt(*p.ListPriority).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	// 若欄位存在則寫入 ShowHat
 	if p.ShowHat != nil {
 		temp, err = pk.Boolean(*p.ShowHat).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
+
+
 
 // PlayerInfo represents the Clientbound PlayerInfo packet.
 
 type PlayerInfo struct {
 	// Bitflags
 	Action uint8
-	Data   []PlayerInfoDataEntry
+	Data []PlayerInfoDataEntry
 }
 
 // PacketID returns the packet ID for this packet.
 func (*PlayerInfo) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundPlayerInfo
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerInfo) ReadFrom(r io.Reader) (n int64, err error) {
@@ -282,24 +249,18 @@ func (p *PlayerInfo) ReadFrom(r io.Reader) (n int64, err error) {
 	var action pk.UnsignedByte
 	temp, err = action.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Action = uint8(action)
 
 	var dataCount pk.VarInt
 	temp, err = dataCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Data = make([]PlayerInfoDataEntry, dataCount)
 	for i := 0; i < int(dataCount); i++ {
 		temp, err = p.Data[i].ReadFromWithParent(r, p)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
@@ -312,28 +273,24 @@ func (p PlayerInfo) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.UnsignedByte(p.Action).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Data)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Data {
 		temp, err = p.Data[i].WriteToWithParent(w, &p)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundPlayerInfo, func() ClientboundPacket {
 		return &PlayerInfo{}
 	})
 }
+

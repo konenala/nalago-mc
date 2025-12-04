@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UnloadChunk represents the Clientbound UnloadChunk packet.
 
@@ -21,6 +22,7 @@ func (*UnloadChunk) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundUnloadChunk
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *UnloadChunk) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,15 +30,11 @@ func (p *UnloadChunk) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.ChunkZ).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.ChunkX).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -48,21 +46,19 @@ func (p UnloadChunk) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.ChunkZ).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.ChunkX).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundUnloadChunk, func() ClientboundPacket {
 		return &UnloadChunk{}
 	})
 }
+

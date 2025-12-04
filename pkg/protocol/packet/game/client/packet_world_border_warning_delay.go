@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // WorldBorderWarningDelay represents the Clientbound WorldBorderWarningDelay packet.
 
@@ -20,6 +21,7 @@ func (*WorldBorderWarningDelay) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundWorldBorderWarningDelay
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *WorldBorderWarningDelay) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *WorldBorderWarningDelay) ReadFrom(r io.Reader) (n int64, err error) {
 	var warningTime pk.VarInt
 	temp, err = warningTime.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WarningTime = int32(warningTime)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p WorldBorderWarningDelay) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.WarningTime).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundWorldBorderWarningDelay, func() ClientboundPacket {
 		return &WorldBorderWarningDelay{}
 	})
 }
+

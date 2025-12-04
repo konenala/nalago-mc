@@ -4,23 +4,25 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // OpenWindow represents the Clientbound OpenWindow packet.
 
 type OpenWindow struct {
-	WindowId      int32       `mc:"VarInt"`
-	InventoryType int32       `mc:"VarInt"`
-	WindowTitle   pk.NBTField `mc:"NBT"`
+	WindowId int32 `mc:"VarInt"`
+	InventoryType int32 `mc:"VarInt"`
+	WindowTitle pk.NBTField `mc:"NBT"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*OpenWindow) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundOpenWindow
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,24 +32,18 @@ func (p *OpenWindow) ReadFrom(r io.Reader) (n int64, err error) {
 	var windowId pk.VarInt
 	temp, err = windowId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.WindowId = int32(windowId)
 
 	var inventoryType pk.VarInt
 	temp, err = inventoryType.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.InventoryType = int32(inventoryType)
 
 	temp, err = (*pk.NBTField)(&p.WindowTitle).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -59,27 +55,23 @@ func (p OpenWindow) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.WindowId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.InventoryType).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.WindowTitle.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundOpenWindow, func() ClientboundPacket {
 		return &OpenWindow{}
 	})
 }
+

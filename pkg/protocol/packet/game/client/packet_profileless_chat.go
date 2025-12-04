@@ -4,24 +4,26 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ProfilelessChat represents the Clientbound ProfilelessChat packet.
 
 type ProfilelessChat struct {
 	Message pk.NBTField `mc:"NBT"`
-	Type    string      `mc:"String"`
-	Name    pk.NBTField `mc:"NBT"`
-	Target  *pk.NBTField
+	Type string `mc:"String"`
+	Name pk.NBTField `mc:"NBT"`
+	Target *pk.NBTField
 }
 
 // PacketID returns the packet ID for this packet.
 func (*ProfilelessChat) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundProfilelessChat
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,37 +32,27 @@ func (p *ProfilelessChat) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.NBTField)(&p.Message).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var _type pk.String
 	temp, err = _type.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Type = string(_type)
 
 	temp, err = (*pk.NBTField)(&p.Name).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var hasTarget pk.Boolean
 	temp, err = hasTarget.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasTarget {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Target = &val
 	}
 
@@ -74,46 +66,36 @@ func (p ProfilelessChat) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Message.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Type).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Name.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.Target != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.NBTField(*p.Target).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundProfilelessChat, func() ClientboundPacket {
 		return &ProfilelessChat{}
 	})
 }
+

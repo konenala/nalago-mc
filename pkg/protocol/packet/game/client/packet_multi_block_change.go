@@ -4,23 +4,25 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // MultiBlockChange represents the Clientbound MultiBlockChange packet.
 
 type MultiBlockChange struct {
 	// Bitfield - see protocol spec for bit layout
 	ChunkCoordinates int32
-	Records          []int32
+	Records []int32
 }
 
 // PacketID returns the packet ID for this packet.
 func (*MultiBlockChange) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundMultiBlockChange
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *MultiBlockChange) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,24 +31,18 @@ func (p *MultiBlockChange) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.ChunkCoordinates).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var recordsCount pk.VarInt
 	temp, err = recordsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Records = make([]int32, recordsCount)
 	for i := 0; i < int(recordsCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Records[i] = int32(elem)
 	}
 
@@ -60,28 +56,24 @@ func (p MultiBlockChange) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.ChunkCoordinates).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Records)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Records {
 		temp, err = pk.VarInt(p.Records[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundMultiBlockChange, func() ClientboundPacket {
 		return &MultiBlockChange{}
 	})
 }
+

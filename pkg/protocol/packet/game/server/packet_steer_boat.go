@@ -4,15 +4,16 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SteerBoat represents the Serverbound SteerBoat packet.
 
 type SteerBoat struct {
-	LeftPaddle  bool
+	LeftPaddle bool
 	RightPaddle bool
 }
 
@@ -20,6 +21,7 @@ type SteerBoat struct {
 func (*SteerBoat) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSteerBoat
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SteerBoat) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,17 +31,13 @@ func (p *SteerBoat) ReadFrom(r io.Reader) (n int64, err error) {
 	var leftPaddle pk.Boolean
 	temp, err = leftPaddle.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.LeftPaddle = bool(leftPaddle)
 
 	var rightPaddle pk.Boolean
 	temp, err = rightPaddle.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.RightPaddle = bool(rightPaddle)
 
 	return n, nil
@@ -52,21 +50,19 @@ func (p SteerBoat) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.LeftPaddle).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.RightPaddle).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSteerBoat, func() ServerboundPacket {
 		return &SteerBoat{}
 	})
 }
+

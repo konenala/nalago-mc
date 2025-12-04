@@ -4,17 +4,18 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // BlockBreakAnimation represents the Clientbound BlockBreakAnimation packet.
 
 type BlockBreakAnimation struct {
 	EntityId int32 `mc:"VarInt"`
 	// Bitfield - see protocol spec for bit layout
-	Location     int32
+	Location int32
 	DestroyStage int8
 }
 
@@ -22,6 +23,7 @@ type BlockBreakAnimation struct {
 func (*BlockBreakAnimation) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundBlockBreakAnimation
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
@@ -31,23 +33,17 @@ func (p *BlockBreakAnimation) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var destroyStage int8
 	temp, err = (*pk.Byte)(&destroyStage).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.DestroyStage = destroyStage
 
 	return n, nil
@@ -60,27 +56,23 @@ func (p BlockBreakAnimation) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.DestroyStage).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundBlockBreakAnimation, func() ClientboundPacket {
 		return &BlockBreakAnimation{}
 	})
 }
+

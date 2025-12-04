@@ -5,9 +5,9 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // RecipeBookAddEntriesEntryRecipeDisplay is a sub-structure used in the packet.
@@ -15,14 +15,15 @@ type RecipeBookAddEntriesEntryRecipeDisplay struct {
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
-	//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
-	//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   crafting_shapeless -> [container [map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   crafting_shaped -> [container [map[name:width type:varint] map[name:height type:varint] map[name:ingredients type:[array map[countType:varint type:SlotDisplay]]] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   furnace -> [container [map[name:ingredient type:SlotDisplay] map[name:fuel type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay] map[name:duration type:varint] map[name:experience type:f32]]]
+//   stonecutter -> [container [map[name:ingredient type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
+//   smithing -> [container [map[name:template type:SlotDisplay] map[name:base type:SlotDisplay] map[name:addition type:SlotDisplay] map[name:result type:SlotDisplay] map[name:craftingStation type:SlotDisplay]]]
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookAddEntriesEntryRecipeDisplay) ReadFrom(r io.Reader) (n int64, err error) {
@@ -32,20 +33,18 @@ func (p *RecipeBookAddEntriesEntryRecipeDisplay) ReadFrom(r io.Reader) (n int64,
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 3:
-		p.Type = "stonecutter"
-	case 4:
-		p.Type = "smithing"
 	case 0:
 		p.Type = "crafting_shapeless"
 	case 1:
 		p.Type = "crafting_shaped"
 	case 2:
 		p.Type = "furnace"
+	case 3:
+		p.Type = "stonecutter"
+	case 4:
+		p.Type = "smithing"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -58,42 +57,34 @@ func (p *RecipeBookAddEntriesEntryRecipeDisplay) ReadFrom(r io.Reader) (n int64,
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p RecipeBookAddEntriesEntryRecipeDisplay) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
 	_ = temp
 
 	switch p.Type {
-	case "stonecutter":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smithing":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "crafting_shapeless":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "crafting_shaped":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "furnace":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "stonecutter":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "smithing":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
@@ -106,15 +97,18 @@ func (p RecipeBookAddEntriesEntryRecipeDisplay) WriteTo(w io.Writer) (n int64, e
 	return n, nil
 }
 
+
+
 // RecipeBookAddEntriesEntryRecipe is a sub-structure used in the packet.
 type RecipeBookAddEntriesEntryRecipe struct {
 	DisplayId int32 `mc:"VarInt"`
-	Display   RecipeBookAddEntriesEntryRecipeDisplay
-	Group     int32 `mc:"VarInt"`
+	Display RecipeBookAddEntriesEntryRecipeDisplay
+	Group int32 `mc:"VarInt"`
 	// Mapper to string
-	Category             string
+	Category string
 	CraftingRequirements *[][]int32
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err error) {
@@ -124,36 +118,36 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 	var displayId pk.VarInt
 	temp, err = displayId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.DisplayId = int32(displayId)
 
 	temp, err = p.Display.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var group pk.VarInt
 	temp, err = group.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Group = int32(group)
 
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
+	case 1:
+		p.Category = "crafting_redstone"
 	case 2:
 		p.Category = "crafting_equipment"
+	case 5:
+		p.Category = "furnace_blocks"
 	case 7:
 		p.Category = "blast_furnace_blocks"
+	case 8:
+		p.Category = "blast_furnace_misc"
+	case 9:
+		p.Category = "smoker_food"
 	case 11:
 		p.Category = "smithing"
 	case 12:
@@ -164,18 +158,10 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 		p.Category = "crafting_misc"
 	case 4:
 		p.Category = "furnace_food"
-	case 5:
-		p.Category = "furnace_blocks"
 	case 6:
 		p.Category = "furnace_misc"
-	case 8:
-		p.Category = "blast_furnace_misc"
-	case 9:
-		p.Category = "smoker_food"
 	case 10:
 		p.Category = "stonecutter"
-	case 1:
-		p.Category = "crafting_redstone"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Category", mapperVal)
 	}
@@ -183,38 +169,28 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 	var hasCraftingRequirements pk.Boolean
 	temp, err = hasCraftingRequirements.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasCraftingRequirements {
 		var cnt pk.VarInt
 		temp, err = cnt.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		arr := make([][]int32, cnt)
 		for i := 0; i < int(cnt); i++ {
 			var v []int32
-			var cnt pk.VarInt
-			temp, err = cnt.ReadFrom(r)
+		var cnt pk.VarInt
+		temp, err = cnt.ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
+		if cnt < 0 { return n, fmt.Errorf("negative IDSet length") }
+		v = make([]int32, cnt)
+		for i := int32(0); i < int32(cnt); i++ {
+			var vi pk.VarInt
+			temp, err = vi.ReadFrom(r)
 			n += temp
-			if err != nil {
-				return n, err
-			}
-			if cnt < 0 {
-				return n, fmt.Errorf("negative IDSet length")
-			}
-			v = make([]int32, cnt)
-			for i := int32(0); i < int32(cnt); i++ {
-				var vi pk.VarInt
-				temp, err = vi.ReadFrom(r)
-				n += temp
-				if err != nil {
-					return n, err
-				}
-				v[i] = int32(vi)
-			}
+			if err != nil { return n, err }
+			v[i] = int32(vi)
+		}
 			arr[i] = v
 		}
 		p.CraftingRequirements = &arr
@@ -223,6 +199,8 @@ func (p *RecipeBookAddEntriesEntryRecipe) ReadFrom(r io.Reader) (n int64, err er
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
@@ -230,101 +208,69 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 
 	temp, err = pk.VarInt(p.DisplayId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Display.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Group).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch p.Category {
-	case "crafting_equipment":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blast_furnace_blocks":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smithing":
-		temp, err = pk.VarInt(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "campfire":
-		temp, err = pk.VarInt(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crafting_building_blocks":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "crafting_misc":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "furnace_food":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "furnace_blocks":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "furnace_misc":
-		temp, err = pk.VarInt(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "blast_furnace_misc":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "smoker_food":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "stonecutter":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "crafting_redstone":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "crafting_equipment":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "furnace_blocks":
+		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blast_furnace_blocks":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "blast_furnace_misc":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "smoker_food":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "smithing":
+		temp, err = pk.VarInt(11).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "campfire":
+		temp, err = pk.VarInt(12).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "crafting_building_blocks":
+		temp, err = pk.VarInt(0).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "crafting_misc":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "furnace_food":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "furnace_misc":
+		temp, err = pk.VarInt(6).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "stonecutter":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Category value %v", p.Category)
 	}
@@ -332,39 +278,31 @@ func (p RecipeBookAddEntriesEntryRecipe) WriteTo(w io.Writer) (n int64, err erro
 	if p.CraftingRequirements != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.VarInt(len(*p.CraftingRequirements)).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		for i := range *p.CraftingRequirements {
 			_ = i
-			temp, err = pk.VarInt(len((*p.CraftingRequirements)[i])).WriteTo(w)
+		temp, err = pk.VarInt(len((*p.CraftingRequirements)[i])).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+		for i := range (*p.CraftingRequirements)[i] {
+			temp, err = pk.VarInt((*p.CraftingRequirements)[i][i]).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
-			for i := range (*p.CraftingRequirements)[i] {
-				temp, err = pk.VarInt((*p.CraftingRequirements)[i][i]).WriteTo(w)
-				n += temp
-				if err != nil {
-					return n, err
-				}
-			}
+			if err != nil { return n, err }
+		}
 		}
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
+
 
 // RecipeBookAddEntriesEntry is a sub-structure used in the packet.
 type RecipeBookAddEntriesEntry struct {
@@ -373,6 +311,7 @@ type RecipeBookAddEntriesEntry struct {
 	Flags uint8
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookAddEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -380,20 +319,18 @@ func (p *RecipeBookAddEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.Recipe.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var flags pk.UnsignedByte
 	temp, err = flags.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Flags = uint8(flags)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p RecipeBookAddEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -402,18 +339,17 @@ func (p RecipeBookAddEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Recipe.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.UnsignedByte(p.Flags).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
+
 
 // RecipeBookAdd represents the Clientbound RecipeBookAdd packet.
 
@@ -427,6 +363,7 @@ func (*RecipeBookAdd) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundRecipeBookAdd
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -435,24 +372,18 @@ func (p *RecipeBookAdd) ReadFrom(r io.Reader) (n int64, err error) {
 	var entriesCount pk.VarInt
 	temp, err = entriesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Entries = make([]RecipeBookAddEntriesEntry, entriesCount)
 	for i := 0; i < int(entriesCount); i++ {
 		temp, err = p.Entries[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	var replace pk.Boolean
 	temp, err = replace.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Replace = bool(replace)
 
 	return n, nil
@@ -465,28 +396,24 @@ func (p RecipeBookAdd) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(len(p.Entries)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Entries {
 		temp, err = p.Entries[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.Boolean(p.Replace).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundRecipeBookAdd, func() ClientboundPacket {
 		return &RecipeBookAdd{}
 	})
 }
+

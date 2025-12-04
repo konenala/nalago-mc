@@ -5,10 +5,11 @@ package server
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetDifficulty represents the Serverbound SetDifficulty packet.
 
@@ -22,6 +23,7 @@ func (*SetDifficulty) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSetDifficulty
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *SetDifficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -30,9 +32,7 @@ func (p *SetDifficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
 	case 0:
 		p.NewDifficulty = "peaceful"
@@ -58,27 +58,19 @@ func (p SetDifficulty) WriteTo(w io.Writer) (n int64, err error) {
 	case "peaceful":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "easy":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "normal":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "hard":
 		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown NewDifficulty value %v", p.NewDifficulty)
 	}
@@ -86,8 +78,10 @@ func (p SetDifficulty) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ServerboundSetDifficulty, func() ServerboundPacket {
 		return &SetDifficulty{}
 	})
 }
+

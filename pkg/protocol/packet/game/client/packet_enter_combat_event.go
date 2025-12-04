@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+
 // EnterCombatEvent represents the Clientbound EnterCombatEvent packet.
 
 type EnterCombatEvent struct {
@@ -17,6 +18,7 @@ type EnterCombatEvent struct {
 func (*EnterCombatEvent) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEnterCombatEvent
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *EnterCombatEvent) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,8 +32,10 @@ func (p EnterCombatEvent) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundEnterCombatEvent, func() ClientboundPacket {
 		return &EnterCombatEvent{}
 	})
 }
+

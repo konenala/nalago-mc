@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Ping represents the Clientbound Ping packet.
 
@@ -20,6 +21,7 @@ func (*Ping) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundPing
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *Ping) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -27,9 +29,7 @@ func (p *Ping) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Id).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -41,15 +41,15 @@ func (p Ping) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Id).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundPing, func() ClientboundPacket {
 		return &Ping{}
 	})
 }
+

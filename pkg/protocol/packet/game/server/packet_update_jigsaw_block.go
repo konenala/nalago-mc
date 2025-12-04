@@ -4,29 +4,31 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateJigsawBlock represents the Serverbound UpdateJigsawBlock packet.
 
 type UpdateJigsawBlock struct {
 	// Bitfield - see protocol spec for bit layout
-	Location          int32
-	Name              string `mc:"String"`
-	Target            string `mc:"String"`
-	Pool              string `mc:"String"`
-	FinalState        string `mc:"String"`
-	JointType         string `mc:"String"`
-	SelectionPriority int32  `mc:"VarInt"`
-	PlacementPriority int32  `mc:"VarInt"`
+	Location int32
+	Name string `mc:"String"`
+	Target string `mc:"String"`
+	Pool string `mc:"String"`
+	FinalState string `mc:"String"`
+	JointType string `mc:"String"`
+	SelectionPriority int32 `mc:"VarInt"`
+	PlacementPriority int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*UpdateJigsawBlock) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundUpdateJigsawBlock
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateJigsawBlock) ReadFrom(r io.Reader) (n int64, err error) {
@@ -35,64 +37,48 @@ func (p *UpdateJigsawBlock) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var name pk.String
 	temp, err = name.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Name = string(name)
 
 	var target pk.String
 	temp, err = target.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Target = string(target)
 
 	var pool pk.String
 	temp, err = pool.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Pool = string(pool)
 
 	var finalState pk.String
 	temp, err = finalState.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.FinalState = string(finalState)
 
 	var jointType pk.String
 	temp, err = jointType.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.JointType = string(jointType)
 
 	var selectionPriority pk.VarInt
 	temp, err = selectionPriority.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SelectionPriority = int32(selectionPriority)
 
 	var placementPriority pk.VarInt
 	temp, err = placementPriority.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.PlacementPriority = int32(placementPriority)
 
 	return n, nil
@@ -105,57 +91,43 @@ func (p UpdateJigsawBlock) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Name).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Target).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Pool).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.FinalState).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.JointType).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.SelectionPriority).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.PlacementPriority).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundUpdateJigsawBlock, func() ServerboundPacket {
 		return &UpdateJigsawBlock{}
 	})
 }
+

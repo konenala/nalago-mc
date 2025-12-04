@@ -4,10 +4,11 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // PlayerInput represents the Serverbound PlayerInput packet.
 
@@ -21,6 +22,7 @@ func (*PlayerInput) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundPlayerInput
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *PlayerInput) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -29,9 +31,7 @@ func (p *PlayerInput) ReadFrom(r io.Reader) (n int64, err error) {
 	var inputs pk.UnsignedByte
 	temp, err = inputs.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Inputs = uint8(inputs)
 
 	return n, nil
@@ -44,15 +44,15 @@ func (p PlayerInput) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.UnsignedByte(p.Inputs).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundPlayerInput, func() ServerboundPacket {
 		return &PlayerInput{}
 	})
 }
+

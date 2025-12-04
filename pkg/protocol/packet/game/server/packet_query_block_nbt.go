@@ -4,10 +4,11 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // QueryBlockNbt represents the Serverbound QueryBlockNbt packet.
 
@@ -22,6 +23,7 @@ func (*QueryBlockNbt) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundQueryBlockNbt
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *QueryBlockNbt) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -30,16 +32,12 @@ func (p *QueryBlockNbt) ReadFrom(r io.Reader) (n int64, err error) {
 	var transactionId pk.VarInt
 	temp, err = transactionId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.TransactionId = int32(transactionId)
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -51,21 +49,19 @@ func (p QueryBlockNbt) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.TransactionId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundQueryBlockNbt, func() ServerboundPacket {
 		return &QueryBlockNbt{}
 	})
 }
+

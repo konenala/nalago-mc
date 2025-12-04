@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // KickDisconnect represents the Clientbound KickDisconnect packet.
 
@@ -20,6 +21,7 @@ func (*KickDisconnect) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundKickDisconnect
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *KickDisconnect) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -27,9 +29,7 @@ func (p *KickDisconnect) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.NBTField)(&p.Reason).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -41,15 +41,15 @@ func (p KickDisconnect) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Reason.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundKickDisconnect, func() ClientboundPacket {
 		return &KickDisconnect{}
 	})
 }
+

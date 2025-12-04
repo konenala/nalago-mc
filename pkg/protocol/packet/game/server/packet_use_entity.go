@@ -5,16 +5,17 @@ package server
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UseEntity represents the Serverbound UseEntity packet.
 
 type UseEntity struct {
 	Target int32 `mc:"VarInt"`
-	Mouse  int32 `mc:"VarInt"`
+	Mouse int32 `mc:"VarInt"`
 	// Optional，當 Mouse 符合條件時出現
 	X *float32
 	// Optional，當 Mouse 符合條件時出現
@@ -22,10 +23,10 @@ type UseEntity struct {
 	// Optional，當 Mouse 符合條件時出現
 	Z *float32
 	// Switch 基於 Mouse：
-	//   0 -> varint
-	//   2 -> varint
-	//   default -> void
-	Hand     interface{}
+//   2 -> varint
+//   0 -> varint
+//   default -> void
+	Hand interface{}
 	Sneaking bool
 }
 
@@ -33,6 +34,7 @@ type UseEntity struct {
 func (*UseEntity) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundUseEntity
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
@@ -42,17 +44,13 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var target pk.VarInt
 	temp, err = target.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Target = int32(target)
 
 	var mouse pk.VarInt
 	temp, err = mouse.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Mouse = int32(mouse)
 
 	// 當 Mouse == 2 時讀取 X
@@ -60,9 +58,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.X = &val
 	}
 
@@ -71,9 +67,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Y = &val
 	}
 
@@ -82,9 +76,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Z = &val
 	}
 
@@ -94,9 +86,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Hand = val
 	case 2:
@@ -104,9 +94,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Hand = val
 	default:
@@ -116,9 +104,7 @@ func (p *UseEntity) ReadFrom(r io.Reader) (n int64, err error) {
 	var sneaking pk.Boolean
 	temp, err = sneaking.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Sneaking = bool(sneaking)
 
 	return n, nil
@@ -131,62 +117,50 @@ func (p UseEntity) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Target).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Mouse).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.X != nil {
 		temp, err = pk.Float(*p.X).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.Y != nil {
 		temp, err = pk.Float(*p.Y).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.Z != nil {
 		temp, err = pk.Float(*p.Z).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	switch v := p.Hand.(type) {
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Hand: %T", v)
 	}
 
 	temp, err = pk.Boolean(p.Sneaking).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundUseEntity, func() ServerboundPacket {
 		return &UseEntity{}
 	})
 }
+

@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntityVelocity represents the Clientbound EntityVelocity packet.
 
 type EntityVelocity struct {
-	EntityId  int32 `mc:"VarInt"`
+	EntityId int32 `mc:"VarInt"`
 	VelocityX int16
 	VelocityY int16
 	VelocityZ int16
@@ -23,6 +24,7 @@ func (*EntityVelocity) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntityVelocity
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *EntityVelocity) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -31,28 +33,20 @@ func (p *EntityVelocity) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Short)(&p.VelocityX).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Short)(&p.VelocityY).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Short)(&p.VelocityZ).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -64,33 +58,27 @@ func (p EntityVelocity) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Short(p.VelocityX).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Short(p.VelocityY).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Short(p.VelocityZ).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntityVelocity, func() ClientboundPacket {
 		return &EntityVelocity{}
 	})
 }
+

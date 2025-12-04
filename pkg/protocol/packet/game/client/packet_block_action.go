@@ -4,25 +4,27 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // BlockAction represents the Clientbound BlockAction packet.
 
 type BlockAction struct {
 	// Bitfield - see protocol spec for bit layout
 	Location int32
-	Byte1    uint8
-	Byte2    uint8
-	BlockId  int32 `mc:"VarInt"`
+	Byte1 uint8
+	Byte2 uint8
+	BlockId int32 `mc:"VarInt"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*BlockAction) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundBlockAction
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *BlockAction) ReadFrom(r io.Reader) (n int64, err error) {
@@ -31,32 +33,24 @@ func (p *BlockAction) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var byte1 pk.UnsignedByte
 	temp, err = byte1.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Byte1 = uint8(byte1)
 
 	var byte2 pk.UnsignedByte
 	temp, err = byte2.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Byte2 = uint8(byte2)
 
 	var blockId pk.VarInt
 	temp, err = blockId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BlockId = int32(blockId)
 
 	return n, nil
@@ -69,33 +63,27 @@ func (p BlockAction) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.UnsignedByte(p.Byte1).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.UnsignedByte(p.Byte2).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.BlockId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundBlockAction, func() ClientboundPacket {
 		return &BlockAction{}
 	})
 }
+

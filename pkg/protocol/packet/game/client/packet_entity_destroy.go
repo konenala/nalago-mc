@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntityDestroy represents the Clientbound EntityDestroy packet.
 
@@ -20,6 +21,7 @@ func (*EntityDestroy) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntityDestroy
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *EntityDestroy) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,17 +30,13 @@ func (p *EntityDestroy) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityIdsCount pk.VarInt
 	temp, err = entityIdsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityIds = make([]int32, entityIdsCount)
 	for i := 0; i < int(entityIdsCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.EntityIds[i] = int32(elem)
 	}
 
@@ -52,22 +50,20 @@ func (p EntityDestroy) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(len(p.EntityIds)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.EntityIds {
 		temp, err = pk.VarInt(p.EntityIds[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntityDestroy, func() ClientboundPacket {
 		return &EntityDestroy{}
 	})
 }
+

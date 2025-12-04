@@ -5,25 +5,26 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // DeclareCommandsTemp is a sub-structure used in the packet.
 type DeclareCommandsTemp struct {
 	// Bitfield - see protocol spec for bit layout
-	Flags    int32
+	Flags int32
 	Children []int32
 	// Optional，當 Flags 符合條件時出現
 	RedirectNode *int32
 	// Switch 基於 Flags：
-	//   0 -> void
-	//   1 -> [container [map[name:name type:string]]]
-	//   2 -> [container [map[name:name type:string] map[name:parser type:[mapper map[mappings:map[0:brigadier:bool 1:brigadier:float 10:minecraft:vec3 11:minecraft:vec2 12:minecraft:block_state 13:minecraft:block_predicate 14:minecraft:item_stack 15:minecraft:item_predicate 16:minecraft:color 17:minecraft:hex_color 18:minecraft:component 19:minecraft:style 2:brigadier:double 20:minecraft:message 21:minecraft:nbt 22:minecraft:nbt_tag 23:minecraft:nbt_path 24:minecraft:objective 25:minecraft:objective_criteria 26:minecraft:operation 27:minecraft:particle 28:minecraft:angle 29:minecraft:rotation 3:brigadier:integer 30:minecraft:scoreboard_slot 31:minecraft:score_holder 32:minecraft:swizzle 33:minecraft:team 34:minecraft:item_slot 35:minecraft:item_slots 36:minecraft:resource_location 37:minecraft:function 38:minecraft:entity_anchor 39:minecraft:int_range 4:brigadier:long 40:minecraft:float_range 41:minecraft:dimension 42:minecraft:gamemode 43:minecraft:time 44:minecraft:resource_or_tag 45:minecraft:resource_or_tag_key 46:minecraft:resource 47:minecraft:resource_key 48:minecraft:resource_selector 49:minecraft:template_mirror 5:brigadier:string 50:minecraft:template_rotation 51:minecraft:heightmap 52:minecraft:loot_table 53:minecraft:loot_predicate 54:minecraft:loot_modifier 55:minecraft:dialog 56:minecraft:uuid 6:minecraft:entity 7:minecraft:game_profile 8:minecraft:block_pos 9:minecraft:column_pos] type:varint]]] map[name:properties type:[switch map[compareTo:parser fields:map[brigadier:bool:void brigadier:double:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:f64]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:f64]]]]]] brigadier:float:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:f32]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:f32]]]]]] brigadier:integer:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:i32]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:i32]]]]]] brigadier:long:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:i64]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:i64]]]]]] brigadier:string:[mapper map[mappings:map[0:SINGLE_WORD 1:QUOTABLE_PHRASE 2:GREEDY_PHRASE] type:varint]] minecraft:angle:void minecraft:block_pos:void minecraft:block_predicate:void minecraft:block_state:void minecraft:color:void minecraft:column_pos:void minecraft:component:void minecraft:dialog:void minecraft:dimension:void minecraft:entity:[bitfield [map[name:unused signed:false size:6] map[name:onlyAllowPlayers signed:false size:1] map[name:onlyAllowEntities signed:false size:1]]] minecraft:entity_anchor:void minecraft:float_range:void minecraft:function:void minecraft:game_profile:void minecraft:gamemode:void minecraft:heightmap:void minecraft:hex_color:void minecraft:int_range:void minecraft:item_predicate:void minecraft:item_slot:void minecraft:item_stack:void minecraft:message:void minecraft:nbt:void minecraft:nbt_path:void minecraft:objective:void minecraft:objective_criteria:void minecraft:operation:void minecraft:particle:void minecraft:resource:[container [map[name:registry type:string]]] minecraft:resource_key:[container [map[name:registry type:string]]] minecraft:resource_location:void minecraft:resource_or_tag:[container [map[name:registry type:string]]] minecraft:resource_or_tag_key:[container [map[name:registry type:string]]] minecraft:resource_selector:[container [map[name:registry type:string]]] minecraft:rotation:void minecraft:score_holder:[bitfield [map[name:unused signed:false size:7] map[name:allowMultiple signed:false size:1]]] minecraft:scoreboard_slot:void minecraft:swizzle:void minecraft:team:void minecraft:template_mirror:void minecraft:template_rotation:void minecraft:time:[container [map[name:min type:i32]]] minecraft:uuid:void minecraft:vec2:void minecraft:vec3:void]]]] map[name:suggestionType type:[switch map[compareTo:../flags/has_custom_suggestions default:void fields:map[1:string]]]]]]
+//   0 -> void
+//   1 -> [container [map[name:name type:string]]]
+//   2 -> [container [map[name:name type:string] map[name:parser type:[mapper map[mappings:map[0:brigadier:bool 1:brigadier:float 10:minecraft:vec3 11:minecraft:vec2 12:minecraft:block_state 13:minecraft:block_predicate 14:minecraft:item_stack 15:minecraft:item_predicate 16:minecraft:color 17:minecraft:hex_color 18:minecraft:component 19:minecraft:style 2:brigadier:double 20:minecraft:message 21:minecraft:nbt 22:minecraft:nbt_tag 23:minecraft:nbt_path 24:minecraft:objective 25:minecraft:objective_criteria 26:minecraft:operation 27:minecraft:particle 28:minecraft:angle 29:minecraft:rotation 3:brigadier:integer 30:minecraft:scoreboard_slot 31:minecraft:score_holder 32:minecraft:swizzle 33:minecraft:team 34:minecraft:item_slot 35:minecraft:item_slots 36:minecraft:resource_location 37:minecraft:function 38:minecraft:entity_anchor 39:minecraft:int_range 4:brigadier:long 40:minecraft:float_range 41:minecraft:dimension 42:minecraft:gamemode 43:minecraft:time 44:minecraft:resource_or_tag 45:minecraft:resource_or_tag_key 46:minecraft:resource 47:minecraft:resource_key 48:minecraft:resource_selector 49:minecraft:template_mirror 5:brigadier:string 50:minecraft:template_rotation 51:minecraft:heightmap 52:minecraft:loot_table 53:minecraft:loot_predicate 54:minecraft:loot_modifier 55:minecraft:dialog 56:minecraft:uuid 6:minecraft:entity 7:minecraft:game_profile 8:minecraft:block_pos 9:minecraft:column_pos] type:varint]]] map[name:properties type:[switch map[compareTo:parser fields:map[brigadier:bool:void brigadier:double:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:f64]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:f64]]]]]] brigadier:float:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:f32]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:f32]]]]]] brigadier:integer:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:i32]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:i32]]]]]] brigadier:long:[container [map[name:flags type:[bitfield [map[name:unused signed:false size:6] map[name:max_present signed:false size:1] map[name:min_present signed:false size:1]]]] map[name:min type:[switch map[compareTo:flags/min_present default:void fields:map[1:i64]]]] map[name:max type:[switch map[compareTo:flags/max_present default:void fields:map[1:i64]]]]]] brigadier:string:[mapper map[mappings:map[0:SINGLE_WORD 1:QUOTABLE_PHRASE 2:GREEDY_PHRASE] type:varint]] minecraft:angle:void minecraft:block_pos:void minecraft:block_predicate:void minecraft:block_state:void minecraft:color:void minecraft:column_pos:void minecraft:component:void minecraft:dialog:void minecraft:dimension:void minecraft:entity:[bitfield [map[name:unused signed:false size:6] map[name:onlyAllowPlayers signed:false size:1] map[name:onlyAllowEntities signed:false size:1]]] minecraft:entity_anchor:void minecraft:float_range:void minecraft:function:void minecraft:game_profile:void minecraft:gamemode:void minecraft:heightmap:void minecraft:hex_color:void minecraft:int_range:void minecraft:item_predicate:void minecraft:item_slot:void minecraft:item_stack:void minecraft:message:void minecraft:nbt:void minecraft:nbt_path:void minecraft:objective:void minecraft:objective_criteria:void minecraft:operation:void minecraft:particle:void minecraft:resource:[container [map[name:registry type:string]]] minecraft:resource_key:[container [map[name:registry type:string]]] minecraft:resource_location:void minecraft:resource_or_tag:[container [map[name:registry type:string]]] minecraft:resource_or_tag_key:[container [map[name:registry type:string]]] minecraft:resource_selector:[container [map[name:registry type:string]]] minecraft:rotation:void minecraft:score_holder:[bitfield [map[name:unused signed:false size:7] map[name:allowMultiple signed:false size:1]]] minecraft:scoreboard_slot:void minecraft:swizzle:void minecraft:team:void minecraft:template_mirror:void minecraft:template_rotation:void minecraft:time:[container [map[name:min type:i32]]] minecraft:uuid:void minecraft:vec2:void minecraft:vec3:void]]]] map[name:suggestionType type:[switch map[compareTo:../flags/has_custom_suggestions default:void fields:map[1:string]]]]]]
 
 	ExtraNodeData interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *DeclareCommandsTemp) ReadFrom(r io.Reader) (n int64, err error) {
@@ -32,24 +33,18 @@ func (p *DeclareCommandsTemp) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Flags).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var childrenCount pk.VarInt
 	temp, err = childrenCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Children = make([]int32, childrenCount)
 	for i := 0; i < int(childrenCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Children[i] = int32(elem)
 	}
 
@@ -59,9 +54,7 @@ func (p *DeclareCommandsTemp) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.RedirectNode = &val
 	}
@@ -77,6 +70,8 @@ func (p *DeclareCommandsTemp) ReadFrom(r io.Reader) (n int64, err error) {
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p DeclareCommandsTemp) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
@@ -84,36 +79,26 @@ func (p DeclareCommandsTemp) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Flags).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Children)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Children {
 		temp, err = pk.VarInt(p.Children[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.RedirectNode != nil {
 		temp, err = pk.VarInt(*p.RedirectNode).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	switch v := p.ExtraNodeData.(type) {
 	case struct{}:
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for ExtraNodeData: %T", v)
 	}
@@ -121,10 +106,13 @@ func (p DeclareCommandsTemp) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
+
+
 // DeclareCommands represents the Clientbound DeclareCommands packet.
 
 type DeclareCommands struct {
-	Nodes     []DeclareCommandsTemp
+	Nodes []DeclareCommandsTemp
 	RootIndex int32 `mc:"VarInt"`
 }
 
@@ -132,6 +120,7 @@ type DeclareCommands struct {
 func (*DeclareCommands) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundDeclareCommands
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *DeclareCommands) ReadFrom(r io.Reader) (n int64, err error) {
@@ -141,24 +130,18 @@ func (p *DeclareCommands) ReadFrom(r io.Reader) (n int64, err error) {
 	var nodesCount pk.VarInt
 	temp, err = nodesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Nodes = make([]DeclareCommandsTemp, nodesCount)
 	for i := 0; i < int(nodesCount); i++ {
 		temp, err = p.Nodes[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	var rootIndex pk.VarInt
 	temp, err = rootIndex.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.RootIndex = int32(rootIndex)
 
 	return n, nil
@@ -171,28 +154,24 @@ func (p DeclareCommands) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(len(p.Nodes)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Nodes {
 		temp, err = p.Nodes[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(p.RootIndex).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundDeclareCommands, func() ClientboundPacket {
 		return &DeclareCommands{}
 	})
 }
+

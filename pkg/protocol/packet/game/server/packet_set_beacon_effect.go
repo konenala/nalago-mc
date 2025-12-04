@@ -4,15 +4,16 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetBeaconEffect represents the Serverbound SetBeaconEffect packet.
 
 type SetBeaconEffect struct {
-	PrimaryEffect   *int32
+	PrimaryEffect *int32
 	SecondaryEffect *int32
 }
 
@@ -20,6 +21,7 @@ type SetBeaconEffect struct {
 func (*SetBeaconEffect) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSetBeaconEffect
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SetBeaconEffect) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,17 +31,13 @@ func (p *SetBeaconEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var hasPrimaryEffect pk.Boolean
 	temp, err = hasPrimaryEffect.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasPrimaryEffect {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.PrimaryEffect = &val
 	}
@@ -47,17 +45,13 @@ func (p *SetBeaconEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var hasSecondaryEffect pk.Boolean
 	temp, err = hasSecondaryEffect.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasSecondaryEffect {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.SecondaryEffect = &val
 	}
@@ -73,46 +67,36 @@ func (p SetBeaconEffect) WriteTo(w io.Writer) (n int64, err error) {
 	if p.PrimaryEffect != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.VarInt(*p.PrimaryEffect).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.SecondaryEffect != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.VarInt(*p.SecondaryEffect).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSetBeaconEffect, func() ServerboundPacket {
 		return &SetBeaconEffect{}
 	})
 }
+

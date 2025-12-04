@@ -5,23 +5,24 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ScoreboardScore represents the Clientbound ScoreboardScore packet.
 
 type ScoreboardScore struct {
-	ItemName     string `mc:"String"`
-	ScoreName    string `mc:"String"`
-	Value        int32  `mc:"VarInt"`
-	DisplayName  *pk.NBTField
+	ItemName string `mc:"String"`
+	ScoreName string `mc:"String"`
+	Value int32 `mc:"VarInt"`
+	DisplayName *pk.NBTField
 	NumberFormat *int32
 	// Switch 基於 NumberFormat：
-	//   2 -> anonymousNbt
-	//   1 -> anonymousNbt
-	//   default -> void
+//   1 -> anonymousNbt
+//   2 -> anonymousNbt
+//   default -> void
 	Styling interface{}
 }
 
@@ -29,6 +30,7 @@ type ScoreboardScore struct {
 func (*ScoreboardScore) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundScoreboardScore
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
@@ -38,57 +40,43 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 	var itemName pk.String
 	temp, err = itemName.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ItemName = string(itemName)
 
 	var scoreName pk.String
 	temp, err = scoreName.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.ScoreName = string(scoreName)
 
 	var value pk.VarInt
 	temp, err = value.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Value = int32(value)
 
 	var hasDisplayName pk.Boolean
 	temp, err = hasDisplayName.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasDisplayName {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.DisplayName = &val
 	}
 
 	var hasNumberFormat pk.Boolean
 	temp, err = hasNumberFormat.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasNumberFormat {
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.NumberFormat = &val
 	}
@@ -98,17 +86,13 @@ func (p *ScoreboardScore) ReadFrom(r io.Reader) (n int64, err error) {
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Styling = val
 	case 2:
 		var val pk.NBTField
 		temp, err = (*pk.NBTField)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Styling = val
 	default:
 		// 無對應負載
@@ -124,67 +108,47 @@ func (p ScoreboardScore) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.ItemName).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.ScoreName).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Value).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.DisplayName != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.NBTField(*p.DisplayName).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	if p.NumberFormat != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.VarInt(*p.NumberFormat).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	switch v := p.Styling.(type) {
 	case pk.NBTField:
 		temp, err = pk.NBTField(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Styling: %T", v)
 	}
@@ -192,8 +156,10 @@ func (p ScoreboardScore) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundScoreboardScore, func() ClientboundPacket {
 		return &ScoreboardScore{}
 	})
 }
+

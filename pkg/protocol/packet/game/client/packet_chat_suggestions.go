@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ChatSuggestions represents the Clientbound ChatSuggestions packet.
 
 type ChatSuggestions struct {
-	Action  int32 `mc:"VarInt"`
+	Action int32 `mc:"VarInt"`
 	Entries []string
 }
 
@@ -20,6 +21,7 @@ type ChatSuggestions struct {
 func (*ChatSuggestions) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundChatSuggestions
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,25 +31,19 @@ func (p *ChatSuggestions) ReadFrom(r io.Reader) (n int64, err error) {
 	var action pk.VarInt
 	temp, err = action.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Action = int32(action)
 
 	var entriesCount pk.VarInt
 	temp, err = entriesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Entries = make([]string, entriesCount)
 	for i := 0; i < int(entriesCount); i++ {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Entries[i] = string(elem)
 	}
 
@@ -61,28 +57,24 @@ func (p ChatSuggestions) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Action).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Entries)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Entries {
 		temp, err = pk.String(p.Entries[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundChatSuggestions, func() ClientboundPacket {
 		return &ChatSuggestions{}
 	})
 }
+

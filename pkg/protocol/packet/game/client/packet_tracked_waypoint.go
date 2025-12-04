@@ -5,9 +5,9 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // TrackedWaypointWaypointIcon is a sub-structure used in the packet.
@@ -15,6 +15,7 @@ type TrackedWaypointWaypointIcon struct {
 	Style string `mc:"String"`
 	Color *int32
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TrackedWaypointWaypointIcon) ReadFrom(r io.Reader) (n int64, err error) {
@@ -24,29 +25,25 @@ func (p *TrackedWaypointWaypointIcon) ReadFrom(r io.Reader) (n int64, err error)
 	var style pk.String
 	temp, err = style.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Style = string(style)
 
 	var hasColor pk.Boolean
 	temp, err = hasColor.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	if hasColor {
 		var val int32
 		temp, err = (*pk.Int)(&val).ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Color = &val
 	}
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p TrackedWaypointWaypointIcon) WriteTo(w io.Writer) (n int64, err error) {
@@ -55,45 +52,40 @@ func (p TrackedWaypointWaypointIcon) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Style).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	if p.Color != nil {
 		temp, err = pk.Boolean(true).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		temp, err = pk.Int(*p.Color).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	} else {
 		temp, err = pk.Boolean(false).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
 
+
+
 // TrackedWaypointWaypoint is a sub-structure used in the packet.
 type TrackedWaypointWaypoint struct {
 	HasUUID bool
-	Icon    TrackedWaypointWaypointIcon
+	Icon TrackedWaypointWaypointIcon
 	// Mapper to string
 	Type string
 	// Switch 基於 Type：
-	//   vec3i -> vec3i
-	//   chunk -> [container [map[name:chunkX type:varint] map[name:chunkZ type:varint]]]
-	//   azimuth -> f32
+//   vec3i -> vec3i
+//   chunk -> [container [map[name:chunkX type:varint] map[name:chunkZ type:varint]]]
+//   azimuth -> f32
 
 	Data interface{}
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
@@ -103,23 +95,17 @@ func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 	var hasUUID pk.Boolean
 	temp, err = hasUUID.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.HasUUID = bool(hasUUID)
 
 	temp, err = p.Icon.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
 	case 0:
 		p.Type = "empty"
@@ -134,25 +120,21 @@ func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Type {
-	case "azimuth":
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Data = val
 	case "vec3i":
 		var val [3]int32
 		for i := 0; i < 3; i++ {
 			var v pk.VarInt
 			temp, err = v.ReadFrom(r)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 			val[i] = int32(v)
 		}
+		p.Data = val
+	case "azimuth":
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil { return n, err }
 		p.Data = val
 	default:
 		// 無對應負載
@@ -161,6 +143,8 @@ func (p *TrackedWaypointWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 	return n, nil
 }
 
+
+
 // WriteTo writes the data to the writer.
 func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 	var temp int64
@@ -168,63 +152,45 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.HasUUID).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Icon.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch p.Type {
 	case "empty":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "vec3i":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "chunk":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "azimuth":
 		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	switch v := p.Data.(type) {
+	case float32:
+		temp, err = pk.Float(v).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	case [3]int32:
 		for i := 0; i < 3; i++ {
 			temp, err = pk.VarInt(v[i]).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
-		if err != nil {
-			return n, err
-		}
-	case float32:
-		temp, err = pk.Float(v).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Data: %T", v)
 	}
@@ -232,18 +198,22 @@ func (p TrackedWaypointWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
+
+
 // TrackedWaypoint represents the Clientbound TrackedWaypoint packet.
 
 type TrackedWaypoint struct {
 	// Mapper to string
 	Operation string
-	Waypoint  TrackedWaypointWaypoint
+	Waypoint TrackedWaypointWaypoint
 }
 
 // PacketID returns the packet ID for this packet.
 func (*TrackedWaypoint) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundTrackedWaypoint
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *TrackedWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
@@ -253,9 +223,7 @@ func (p *TrackedWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
 	case 0:
 		p.Operation = "track"
@@ -269,9 +237,7 @@ func (p *TrackedWaypoint) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.Waypoint.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -285,36 +251,30 @@ func (p TrackedWaypoint) WriteTo(w io.Writer) (n int64, err error) {
 	case "track":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "untrack":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "update":
 		temp, err = pk.VarInt(2).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Operation value %v", p.Operation)
 	}
 
 	temp, err = p.Waypoint.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundTrackedWaypoint, func() ClientboundPacket {
 		return &TrackedWaypoint{}
 	})
 }
+

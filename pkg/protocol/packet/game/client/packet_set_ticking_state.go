@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetTickingState represents the Clientbound SetTickingState packet.
 
@@ -21,6 +22,7 @@ func (*SetTickingState) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSetTickingState
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *SetTickingState) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,16 +30,12 @@ func (p *SetTickingState) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Float)(&p.TickRate).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var isFrozen pk.Boolean
 	temp, err = isFrozen.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IsFrozen = bool(isFrozen)
 
 	return n, nil
@@ -50,21 +48,19 @@ func (p SetTickingState) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Float(p.TickRate).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IsFrozen).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSetTickingState, func() ClientboundPacket {
 		return &SetTickingState{}
 	})
 }
+

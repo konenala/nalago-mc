@@ -4,10 +4,11 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Pong represents the Serverbound Pong packet.
 
@@ -20,6 +21,7 @@ func (*Pong) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundPong
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *Pong) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -27,9 +29,7 @@ func (p *Pong) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Id).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -41,15 +41,15 @@ func (p Pong) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Id).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundPong, func() ServerboundPacket {
 		return &Pong{}
 	})
 }
+

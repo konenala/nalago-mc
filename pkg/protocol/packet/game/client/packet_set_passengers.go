@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SetPassengers represents the Clientbound SetPassengers packet.
 
 type SetPassengers struct {
-	EntityId   int32 `mc:"VarInt"`
+	EntityId int32 `mc:"VarInt"`
 	Passengers []int32
 }
 
@@ -20,6 +21,7 @@ type SetPassengers struct {
 func (*SetPassengers) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSetPassengers
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,25 +31,19 @@ func (p *SetPassengers) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var passengersCount pk.VarInt
 	temp, err = passengersCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Passengers = make([]int32, passengersCount)
 	for i := 0; i < int(passengersCount); i++ {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Passengers[i] = int32(elem)
 	}
 
@@ -61,28 +57,24 @@ func (p SetPassengers) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Passengers)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Passengers {
 		temp, err = pk.VarInt(p.Passengers[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSetPassengers, func() ClientboundPacket {
 		return &SetPassengers{}
 	})
 }
+

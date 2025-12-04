@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SimulationDistance represents the Clientbound SimulationDistance packet.
 
@@ -20,6 +21,7 @@ func (*SimulationDistance) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundSimulationDistance
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *SimulationDistance) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *SimulationDistance) ReadFrom(r io.Reader) (n int64, err error) {
 	var distance pk.VarInt
 	temp, err = distance.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Distance = int32(distance)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p SimulationDistance) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.Distance).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundSimulationDistance, func() ClientboundPacket {
 		return &SimulationDistance{}
 	})
 }
+

@@ -4,25 +4,27 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateCommandBlock represents the Serverbound UpdateCommandBlock packet.
 
 type UpdateCommandBlock struct {
 	// Bitfield - see protocol spec for bit layout
 	Location int32
-	Command  string `mc:"String"`
-	Mode     int32  `mc:"VarInt"`
-	Flags    uint8
+	Command string `mc:"String"`
+	Mode int32 `mc:"VarInt"`
+	Flags uint8
 }
 
 // PacketID returns the packet ID for this packet.
 func (*UpdateCommandBlock) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundUpdateCommandBlock
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateCommandBlock) ReadFrom(r io.Reader) (n int64, err error) {
@@ -31,32 +33,24 @@ func (p *UpdateCommandBlock) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var command pk.String
 	temp, err = command.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Command = string(command)
 
 	var mode pk.VarInt
 	temp, err = mode.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Mode = int32(mode)
 
 	var flags pk.UnsignedByte
 	temp, err = flags.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Flags = uint8(flags)
 
 	return n, nil
@@ -69,33 +63,27 @@ func (p UpdateCommandBlock) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Command).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Mode).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.UnsignedByte(p.Flags).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundUpdateCommandBlock, func() ServerboundPacket {
 		return &UpdateCommandBlock{}
 	})
 }
+

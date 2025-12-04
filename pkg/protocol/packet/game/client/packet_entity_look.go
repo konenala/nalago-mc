@@ -4,17 +4,18 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntityLook represents the Clientbound EntityLook packet.
 
 type EntityLook struct {
 	EntityId int32 `mc:"VarInt"`
-	Yaw      int8
-	Pitch    int8
+	Yaw int8
+	Pitch int8
 	OnGround bool
 }
 
@@ -22,6 +23,7 @@ type EntityLook struct {
 func (*EntityLook) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntityLook
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
@@ -31,33 +33,25 @@ func (p *EntityLook) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var yaw int8
 	temp, err = (*pk.Byte)(&yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Yaw = yaw
 
 	var pitch int8
 	temp, err = (*pk.Byte)(&pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Pitch = pitch
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.OnGround = bool(onGround)
 
 	return n, nil
@@ -70,33 +64,27 @@ func (p EntityLook) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.OnGround).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntityLook, func() ClientboundPacket {
 		return &EntityLook{}
 	})
 }
+

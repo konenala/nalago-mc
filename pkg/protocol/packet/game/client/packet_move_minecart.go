@@ -4,9 +4,9 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // MoveMinecartStepsEntryPosition is a sub-structure used in the packet.
@@ -16,6 +16,7 @@ type MoveMinecartStepsEntryPosition struct {
 	Z float32
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *MoveMinecartStepsEntryPosition) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -23,24 +24,20 @@ func (p *MoveMinecartStepsEntryPosition) ReadFrom(r io.Reader) (n int64, err err
 
 	temp, err = (*pk.Float)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p MoveMinecartStepsEntryPosition) WriteTo(w io.Writer) (n int64, err error) {
@@ -49,24 +46,20 @@ func (p MoveMinecartStepsEntryPosition) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.Float(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // MoveMinecartStepsEntryMovement is a sub-structure used in the packet.
 type MoveMinecartStepsEntryMovement struct {
@@ -75,6 +68,7 @@ type MoveMinecartStepsEntryMovement struct {
 	Z float32
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *MoveMinecartStepsEntryMovement) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -82,24 +76,20 @@ func (p *MoveMinecartStepsEntryMovement) ReadFrom(r io.Reader) (n int64, err err
 
 	temp, err = (*pk.Float)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p MoveMinecartStepsEntryMovement) WriteTo(w io.Writer) (n int64, err error) {
@@ -108,33 +98,30 @@ func (p MoveMinecartStepsEntryMovement) WriteTo(w io.Writer) (n int64, err error
 
 	temp, err = pk.Float(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // MoveMinecartStepsEntry is a sub-structure used in the packet.
 type MoveMinecartStepsEntry struct {
 	Position MoveMinecartStepsEntryPosition
 	Movement MoveMinecartStepsEntryMovement
-	Yaw      float32
-	Pitch    float32
-	Weight   float32
+	Yaw float32
+	Pitch float32
+	Weight float32
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *MoveMinecartStepsEntry) ReadFrom(r io.Reader) (n int64, err error) {
@@ -143,36 +130,28 @@ func (p *MoveMinecartStepsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.Position.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Movement.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Weight).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p MoveMinecartStepsEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -181,48 +160,42 @@ func (p MoveMinecartStepsEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Position.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Movement.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Weight).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
+
 
 // MoveMinecart represents the Clientbound MoveMinecart packet.
 
 type MoveMinecart struct {
 	EntityId int32 `mc:"VarInt"`
-	Steps    []MoveMinecartStepsEntry
+	Steps []MoveMinecartStepsEntry
 }
 
 // PacketID returns the packet ID for this packet.
 func (*MoveMinecart) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundMoveMinecart
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *MoveMinecart) ReadFrom(r io.Reader) (n int64, err error) {
@@ -232,24 +205,18 @@ func (p *MoveMinecart) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var stepsCount pk.VarInt
 	temp, err = stepsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Steps = make([]MoveMinecartStepsEntry, stepsCount)
 	for i := 0; i < int(stepsCount); i++ {
 		temp, err = p.Steps[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
@@ -262,28 +229,24 @@ func (p MoveMinecart) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Steps)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Steps {
 		temp, err = p.Steps[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundMoveMinecart, func() ClientboundPacket {
 		return &MoveMinecart{}
 	})
 }
+

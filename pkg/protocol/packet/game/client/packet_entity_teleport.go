@@ -4,20 +4,21 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntityTeleport represents the Clientbound EntityTeleport packet.
 
 type EntityTeleport struct {
 	EntityId int32 `mc:"VarInt"`
-	X        float64
-	Y        float64
-	Z        float64
-	Yaw      int8
-	Pitch    int8
+	X float64
+	Y float64
+	Z float64
+	Yaw int8
+	Pitch int8
 	OnGround bool
 }
 
@@ -25,6 +26,7 @@ type EntityTeleport struct {
 func (*EntityTeleport) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntityTeleport
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *EntityTeleport) ReadFrom(r io.Reader) (n int64, err error) {
@@ -34,51 +36,37 @@ func (p *EntityTeleport) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var yaw int8
 	temp, err = (*pk.Byte)(&yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Yaw = yaw
 
 	var pitch int8
 	temp, err = (*pk.Byte)(&pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Pitch = pitch
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.OnGround = bool(onGround)
 
 	return n, nil
@@ -91,51 +79,39 @@ func (p EntityTeleport) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.OnGround).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntityTeleport, func() ClientboundPacket {
 		return &EntityTeleport{}
 	})
 }
+

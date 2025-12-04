@@ -4,17 +4,18 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // StatisticsEntriesEntry is a sub-structure used in the packet.
 type StatisticsEntriesEntry struct {
-	CategoryId  int32 `mc:"VarInt"`
+	CategoryId int32 `mc:"VarInt"`
 	StatisticId int32 `mc:"VarInt"`
-	Value       int32 `mc:"VarInt"`
+	Value int32 `mc:"VarInt"`
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *StatisticsEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
@@ -24,29 +25,25 @@ func (p *StatisticsEntriesEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var categoryId pk.VarInt
 	temp, err = categoryId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.CategoryId = int32(categoryId)
 
 	var statisticId pk.VarInt
 	temp, err = statisticId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.StatisticId = int32(statisticId)
 
 	var value pk.VarInt
 	temp, err = value.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Value = int32(value)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p StatisticsEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -55,24 +52,21 @@ func (p StatisticsEntriesEntry) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.CategoryId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.StatisticId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Value).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
+
 
 // Statistics represents the Clientbound Statistics packet.
 
@@ -85,6 +79,7 @@ func (*Statistics) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundStatistics
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *Statistics) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -93,16 +88,12 @@ func (p *Statistics) ReadFrom(r io.Reader) (n int64, err error) {
 	var entriesCount pk.VarInt
 	temp, err = entriesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Entries = make([]StatisticsEntriesEntry, entriesCount)
 	for i := 0; i < int(entriesCount); i++ {
 		temp, err = p.Entries[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
@@ -115,22 +106,20 @@ func (p Statistics) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(len(p.Entries)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Entries {
 		temp, err = p.Entries[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundStatistics, func() ClientboundPacket {
 		return &Statistics{}
 	})
 }
+

@@ -5,10 +5,11 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntitySoundEffect represents the Clientbound EntitySoundEffect packet.
 
@@ -16,16 +17,17 @@ type EntitySoundEffect struct {
 	Sound string `mc:"String"`
 	// Mapper to string
 	SoundCategory string
-	EntityId      int32 `mc:"VarInt"`
-	Volume        float32
-	Pitch         float32
-	Seed          int64
+	EntityId int32 `mc:"VarInt"`
+	Volume float32
+	Pitch float32
+	Seed int64
 }
 
 // PacketID returns the packet ID for this packet.
 func (*EntitySoundEffect) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntitySoundEffect
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
@@ -35,32 +37,16 @@ func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var sound pk.String
 	temp, err = sound.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Sound = string(sound)
 
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
-	case 7:
-		p.SoundCategory = "player"
-	case 9:
-		p.SoundCategory = "voice"
-	case 1:
-		p.SoundCategory = "music"
-	case 8:
-		p.SoundCategory = "ambient"
-	case 10:
-		p.SoundCategory = "ui"
 	case 0:
 		p.SoundCategory = "master"
-	case 2:
-		p.SoundCategory = "record"
 	case 3:
 		p.SoundCategory = "weather"
 	case 4:
@@ -69,6 +55,18 @@ func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 		p.SoundCategory = "hostile"
 	case 6:
 		p.SoundCategory = "neutral"
+	case 8:
+		p.SoundCategory = "ambient"
+	case 9:
+		p.SoundCategory = "voice"
+	case 1:
+		p.SoundCategory = "music"
+	case 2:
+		p.SoundCategory = "record"
+	case 7:
+		p.SoundCategory = "player"
+	case 10:
+		p.SoundCategory = "ui"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for SoundCategory", mapperVal)
 	}
@@ -76,28 +74,20 @@ func (p *EntitySoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	temp, err = (*pk.Float)(&p.Volume).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Long)(&p.Seed).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -109,110 +99,80 @@ func (p EntitySoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Sound).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch p.SoundCategory {
-	case "player":
-		temp, err = pk.VarInt(7).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "voice":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "music":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ambient":
-		temp, err = pk.VarInt(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ui":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "master":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "record":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "weather":
 		temp, err = pk.VarInt(3).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "block":
 		temp, err = pk.VarInt(4).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "hostile":
 		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "neutral":
 		temp, err = pk.VarInt(6).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "ambient":
+		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "voice":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "music":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "record":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "player":
+		temp, err = pk.VarInt(7).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ui":
+		temp, err = pk.VarInt(10).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown SoundCategory value %v", p.SoundCategory)
 	}
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Volume).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Long(p.Seed).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntitySoundEffect, func() ClientboundPacket {
 		return &EntitySoundEffect{}
 	})
 }
+

@@ -4,15 +4,16 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // SelectBundleItem represents the Serverbound SelectBundleItem packet.
 
 type SelectBundleItem struct {
-	SlotId            int32 `mc:"VarInt"`
+	SlotId int32 `mc:"VarInt"`
 	SelectedItemIndex int32 `mc:"VarInt"`
 }
 
@@ -20,6 +21,7 @@ type SelectBundleItem struct {
 func (*SelectBundleItem) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundSelectBundleItem
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *SelectBundleItem) ReadFrom(r io.Reader) (n int64, err error) {
@@ -29,17 +31,13 @@ func (p *SelectBundleItem) ReadFrom(r io.Reader) (n int64, err error) {
 	var slotId pk.VarInt
 	temp, err = slotId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SlotId = int32(slotId)
 
 	var selectedItemIndex pk.VarInt
 	temp, err = selectedItemIndex.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SelectedItemIndex = int32(selectedItemIndex)
 
 	return n, nil
@@ -52,21 +50,19 @@ func (p SelectBundleItem) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.SlotId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.SelectedItemIndex).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundSelectBundleItem, func() ServerboundPacket {
 		return &SelectBundleItem{}
 	})
 }
+

@@ -8,6 +8,7 @@ import (
 	"io"
 )
 
+
 // StartConfiguration represents the Clientbound StartConfiguration packet.
 
 type StartConfiguration struct {
@@ -17,6 +18,7 @@ type StartConfiguration struct {
 func (*StartConfiguration) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundStartConfiguration
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *StartConfiguration) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,8 +32,10 @@ func (p StartConfiguration) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundStartConfiguration, func() ClientboundPacket {
 		return &StartConfiguration{}
 	})
 }
+

@@ -4,10 +4,11 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // ClearTitles represents the Clientbound ClearTitles packet.
 
@@ -20,6 +21,7 @@ func (*ClearTitles) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundClearTitles
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *ClearTitles) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,9 +30,7 @@ func (p *ClearTitles) ReadFrom(r io.Reader) (n int64, err error) {
 	var reset pk.Boolean
 	temp, err = reset.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Reset = bool(reset)
 
 	return n, nil
@@ -43,15 +43,15 @@ func (p ClearTitles) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.Reset).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundClearTitles, func() ClientboundPacket {
 		return &ClearTitles{}
 	})
 }
+

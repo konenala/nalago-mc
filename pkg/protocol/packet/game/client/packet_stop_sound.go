@@ -5,24 +5,25 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // StopSound represents the Clientbound StopSound packet.
 
 type StopSound struct {
 	Flags int8
 	// Switch 基於 Flags：
-	//   1 -> varint
-	//   3 -> varint
-	//   default -> void
+//   1 -> varint
+//   3 -> varint
+//   default -> void
 	Source interface{}
 	// Switch 基於 Flags：
-	//   2 -> string
-	//   3 -> string
-	//   default -> void
+//   3 -> string
+//   2 -> string
+//   default -> void
 	Sound interface{}
 }
 
@@ -30,6 +31,7 @@ type StopSound struct {
 func (*StopSound) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundStopSound
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
@@ -39,9 +41,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 	var flags int8
 	temp, err = (*pk.Byte)(&flags).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Flags = flags
 
 	switch p.Flags {
@@ -50,9 +50,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Source = val
 	case 3:
@@ -60,9 +58,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = int32(elem)
 		p.Source = val
 	default:
@@ -75,9 +71,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
 		p.Sound = val
 	case 3:
@@ -85,9 +79,7 @@ func (p *StopSound) ReadFrom(r io.Reader) (n int64, err error) {
 		var elem pk.String
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		val = string(elem)
 		p.Sound = val
 	default:
@@ -104,17 +96,13 @@ func (p StopSound) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Byte(p.Flags).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch v := p.Source.(type) {
 	case int32:
 		temp, err = pk.VarInt(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Source: %T", v)
 	}
@@ -123,9 +111,7 @@ func (p StopSound) WriteTo(w io.Writer) (n int64, err error) {
 	case string:
 		temp, err = pk.String(v).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unsupported switch type for Sound: %T", v)
 	}
@@ -133,8 +119,10 @@ func (p StopSound) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundStopSound, func() ClientboundPacket {
 		return &StopSound{}
 	})
 }
+

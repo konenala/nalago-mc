@@ -5,9 +5,9 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // MapChunkHeightmapsEntry is a sub-structure used in the packet.
@@ -17,6 +17,7 @@ type MapChunkHeightmapsEntry struct {
 	Data []int64
 }
 
+
 // ReadFrom reads the data from the reader.
 func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -25,10 +26,12 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
+	case 5:
+		p.Type = "motion_blocking_no_leaves"
+	case 0:
+		p.Type = "world_surface_wg"
 	case 1:
 		p.Type = "world_surface"
 	case 2:
@@ -37,10 +40,6 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 		p.Type = "ocean_floor"
 	case 4:
 		p.Type = "motion_blocking"
-	case 5:
-		p.Type = "motion_blocking_no_leaves"
-	case 0:
-		p.Type = "world_surface_wg"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -48,22 +47,20 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 	var dataCount pk.VarInt
 	temp, err = dataCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Data = make([]int64, dataCount)
 	for i := 0; i < int(dataCount); i++ {
 		var elem pk.Long
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.Data[i] = int64(elem)
 	}
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
@@ -71,68 +68,55 @@ func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Type {
-	case "world_surface":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ocean_floor_wg":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ocean_floor":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "motion_blocking":
-		temp, err = pk.VarInt(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "motion_blocking_no_leaves":
 		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	case "world_surface_wg":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "world_surface":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ocean_floor_wg":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "ocean_floor":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "motion_blocking":
+		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Type value %v", p.Type)
 	}
 
 	temp, err = pk.VarInt(len(p.Data)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Data {
 		temp, err = pk.Long(p.Data[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	return n, nil
 }
 
+
+
 // MapChunkTemp is a sub-structure used in the packet.
 type MapChunkTemp struct {
-	Y       int16
-	Type    int32 `mc:"VarInt"`
+	Y int16
+	Type int32 `mc:"VarInt"`
 	NbtData pk.NBTField
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *MapChunkTemp) ReadFrom(r io.Reader) (n int64, err error) {
@@ -141,26 +125,22 @@ func (p *MapChunkTemp) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Short)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var _type pk.VarInt
 	temp, err = _type.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Type = int32(_type)
 
 	temp, err = (*pk.NBTField)(&p.NbtData).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p MapChunkTemp) WriteTo(w io.Writer) (n int64, err error) {
@@ -169,45 +149,43 @@ func (p MapChunkTemp) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Short(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Type).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.NbtData.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
+
 // MapChunk represents the Clientbound MapChunk packet.
 
 type MapChunk struct {
-	X                   int32
-	Z                   int32
-	Heightmaps          []MapChunkHeightmapsEntry
-	ChunkData           []byte `mc:"ByteArray"`
-	BlockEntities       []MapChunkTemp
-	SkyLightMask        []int64
-	BlockLightMask      []int64
-	EmptySkyLightMask   []int64
+	X int32
+	Z int32
+	Heightmaps []MapChunkHeightmapsEntry
+	ChunkData []byte `mc:"ByteArray"`
+	BlockEntities []MapChunkTemp
+	SkyLightMask []int64
+	BlockLightMask []int64
+	EmptySkyLightMask []int64
 	EmptyBlockLightMask []int64
-	SkyLight            [][]uint8
-	BlockLight          [][]uint8
+	SkyLight [][]uint8
+	BlockLight [][]uint8
 }
 
 // PacketID returns the packet ID for this packet.
 func (*MapChunk) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundMapChunk
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
@@ -216,169 +194,127 @@ func (p *MapChunk) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Int)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var heightmapsCount pk.VarInt
 	temp, err = heightmapsCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Heightmaps = make([]MapChunkHeightmapsEntry, heightmapsCount)
 	for i := 0; i < int(heightmapsCount); i++ {
 		temp, err = p.Heightmaps[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = (*pk.ByteArray)(&p.ChunkData).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var blockEntitiesCount pk.VarInt
 	temp, err = blockEntitiesCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BlockEntities = make([]MapChunkTemp, blockEntitiesCount)
 	for i := 0; i < int(blockEntitiesCount); i++ {
 		temp, err = p.BlockEntities[i].ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	var skyLightMaskCount pk.VarInt
 	temp, err = skyLightMaskCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SkyLightMask = make([]int64, skyLightMaskCount)
 	for i := 0; i < int(skyLightMaskCount); i++ {
 		var elem pk.Long
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.SkyLightMask[i] = int64(elem)
 	}
 
 	var blockLightMaskCount pk.VarInt
 	temp, err = blockLightMaskCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BlockLightMask = make([]int64, blockLightMaskCount)
 	for i := 0; i < int(blockLightMaskCount); i++ {
 		var elem pk.Long
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.BlockLightMask[i] = int64(elem)
 	}
 
 	var emptySkyLightMaskCount pk.VarInt
 	temp, err = emptySkyLightMaskCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EmptySkyLightMask = make([]int64, emptySkyLightMaskCount)
 	for i := 0; i < int(emptySkyLightMaskCount); i++ {
 		var elem pk.Long
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.EmptySkyLightMask[i] = int64(elem)
 	}
 
 	var emptyBlockLightMaskCount pk.VarInt
 	temp, err = emptyBlockLightMaskCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EmptyBlockLightMask = make([]int64, emptyBlockLightMaskCount)
 	for i := 0; i < int(emptyBlockLightMaskCount); i++ {
 		var elem pk.Long
 		temp, err = elem.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.EmptyBlockLightMask[i] = int64(elem)
 	}
 
 	var skyLightCount pk.VarInt
 	temp, err = skyLightCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.SkyLight = make([][]uint8, skyLightCount)
 	for i := 0; i < int(skyLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.SkyLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
 			var elem pk.UnsignedByte
-			temp, err = elem.ReadFrom(r)
-			p.SkyLight[i][j] = uint8(elem)
+		temp, err = elem.ReadFrom(r)
+		p.SkyLight[i][j] = uint8(elem)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	var blockLightCount pk.VarInt
 	temp, err = blockLightCount.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.BlockLight = make([][]uint8, blockLightCount)
 	for i := 0; i < int(blockLightCount); i++ {
 		var innerCount pk.VarInt
 		temp, err = innerCount.ReadFrom(r)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		p.BlockLight[i] = make([]uint8, innerCount)
 		for j := 0; j < int(innerCount); j++ {
 			var elem pk.UnsignedByte
-			temp, err = elem.ReadFrom(r)
-			p.BlockLight[i][j] = uint8(elem)
+		temp, err = elem.ReadFrom(r)
+		p.BlockLight[i][j] = uint8(elem)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
@@ -392,145 +328,105 @@ func (p MapChunk) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Int(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.Heightmaps)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.Heightmaps {
 		temp, err = p.Heightmaps[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = (*pk.ByteArray)(&p.ChunkData).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(len(p.BlockEntities)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.BlockEntities {
 		temp, err = p.BlockEntities[i].WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(len(p.SkyLightMask)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.SkyLightMask {
 		temp, err = pk.Long(p.SkyLightMask[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(len(p.BlockLightMask)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.BlockLightMask {
 		temp, err = pk.Long(p.BlockLightMask[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(len(p.EmptySkyLightMask)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.EmptySkyLightMask {
 		temp, err = pk.Long(p.EmptySkyLightMask[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(len(p.EmptyBlockLightMask)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.EmptyBlockLightMask {
 		temp, err = pk.Long(p.EmptyBlockLightMask[i]).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 	}
 
 	temp, err = pk.VarInt(len(p.SkyLight)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.SkyLight {
 		temp, err = pk.VarInt(len(p.SkyLight[i])).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		for j := range p.SkyLight[i] {
 			temp, err = pk.UnsignedByte(p.SkyLight[i][j]).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	temp, err = pk.VarInt(len(p.BlockLight)).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	for i := range p.BlockLight {
 		temp, err = pk.VarInt(len(p.BlockLight[i])).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
 		for j := range p.BlockLight[i] {
 			temp, err = pk.UnsignedByte(p.BlockLight[i][j]).WriteTo(w)
 			n += temp
-			if err != nil {
-				return n, err
-			}
+			if err != nil { return n, err }
 		}
 	}
 
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundMapChunk, func() ClientboundPacket {
 		return &MapChunk{}
 	})
 }
+

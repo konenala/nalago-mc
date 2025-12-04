@@ -5,16 +5,17 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Difficulty represents the Clientbound Difficulty packet.
 
 type Difficulty struct {
 	// Mapper to string
-	Difficulty       string
+	Difficulty string
 	DifficultyLocked bool
 }
 
@@ -22,6 +23,7 @@ type Difficulty struct {
 func (*Difficulty) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundDifficulty
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
@@ -31,18 +33,16 @@ func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	var mapperVal pk.VarInt
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
+	case 0:
+		p.Difficulty = "peaceful"
 	case 1:
 		p.Difficulty = "easy"
 	case 2:
 		p.Difficulty = "normal"
 	case 3:
 		p.Difficulty = "hard"
-	case 0:
-		p.Difficulty = "peaceful"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Difficulty", mapperVal)
 	}
@@ -50,9 +50,7 @@ func (p *Difficulty) ReadFrom(r io.Reader) (n int64, err error) {
 	var difficultyLocked pk.Boolean
 	temp, err = difficultyLocked.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.DifficultyLocked = bool(difficultyLocked)
 
 	return n, nil
@@ -64,45 +62,37 @@ func (p Difficulty) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Difficulty {
-	case "easy":
-		temp, err = pk.VarInt(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "normal":
-		temp, err = pk.VarInt(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "hard":
-		temp, err = pk.VarInt(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "peaceful":
 		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "easy":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "normal":
+		temp, err = pk.VarInt(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "hard":
+		temp, err = pk.VarInt(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Difficulty value %v", p.Difficulty)
 	}
 
 	temp, err = pk.Boolean(p.DifficultyLocked).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundDifficulty, func() ClientboundPacket {
 		return &Difficulty{}
 	})
 }
+

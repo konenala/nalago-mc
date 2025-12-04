@@ -4,19 +4,20 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // VehicleMove represents the Serverbound VehicleMove packet.
 
 type VehicleMove struct {
-	X        float64
-	Y        float64
-	Z        float64
-	Yaw      float32
-	Pitch    float32
+	X float64
+	Y float64
+	Z float64
+	Yaw float32
+	Pitch float32
 	OnGround bool
 }
 
@@ -25,6 +26,7 @@ func (*VehicleMove) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundVehicleMove
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *VehicleMove) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -32,40 +34,28 @@ func (p *VehicleMove) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Double)(&p.X).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Y).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Double)(&p.Z).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Yaw).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = (*pk.Float)(&p.Pitch).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var onGround pk.Boolean
 	temp, err = onGround.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.OnGround = bool(onGround)
 
 	return n, nil
@@ -78,45 +68,35 @@ func (p VehicleMove) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Double(p.X).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Y).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Double(p.Z).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Yaw).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Float(p.Pitch).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.OnGround).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundVehicleMove, func() ServerboundPacket {
 		return &VehicleMove{}
 	})
 }
+

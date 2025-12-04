@@ -5,10 +5,11 @@ package client
 
 import (
 	"fmt"
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Teams represents the Clientbound Teams packet.
 
@@ -17,10 +18,10 @@ type Teams struct {
 	// Mapper to string
 	Mode string
 	// Switch 基於 Mode：
-	//   add -> [array map[countType:varint type:string]]
-	//   join -> [array map[countType:varint type:string]]
-	//   leave -> [array map[countType:varint type:string]]
-	//   default -> void
+//   add -> [array map[countType:varint type:string]]
+//   join -> [array map[countType:varint type:string]]
+//   leave -> [array map[countType:varint type:string]]
+//   default -> void
 	Players interface{}
 }
 
@@ -28,6 +29,7 @@ type Teams struct {
 func (*Teams) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundTeams
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
@@ -37,18 +39,16 @@ func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 	var team pk.String
 	temp, err = team.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Team = string(team)
 
 	var mapperVal pk.Byte
 	temp, err = mapperVal.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	switch mapperVal {
+	case 0:
+		p.Mode = "add"
 	case 1:
 		p.Mode = "remove"
 	case 2:
@@ -57,8 +57,6 @@ func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 		p.Mode = "join"
 	case 4:
 		p.Mode = "leave"
-	case 0:
-		p.Mode = "add"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Mode", mapperVal)
 	}
@@ -78,41 +76,29 @@ func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.String(p.Team).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	switch p.Mode {
-	case "remove":
-		temp, err = pk.Byte(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "change":
-		temp, err = pk.Byte(2).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "join":
-		temp, err = pk.Byte(3).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "leave":
-		temp, err = pk.Byte(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "add":
 		temp, err = pk.Byte(0).WriteTo(w)
 		n += temp
-		if err != nil {
-			return n, err
-		}
+		if err != nil { return n, err }
+	case "remove":
+		temp, err = pk.Byte(1).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "change":
+		temp, err = pk.Byte(2).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "join":
+		temp, err = pk.Byte(3).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
+	case "leave":
+		temp, err = pk.Byte(4).WriteTo(w)
+		n += temp
+		if err != nil { return n, err }
 	default:
 		return n, fmt.Errorf("unknown Mode value %v", p.Mode)
 	}
@@ -125,8 +111,10 @@ func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 	return n, nil
 }
 
+
 func init() {
 	registerPacket(packetid.ClientboundTeams, func() ClientboundPacket {
 		return &Teams{}
 	})
 }
+

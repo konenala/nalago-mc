@@ -4,16 +4,17 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // Experience represents the Clientbound Experience packet.
 
 type Experience struct {
-	ExperienceBar   float32
-	Level           int32 `mc:"VarInt"`
+	ExperienceBar float32
+	Level int32 `mc:"VarInt"`
 	TotalExperience int32 `mc:"VarInt"`
 }
 
@@ -22,6 +23,7 @@ func (*Experience) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundExperience
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *Experience) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -29,24 +31,18 @@ func (p *Experience) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Float)(&p.ExperienceBar).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var level pk.VarInt
 	temp, err = level.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Level = int32(level)
 
 	var totalExperience pk.VarInt
 	temp, err = totalExperience.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.TotalExperience = int32(totalExperience)
 
 	return n, nil
@@ -59,27 +55,23 @@ func (p Experience) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Float(p.ExperienceBar).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.Level).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.VarInt(p.TotalExperience).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundExperience, func() ClientboundPacket {
 		return &Experience{}
 	})
 }
+

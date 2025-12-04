@@ -4,27 +4,29 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateSign represents the Serverbound UpdateSign packet.
 
 type UpdateSign struct {
 	// Bitfield - see protocol spec for bit layout
-	Location    int32
+	Location int32
 	IsFrontText bool
-	Text1       string `mc:"String"`
-	Text2       string `mc:"String"`
-	Text3       string `mc:"String"`
-	Text4       string `mc:"String"`
+	Text1 string `mc:"String"`
+	Text2 string `mc:"String"`
+	Text3 string `mc:"String"`
+	Text4 string `mc:"String"`
 }
 
 // PacketID returns the packet ID for this packet.
 func (*UpdateSign) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundUpdateSign
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateSign) ReadFrom(r io.Reader) (n int64, err error) {
@@ -33,48 +35,36 @@ func (p *UpdateSign) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.Location).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var isFrontText pk.Boolean
 	temp, err = isFrontText.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.IsFrontText = bool(isFrontText)
 
 	var text1 pk.String
 	temp, err = text1.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Text1 = string(text1)
 
 	var text2 pk.String
 	temp, err = text2.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Text2 = string(text2)
 
 	var text3 pk.String
 	temp, err = text3.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Text3 = string(text3)
 
 	var text4 pk.String
 	temp, err = text4.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Text4 = string(text4)
 
 	return n, nil
@@ -87,45 +77,35 @@ func (p UpdateSign) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.Location).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.IsFrontText).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Text1).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Text2).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Text3).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Text4).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundUpdateSign, func() ServerboundPacket {
 		return &UpdateSign{}
 	})
 }
+

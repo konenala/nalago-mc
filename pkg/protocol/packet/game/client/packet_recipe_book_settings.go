@@ -4,16 +4,17 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
 
 // RecipeBookSettingsCrafting is a sub-structure used in the packet.
 type RecipeBookSettingsCrafting struct {
-	Open      bool
+	Open bool
 	Filtering bool
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookSettingsCrafting) ReadFrom(r io.Reader) (n int64, err error) {
@@ -23,21 +24,19 @@ func (p *RecipeBookSettingsCrafting) ReadFrom(r io.Reader) (n int64, err error) 
 	var open pk.Boolean
 	temp, err = open.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Open = bool(open)
 
 	var filtering pk.Boolean
 	temp, err = filtering.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Filtering = bool(filtering)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p RecipeBookSettingsCrafting) WriteTo(w io.Writer) (n int64, err error) {
@@ -46,24 +45,23 @@ func (p RecipeBookSettingsCrafting) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.Open).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.Filtering).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
 // RecipeBookSettingsFurnace is a sub-structure used in the packet.
 type RecipeBookSettingsFurnace struct {
-	Open      bool
+	Open bool
 	Filtering bool
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookSettingsFurnace) ReadFrom(r io.Reader) (n int64, err error) {
@@ -73,21 +71,19 @@ func (p *RecipeBookSettingsFurnace) ReadFrom(r io.Reader) (n int64, err error) {
 	var open pk.Boolean
 	temp, err = open.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Open = bool(open)
 
 	var filtering pk.Boolean
 	temp, err = filtering.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Filtering = bool(filtering)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p RecipeBookSettingsFurnace) WriteTo(w io.Writer) (n int64, err error) {
@@ -96,24 +92,23 @@ func (p RecipeBookSettingsFurnace) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.Open).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.Filtering).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
 // RecipeBookSettingsBlast is a sub-structure used in the packet.
 type RecipeBookSettingsBlast struct {
-	Open      bool
+	Open bool
 	Filtering bool
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookSettingsBlast) ReadFrom(r io.Reader) (n int64, err error) {
@@ -123,21 +118,19 @@ func (p *RecipeBookSettingsBlast) ReadFrom(r io.Reader) (n int64, err error) {
 	var open pk.Boolean
 	temp, err = open.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Open = bool(open)
 
 	var filtering pk.Boolean
 	temp, err = filtering.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Filtering = bool(filtering)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p RecipeBookSettingsBlast) WriteTo(w io.Writer) (n int64, err error) {
@@ -146,24 +139,23 @@ func (p RecipeBookSettingsBlast) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.Open).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.Filtering).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
 
+
+
 // RecipeBookSettingsSmoker is a sub-structure used in the packet.
 type RecipeBookSettingsSmoker struct {
-	Open      bool
+	Open bool
 	Filtering bool
 }
+
 
 // ReadFrom reads the data from the reader.
 func (p *RecipeBookSettingsSmoker) ReadFrom(r io.Reader) (n int64, err error) {
@@ -173,21 +165,19 @@ func (p *RecipeBookSettingsSmoker) ReadFrom(r io.Reader) (n int64, err error) {
 	var open pk.Boolean
 	temp, err = open.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Open = bool(open)
 
 	var filtering pk.Boolean
 	temp, err = filtering.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Filtering = bool(filtering)
 
 	return n, nil
 }
+
+
 
 // WriteTo writes the data to the writer.
 func (p RecipeBookSettingsSmoker) WriteTo(w io.Writer) (n int64, err error) {
@@ -196,32 +186,32 @@ func (p RecipeBookSettingsSmoker) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Boolean(p.Open).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.Filtering).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
+
+
 
 // RecipeBookSettings represents the Clientbound RecipeBookSettings packet.
 
 type RecipeBookSettings struct {
 	Crafting RecipeBookSettingsCrafting
-	Furnace  RecipeBookSettingsFurnace
-	Blast    RecipeBookSettingsBlast
-	Smoker   RecipeBookSettingsSmoker
+	Furnace RecipeBookSettingsFurnace
+	Blast RecipeBookSettingsBlast
+	Smoker RecipeBookSettingsSmoker
 }
 
 // PacketID returns the packet ID for this packet.
 func (*RecipeBookSettings) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundRecipeBookSettings
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *RecipeBookSettings) ReadFrom(r io.Reader) (n int64, err error) {
@@ -230,27 +220,19 @@ func (p *RecipeBookSettings) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = p.Crafting.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Furnace.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Blast.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Smoker.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
@@ -262,33 +244,27 @@ func (p RecipeBookSettings) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = p.Crafting.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Furnace.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Blast.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = p.Smoker.WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundRecipeBookSettings, func() ClientboundPacket {
 		return &RecipeBookSettings{}
 	})
 }
+

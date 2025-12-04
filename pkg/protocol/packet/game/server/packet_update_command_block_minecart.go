@@ -4,16 +4,17 @@
 package server
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // UpdateCommandBlockMinecart represents the Serverbound UpdateCommandBlockMinecart packet.
 
 type UpdateCommandBlockMinecart struct {
-	EntityId    int32  `mc:"VarInt"`
-	Command     string `mc:"String"`
+	EntityId int32 `mc:"VarInt"`
+	Command string `mc:"String"`
 	TrackOutput bool
 }
 
@@ -21,6 +22,7 @@ type UpdateCommandBlockMinecart struct {
 func (*UpdateCommandBlockMinecart) PacketID() packetid.ServerboundPacketID {
 	return packetid.ServerboundUpdateCommandBlockMinecart
 }
+
 
 // ReadFrom reads the packet data from the reader.
 func (p *UpdateCommandBlockMinecart) ReadFrom(r io.Reader) (n int64, err error) {
@@ -30,25 +32,19 @@ func (p *UpdateCommandBlockMinecart) ReadFrom(r io.Reader) (n int64, err error) 
 	var entityId pk.VarInt
 	temp, err = entityId.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityId = int32(entityId)
 
 	var command pk.String
 	temp, err = command.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.Command = string(command)
 
 	var trackOutput pk.Boolean
 	temp, err = trackOutput.ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.TrackOutput = bool(trackOutput)
 
 	return n, nil
@@ -61,27 +57,23 @@ func (p UpdateCommandBlockMinecart) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.VarInt(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.String(p.Command).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Boolean(p.TrackOutput).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ServerboundUpdateCommandBlockMinecart, func() ServerboundPacket {
 		return &UpdateCommandBlockMinecart{}
 	})
 }
+

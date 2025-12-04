@@ -4,15 +4,16 @@
 package client
 
 import (
-	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 	"io"
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
 )
+
 
 // EntityStatus represents the Clientbound EntityStatus packet.
 
 type EntityStatus struct {
-	EntityId     int32
+	EntityId int32
 	EntityStatus int8
 }
 
@@ -21,6 +22,7 @@ func (*EntityStatus) PacketID() packetid.ClientboundPacketID {
 	return packetid.ClientboundEntityStatus
 }
 
+
 // ReadFrom reads the packet data from the reader.
 func (p *EntityStatus) ReadFrom(r io.Reader) (n int64, err error) {
 	var temp int64
@@ -28,16 +30,12 @@ func (p *EntityStatus) ReadFrom(r io.Reader) (n int64, err error) {
 
 	temp, err = (*pk.Int)(&p.EntityId).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	var entityStatus int8
 	temp, err = (*pk.Byte)(&entityStatus).ReadFrom(r)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 	p.EntityStatus = entityStatus
 
 	return n, nil
@@ -50,21 +48,19 @@ func (p EntityStatus) WriteTo(w io.Writer) (n int64, err error) {
 
 	temp, err = pk.Int(p.EntityId).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	temp, err = pk.Byte(p.EntityStatus).WriteTo(w)
 	n += temp
-	if err != nil {
-		return n, err
-	}
+	if err != nil { return n, err }
 
 	return n, nil
 }
+
 
 func init() {
 	registerPacket(packetid.ClientboundEntityStatus, func() ClientboundPacket {
 		return &EntityStatus{}
 	})
 }
+
