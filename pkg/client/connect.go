@@ -119,6 +119,11 @@ func (b *botClient) configuration() (err error) {
 			if err != nil {
 				return err
 			}
+			if b.configRPHook != nil {
+				b.configRPHook(pkt.UUID)
+			} else if configResourcePackHook != nil { // fallback to global hook
+				configResourcePackHook(pkt.UUID)
+			}
 			u := pk.UUID(pkt.UUID)
 			pktOut := pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(3))
 			b.logPacket("out", pktOut)

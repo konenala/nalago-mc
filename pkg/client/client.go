@@ -32,6 +32,7 @@ import (
 // Use SetProtocolVersion to override before calling Connect.
 var handshakeProtocol int32 = 772
 var disableAbilities bool
+var configResourcePackHook func([16]byte)
 
 // handshakeExtra 用於附加到握手主機欄位（例如 Proxy Forwarding Secret）。
 // 留空則不附加。
@@ -55,6 +56,12 @@ func SetDisableAbilities(disable bool) {
 	disableAbilities = disable
 }
 
+// SetConfigResourcePackHook 設定配置階段收到 ResourcePackPush 時的回呼（參數為 UUID）。
+// 若未設定，維持內建自動接受行為但不導出事件。
+func SetConfigResourcePackHook(h func([16]byte)) {
+	configResourcePackHook = h
+}
+
 type botClient struct {
 	conn          *mcnet.Conn
 	packetHandler *packetHandler
@@ -70,6 +77,8 @@ type botClient struct {
 	player    *player.Player
 
 	chatSessionSent bool
+
+	configRPHook func([16]byte) // 可選：將 configuration 階段的資源包 UUID 導出
 }
 
 // packetRecorder 簡易登入階段封包記錄器
@@ -378,6 +387,7 @@ func NewClient(options *bot.ClientOptions) bot.Client {
 		authProvider:  options.AuthProvider,
 		recorder:      newPacketRecorderFromEnv(),
 		chatKeys:      chatKeys,
+		configRPHook:  configResourcePackHook,
 	}
 
 	if options.AuthProvider == nil {
