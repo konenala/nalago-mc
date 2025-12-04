@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"time"
 
+	"git.konjactw.dev/falloutBot/go-mc/chat"
 	"github.com/go-gl/mathgl/mgl64"
 	"github.com/google/uuid"
 
@@ -76,87 +77,35 @@ func New(c bot.Client) *Player {
 
 	bot.AddHandler(c, func(ctx context.Context, p *client.KeepAlive) {
 		_ = c.WritePacket(ctx, &server.KeepAlive{
-			ID: p.KeepAliveId,
+			KeepAliveId: p.KeepAliveId,
 		})
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *client.Disconnect) {
-		fmt.Println(p.Reason.String())
+	bot.AddHandler(c, func(ctx context.Context, p *client.KickDisconnect) {
+		fmt.Println(p.Reason)
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *client.SystemChatMessage) {
-		if !p.Overlay {
+	bot.AddHandler(c, func(ctx context.Context, p *client.SystemChat) {
+		if !p.IsActionBar {
 			// 系統訊息不參與 lastSeen（與 nmp 行為一致），僅發佈事件
-			bot.PublishEvent(c, MessageEvent{Message: p.Content})
+			bot.PublishEvent(c, MessageEvent{Message: chat.Message{Text: fmt.Sprint(p.Content)}})
 		}
 	})
 	// Handle player chat messages for seen tracking (important for chat acknowledgment)
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerChat) {
 
 		// 只追蹤有簽章的聊天（unsigned 不進入 lastSeen），對齊 nmp 行為
-		if p.HasSignature && len(p.Signature) > 0 {
-			pl.chat.IncSeen(p.Signature)
-		}
-
-		// Auto-send acknowledgement if pending > 64
-		if pl.chat.Pending() > 64 {
-			_ = c.WritePacket(ctx, &server.ChatAck{
-				MessageCount: pl.chat.Pending(),
-			})
-			pl.chat.ResetPending()
+		if p.Signature != nil && len(*p.Signature) > 0 {
+			pl.chat.IncSeen(*p.Signature)
 		}
 
 		// Note: We don't publish this as MessageEvent since SystemChatMessage already handles it
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerPosition) {
-		fmt.Println(p)
 		// Ensure entity is initialized before accessing
 		if pl.entity == nil || pl.entity.Entity == nil {
-			// Initialize player entity with default values
-			pl.entity = world.NewEntity(0, uuid.Nil, 0, mgl64.Vec3{p.X, p.Y, p.Z}, mgl64.Vec2{float64(p.YRot), float64(p.XRot)})
+			pl.entity = world.NewEntity(0, uuid.Nil, 0, mgl64.Vec3{p.X, p.Y, p.Z}, mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)})
 		}
-		position := pl.entity.Position()
-		if p.Flags&0x01 != 0 {
-			position[0] += p.X
-		} else {
-			position[0] = p.X
-		}
-
-		if p.Flags&0x02 != 0 {
-			position[1] += p.Y
-		} else {
-			position[1] = p.Y
-		}
-
-		if p.Flags&0x04 != 0 {
-			position[2] += p.Z
-		} else {
-			position[2] = p.Z
-		}
-
-		pl.entity.SetPosition(position)
-
-		rot := pl.entity.Rotation()
-		if p.Flags&0x08 != 0 {
-			rot[0] += float64(p.XRot)
-		} else {
-			rot[0] = float64(p.XRot)
-		}
-
-		if p.Flags&0x10 != 0 {
-			rot[1] += float64(p.YRot)
-		} else {
-			rot[1] = float64(p.YRot)
-		}
-		pl.entity.SetRotation(rot)
-
-		c.WritePacket(context.Background(), &server.AcceptTeleportation{TeleportID: p.ID})
-		c.WritePacket(context.Background(), &server.MovePlayerPosRot{
-			X:     p.X,
-			FeetY: p.Y,
-			Z:     p.Z,
-			Yaw:   p.XRot,
-			Pitch: p.YRot,
-			Flags: 0x00,
-		})
+		pl.entity.SetPosition(mgl64.Vec3{p.X, p.Y, p.Z})
+		pl.entity.SetRotation(mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)})
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *client.PlayerRotation) {
 		pl.entity.SetRotation(mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)})
@@ -238,7 +187,7 @@ func (p *Player) FlyTo(pos mgl64.Vec3) error {
 
 		if err := p.c.WritePacket(context.Background(), &server.MovePlayerPos{
 			X:     target.X(),
-			FeetY: target.Y(),
+			Y:     target.Y(),
 			Z:     target.Z(),
 			Flags: 0x00,
 		}); err != nil {
@@ -276,7 +225,7 @@ func (p *Player) WalkTo(pos mgl64.Vec3) error {
 	for _, waypoint := range path {
 		if err := p.c.WritePacket(context.Background(), &server.MovePlayerPos{
 			X:     waypoint.X(),
-			FeetY: waypoint.Y(),
+			Y:     waypoint.Y(),
 			Z:     waypoint.Z(),
 			Flags: 0x0,
 		}); err != nil {
@@ -293,7 +242,7 @@ func (p *Player) WalkTo(pos mgl64.Vec3) error {
 func (p *Player) UpdateLocation() {
 	_ = p.c.WritePacket(context.Background(), &server.MovePlayerPosRot{
 		X:     p.entity.Position().X(),
-		FeetY: p.entity.Position().Y(),
+		Y:     p.entity.Position().Y(),
 		Z:     p.entity.Position().Z(),
 		Yaw:   float32(p.entity.Rotation().X()),
 		Pitch: float32(p.entity.Rotation().Y()),
@@ -405,15 +354,14 @@ func (p *Player) OpenContainer(pos protocol.Position) (bot.Container, error) {
 
 	// 發送使用物品封包來打開容器
 	packet := &server.UseItemOn{
-		Hand:           1,
-		Location:       pk.Position{X: int(pos[0]), Y: int(pos[1]), Z: int(pos[2])},
-		Face:           1,
-		CursorX:        0.5,
-		CursorY:        0.5,
-		CursorZ:        0.5,
-		InsideBlock:    false,
-		WorldBorderHit: false,
-		Sequence:       p.stateID,
+		Hand:        1,
+		Location:    pk.Position{X: int(pos[0]), Y: int(pos[1]), Z: int(pos[2])},
+		Face:        1,
+		CursorX:     0.5,
+		CursorY:     0.5,
+		CursorZ:     0.5,
+		InsideBlock: false,
+		Sequence:    p.stateID,
 	}
 
 	if err := p.c.WritePacket(context.Background(), packet); err != nil {
@@ -450,8 +398,6 @@ func (p *Player) UseItem(hand int8) error {
 	return p.c.WritePacket(context.Background(), &server.UseItem{
 		Hand:     int32(hand),
 		Sequence: p.stateID,
-		Yaw:      0,
-		Pitch:    0,
 	})
 }
 
@@ -492,7 +438,7 @@ func (p *Player) Command(msg string) error {
 		Command:            msg,
 		Timestamp:          ts,
 		Salt:               salt,
-		ArgumentSignatures: make([]server.SignedSignatures, 0),
+		ArgumentSignatures: make([]server.ChatCommandSignedArgumentSignaturesEntry, 0),
 		MessageCount:       p.chat.NextOffset(),
 		Acknowledged:       ackBitset,
 		Checksum:           p.chat.Checksum(),
@@ -528,13 +474,12 @@ func (p *Player) Chat(msg string) error {
 	// Get acknowledgements and bitset (mineflayer chat.js:405, 410-413)
 	acknowledgements, ackBitset := p.chat.GetAcknowledgements()
 
-	chatPacket := &server.Chat{
+	chatPacket := &server.ChatMessage{
 		Message:      msg,
 		Timestamp:    ts,
 		Salt:         salt,
-		HasSignature: false,
 		Offset:       p.chat.NextOffset(),
-		Checksum:     p.chat.Checksum(),
+		Checksum:     int8(p.chat.Checksum()),
 		Acknowledged: ackBitset,
 	}
 
@@ -543,8 +488,7 @@ func (p *Player) Chat(msg string) error {
 		// Pass acknowledgements to signature (CRITICAL - mineflayer chat.js:462)
 		signature, err := p.signer.SignChatMessage(msg, ts, salt, acknowledgements)
 		if err == nil && signature != nil {
-			chatPacket.HasSignature = true
-			chatPacket.Signature = signature
+			chatPacket.Signature = &signature
 
 			// Track message in chain
 			p.messageIndex++
@@ -559,9 +503,14 @@ func (p *Player) Chat(msg string) error {
 	p.chat.ResetPending()
 
 	if chatDebug {
+		signed := chatPacket.Signature != nil
+		siglen := 0
+		if chatPacket.Signature != nil {
+			siglen = len(*chatPacket.Signature)
+		}
 		fmt.Printf("[CHAT-DBG] msg='%s' signed=%v offset=%d checksum=%d ack=%s siglen=%d\n",
-			msg, chatPacket.HasSignature, chatPacket.Offset, chatPacket.Checksum,
-			hex.EncodeToString(chatPacket.Acknowledged), len(chatPacket.Signature))
+			msg, signed, chatPacket.Offset, chatPacket.Checksum,
+			hex.EncodeToString(chatPacket.Acknowledged), siglen)
 	}
 
 	return p.c.WritePacket(context.Background(), chatPacket)

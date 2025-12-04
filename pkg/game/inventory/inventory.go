@@ -86,12 +86,12 @@ func (c *Container) Clear() {
 }
 
 func (c *Container) Click(idx int16, mode int32, button int32) error {
-	clickPacket := &server.ContainerClick{
-		WindowID: c.containerID,
-		StateID:  c.c.Player().StateID(),
-		Slot:     idx,
-		Button:   int8(button),
-		Mode:     mode,
+	clickPacket := &server.WindowClick{
+		WindowId:    c.containerID,
+		StateId:     c.c.Player().StateID(),
+		Slot:        idx,
+		MouseButton: int8(button),
+		Mode:        mode,
 	}
 	return c.c.WritePacket(context.Background(), clickPacket)
 }

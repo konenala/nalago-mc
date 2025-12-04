@@ -1680,16 +1680,19 @@ func parseSwitchCompareTo(compareTo string, parentFields []PacketField, currentS
 func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareField, compareFieldType string, bitFlag int, fromParent bool, compareFieldIsMapper bool) *PacketField {
 	var innerType string
 	var compareVal interface{}
+	var innerDef interface{}
 	for k, v := range cfg.Fields {
 		switch t := v.(type) {
 		case string:
 			innerType = t
 			compareVal = k
+			innerDef = v
 		case []interface{}:
 			if len(t) > 0 {
 				if tn, ok := t[0].(string); ok {
 					innerType = tn
 					compareVal = k
+					innerDef = v
 				}
 			}
 		}
@@ -1703,11 +1706,33 @@ func generateOptionalSwitchField(fieldName string, cfg *SwitchConfig, compareFie
 
 	field := &PacketField{
 		Name:        toPascalCase(fieldName),
-		GoType:      "*" + mapType(innerType),
 		Optional:    true,
 		NeedsParent: fromParent,
 		Comment:     fmt.Sprintf("// Optional，當 %s 符合條件時出現", compareField),
 	}
+
+	// 特殊處理：switch → array 型別
+	if arr, ok := innerDef.([]interface{}); ok && len(arr) > 1 {
+		if arrName, ok2 := arr[0].(string); ok2 && arrName == "array" {
+			if arrDef, ok3 := arr[1].(map[string]interface{}); ok3 {
+				countType, _ := arrDef["countType"].(string)
+				elemStr, elemIsStr := arrDef["type"].(string)
+				if elemIsStr && countType != "" {
+					elemGo := mapType(elemStr)
+					field.GoType = "*[]" + elemGo
+					compareLiteral := buildCompareLiteral(compareVal, compareFieldType, fromParent && isNumericType(compareFieldType))
+					if compareLiteral == "" {
+						return generateFallbackSwitchField(fieldName, cfg)
+					}
+					field.ReadCode = generateDirectOptionalArrayRead(field.Name, compareField, compareLiteral, elemStr, countType, fromParent)
+					field.WriteCode = generateDirectOptionalArrayWrite(field.Name, elemStr, countType)
+					return field
+				}
+			}
+		}
+	}
+
+	field.GoType = "*" + mapType(innerType)
 
 	preferNumericBool := fromParent && isNumericType(compareFieldType)
 	_ = compareFieldIsMapper
@@ -1788,6 +1813,62 @@ func generateDirectOptionalWrite(fieldName, innerType string, fromParent bool) [
 	code = append(code, generateValueWriteLines(innerType, "*p."+fieldName)...)
 	code = append(code,
 		"	if err != nil { return n, err }",
+		"}",
+	)
+	return code
+}
+
+// 基於直接欄位比較的 optional「array」讀取
+func generateDirectOptionalArrayRead(fieldName, compareField, compareLiteral, elemType, countType string, fromParent bool) []string {
+	code := []string{
+		fmt.Sprintf("// 當 %s == %s 時讀取 %s (array)", compareField, compareLiteral, fieldName),
+	}
+	cond := fmt.Sprintf("if p.%s == %s {", compareField, compareLiteral)
+	if fromParent {
+		cond = fmt.Sprintf("if parent != nil && parent.%s == %s {", compareField, compareLiteral)
+	}
+	code = append(code, cond)
+	code = append(code,
+		fmt.Sprintf("	var cnt pk.%s", mapTypeToPkType(countType)),
+		"	temp, err = cnt.ReadFrom(r)",
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"	arr := make([]"+mapType(elemType)+", cnt)",
+		"	for i := 0; i < int(cnt); i++ {",
+	)
+	readLines := generateValueReadLines(elemType, "v")
+	// 確保有變數宣告
+	if !strings.Contains(strings.Join(readLines, "\n"), "var v ") {
+		readLines = append([]string{"\t\tvar v " + mapType(elemType)}, readLines...)
+	}
+	for _, l := range readLines {
+		code = append(code, "		"+strings.TrimLeft(l, "\t"))
+	}
+	code = append(code,
+		"		arr[i] = v",
+		"	}",
+		fmt.Sprintf("	p.%s = &arr", fieldName),
+		"}",
+	)
+	return code
+}
+
+// 基於直接欄位比較的 optional「array」寫入
+func generateDirectOptionalArrayWrite(fieldName, elemType, countType string) []string {
+	code := []string{
+		fmt.Sprintf("if p.%s != nil {", fieldName),
+		fmt.Sprintf("	temp, err = pk.%s(len(*p.%s)).WriteTo(w)", mapTypeToPkType(countType), fieldName),
+		"	n += temp",
+		"	if err != nil { return n, err }",
+		"	for i := range *p." + fieldName + " {",
+	}
+	writeLines := generateValueWriteLines(elemType, "(*p."+fieldName+")[i]")
+	for _, l := range writeLines {
+		code = append(code, "		"+strings.TrimLeft(l, "\t"))
+	}
+	code = append(code,
+		"		if err != nil { return n, err }",
+		"	}",
 		"}",
 	)
 	return code
@@ -2950,6 +3031,10 @@ func generatePackets(packets []PacketDef, outputDir, direction string) error {
 	if direction == "server" {
 		packetIDType = "Serverbound"
 	}
+	// 先產出 base.go（放接口 + 註冊表）
+	if err := generateBaseFile(outputDir, packageName, packetIDType); err != nil {
+		return err
+	}
 
 	// 模板 - 支持子结构体
 	tmpl := template.Must(template.New("packet").Funcs(template.FuncMap{
@@ -3134,4 +3219,71 @@ func init() {
 	}
 
 	return nil
+}
+
+// generateBaseFile 會在 client/ 或 server/ 目錄下生成 base.go
+// 內容就是 ClientboundPacket / ServerboundPacket 介面 + map + registerPacket。
+func generateBaseFile(outputDir, packageName, packetIDType string) error {
+	filename := filepath.Join(outputDir, "packet.go")
+
+	f, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// 根據方向決定名字
+	var (
+		packetInterfaceName string
+		packetIDTypeName    string
+		creatorTypeName     string
+		mapName             string
+	)
+
+	if packetIDType == "Clientbound" {
+		packetInterfaceName = "ClientboundPacket"
+		packetIDTypeName = "ClientboundPacketID"
+		creatorTypeName = "ClientboundPacketCreator"
+		mapName = "ClientboundPackets"
+	} else {
+		packetInterfaceName = "ServerboundPacket"
+		packetIDTypeName = "ServerboundPacketID"
+		creatorTypeName = "ServerboundPacketCreator"
+		mapName = "ServerboundPackets"
+	}
+
+	// 寫入檔案內容
+	_, err = fmt.Fprintf(f, `// Code generated by enhanced-generator v2; DO NOT EDIT.
+
+package %s
+
+import (
+	pk "git.konjactw.dev/falloutBot/go-mc/net/packet"
+	packetid "%s"
+)
+
+// %s 定義所有遊戲階段封包介面（%s）
+type %s interface {
+	pk.Field
+	PacketID() packetid.%s
+}
+
+type %s func() %s
+
+// %s 供外部透過 ID 生成封包實例
+var %s = make(map[packetid.%s]%s)
+
+func registerPacket(id packetid.%s, creator %s) {
+	%s[id] = creator
+}
+`, packageName, *packetidPkg,
+		packetInterfaceName, packetIDType, // 註解用
+		packetInterfaceName, packetIDTypeName,
+		creatorTypeName, packetInterfaceName,
+		mapName, mapName, packetIDTypeName, creatorTypeName,
+		packetIDTypeName, creatorTypeName,
+		mapName,
+	)
+
+	return err
 }

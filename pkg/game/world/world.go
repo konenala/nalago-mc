@@ -17,7 +17,8 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
 	cp "git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
-	"git.konjactw.dev/patyhank/minego/pkg/protocol/slot"
+
+	"github.com/google/uuid"
 )
 
 type World struct {
@@ -37,18 +38,22 @@ func NewWorld(c bot.Client) *World {
 		entities: make(map[int32]*Entity),
 	}
 
-	bot.AddHandler(c, func(ctx context.Context, p *cp.LevelChunkWithLight) {
+	bot.AddHandler(c, func(ctx context.Context, p *cp.MapChunk) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
 
-		w.columns[p.Pos] = p.Data
+		pos2d := level.ChunkPos{p.X, p.Z}
+		chunk := level.EmptyChunk(24)
+		_ = chunk.PutData(p.ChunkData)
+		w.columns[pos2d] = chunk
 	})
 
-	bot.AddHandler(c, func(ctx context.Context, p *cp.ForgetLevelChunk) {
+	bot.AddHandler(c, func(ctx context.Context, p *cp.UnloadChunk) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
 
-		delete(w.columns, p.Pos)
+		pos2d := level.ChunkPos{p.ChunkX, p.ChunkZ}
+		delete(w.columns, pos2d)
 	})
 	bot.AddHandler(c, func(ctx context.Context, p *cp.Respawn) {
 		w.chunkLock.Lock()
@@ -57,22 +62,23 @@ func NewWorld(c bot.Client) *World {
 		w.columns = make(map[level.ChunkPos]*level.Chunk)
 	})
 
-	bot.AddHandler(c, func(ctx context.Context, p *cp.AddEntity) {
+	bot.AddHandler(c, func(ctx context.Context, p *cp.SpawnEntity) {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
 
-		w.entities[p.ID] = NewEntity(
-			p.ID,
-			p.UUID,
+		uid, _ := uuid.FromBytes(p.ObjectUUID[:])
+		w.entities[p.EntityId] = NewEntity(
+			p.EntityId,
+			uid,
 			int32(p.Type),
 			mgl64.Vec3{p.X, p.Y, p.Z},
-			mgl64.Vec2{pk.Angle(p.XRot).ToDeg(), pk.Angle(p.YRot).ToDeg()},
+			mgl64.Vec2{pk.Angle(p.Pitch).ToDeg(), pk.Angle(p.Yaw).ToDeg()},
 		)
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *cp.RemoveEntities) {
+	bot.AddHandler(c, func(ctx context.Context, p *cp.EntityDestroy) {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
-		for _, d := range p.EntityIDs {
+		for _, d := range p.EntityIds {
 			e, ok := w.entities[d]
 			if ok {
 				bot.PublishEvent(c, EntityRemoveEvent{Entity: e})
@@ -80,10 +86,10 @@ func NewWorld(c bot.Client) *World {
 			}
 		}
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *cp.SetEntityMetadata) {
+	bot.AddHandler(c, func(ctx context.Context, p *cp.EntityMetadata) {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
-		e, ok := w.entities[p.EntityID]
+		e, ok := w.entities[p.EntityId]
 		if ok {
 			if e.metadata == nil {
 				e.metadata = make(map[uint8]metadata.Metadata)
@@ -93,102 +99,123 @@ func NewWorld(c bot.Client) *World {
 			}
 		}
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *cp.SetEquipment) {
+	// EntityEquipment 新版格式較複雜，此處暫不處理裝備更新避免解析錯誤。
+	bot.AddHandler(c, func(ctx context.Context, p *cp.SyncEntityPosition) {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
-		e, ok := w.entities[p.EntityID]
-		if ok {
-			if e.equipment == nil {
-				e.equipment = make(map[int8]slot.Slot)
-			}
-			for _, equipment := range p.Equipment {
-				e.equipment[equipment.Slot] = equipment.Item
-			}
+		if e, ok := w.entities[p.EntityId]; ok {
+			e.SetPosition(mgl64.Vec3{p.X, p.Y, p.Z})
 		}
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *cp.UpdateEntityPosition) {
+
+	bot.AddHandler(c, func(ctx context.Context, p *cp.EntityLook) {
 		w.entityLock.Lock()
 		defer w.entityLock.Unlock()
-		if e, ok := w.entities[p.EntityID]; ok {
+		if e, ok := w.entities[p.EntityId]; ok {
+			e.SetRotation(mgl64.Vec2{pk.Angle(p.Yaw).ToDeg(), pk.Angle(p.Pitch).ToDeg()})
+		}
+	})
+
+	bot.AddHandler(c, func(ctx context.Context, p *cp.EntityMoveLook) {
+		w.entityLock.Lock()
+		defer w.entityLock.Unlock()
+		if e, ok := w.entities[p.EntityId]; ok {
 			currentPos := e.Position()
-			newPos := currentPos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
+			newPos := currentPos.Add(mgl64.Vec3{float64(p.DX) / 4096.0, float64(p.DY) / 4096.0, float64(p.DZ) / 4096.0})
 			e.SetPosition(newPos)
+			e.SetRotation(mgl64.Vec2{pk.Angle(p.Yaw).ToDeg(), pk.Angle(p.Pitch).ToDeg()})
 		}
 	})
 
-	bot.AddHandler(c, func(ctx context.Context, p *cp.UpdateEntityRotation) {
-		w.entityLock.Lock()
-		defer w.entityLock.Unlock()
-		if e, ok := w.entities[p.EntityID]; ok {
-			e.SetRotation(mgl64.Vec2{float64(p.Yaw), float64(p.Pitch)})
-		}
-	})
-
-	bot.AddHandler(c, func(ctx context.Context, p *cp.UpdateEntityPositionAndRotation) {
-		w.entityLock.Lock()
-		defer w.entityLock.Unlock()
-		if e, ok := w.entities[p.EntityID]; ok {
-			currentPos := e.Position()
-			newPos := currentPos.Add(mgl64.Vec3{float64(p.DeltaX) / 4096.0, float64(p.DeltaY) / 4096.0, float64(p.DeltaZ) / 4096.0})
-			e.SetPosition(newPos)
-		}
-	})
-
-	bot.AddHandler(c, func(ctx context.Context, p *cp.BlockUpdate) {
+	// 單方塊更新
+	bot.AddHandler(c, func(ctx context.Context, p *cp.BlockChange) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
 
-		pos := protocol.Position{int32(p.Position.X), int32(p.Position.Y), int32(p.Position.Z)}
-		chunkX := pos[0] >> 4
-		chunkZ := pos[2] >> 4
-		pos2d := level.ChunkPos{chunkX, chunkZ}
-
+		chunkX, chunkZ, lx, ly, lz := decodePackedBlockPos(int64(p.Location))
+		pos2d := level.ChunkPos{int32(chunkX), int32(chunkZ)}
 		chunk, ok := w.columns[pos2d]
 		if !ok {
-			return // chunk not loaded, ignore update
+			return
 		}
-
-		blockX := pos[0] & 15
-		blockZ := pos[2] & 15
-		sectionY := pos[1] >> 4
-		blockY := pos[1] & 15
-
+		sectionY := ly >> 4
 		if sectionY < 0 || int(sectionY) >= len(chunk.Sections) {
-			return // invalid section Y coordinate
+			return
 		}
-
 		section := chunk.Sections[sectionY]
-		blockIdx := (blockY << 8) | (blockZ << 4) | blockX
-		section.SetBlock(int(blockIdx), level.BlocksState(p.BlockState))
+		blockIdx := (int(ly&15) << 8) | (int(lz) << 4) | int(lx)
+		section.SetBlock(blockIdx, level.BlocksState(p.Type))
 	})
 
-	bot.AddHandler(c, func(ctx context.Context, p *cp.UpdateSectionsBlocks) {
+	// 多方塊更新 (每個 record 為 chunk 內 12bit 位置 + 狀態)
+	bot.AddHandler(c, func(ctx context.Context, p *cp.MultiBlockChange) {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
 
-		sectionX, sectionY, sectionZ := p.ToSectionPos()
-		chunkX := sectionX
-		chunkZ := sectionZ
-		pos2d := level.ChunkPos{chunkX, chunkZ}
-
+		chunkX, chunkZ := decodeChunkXZ(int64(p.ChunkCoordinates))
+		pos2d := level.ChunkPos{int32(chunkX), int32(chunkZ)}
 		chunk, ok := w.columns[pos2d]
 		if !ok {
-			return // chunk not loaded, ignore update
+			return
+		}
+		for _, rec := range p.Records {
+			stateID := rec >> 12
+			lpos := rec & 0xFFF
+			lx := (lpos >> 8) & 0xF
+			lz := (lpos >> 4) & 0xF
+			ly := lpos & 0xF
+			sectionY := int32(ly >> 4) // always 0..0 for section-local; keep 0
+			if sectionY < 0 || int(sectionY) >= len(chunk.Sections) {
+				continue
+			}
+			section := chunk.Sections[sectionY]
+			blockIdx := (int(ly&15) << 8) | (int(lz) << 4) | int(lx)
+			section.SetBlock(blockIdx, level.BlocksState(stateID))
+		}
+	})
+
+	// 光照更新，僅保存數據，不計算
+	bot.AddHandler(c, func(ctx context.Context, p *cp.UpdateLight) {
+		w.chunkLock.Lock()
+		defer w.chunkLock.Unlock()
+
+		pos2d := level.ChunkPos{p.ChunkX, p.ChunkZ}
+		chunk, ok := w.columns[pos2d]
+		if !ok {
+			return
 		}
 
-		if sectionY < 0 || int(sectionY) >= len(chunk.Sections) {
-			return // invalid section Y coordinate
+		applyLightMask := func(mask []int64, lights [][]uint8, setter func(sec *level.Section, data []byte)) {
+			lightIdx := 0
+			maxSec := len(chunk.Sections)
+			for bit := 0; bit < maxSec && lightIdx < len(lights); bit++ {
+				if bitSet(mask, bit) {
+					sec := &chunk.Sections[bit]
+					data := make([]byte, len(lights[lightIdx]))
+					copy(data, lights[lightIdx])
+					setter(sec, data)
+					lightIdx++
+				}
+			}
 		}
 
-		section := chunk.Sections[sectionY]
-		blocks := p.ParseBlocks()
+		applyLightMask(p.SkyLightMask, p.SkyLight, func(sec *level.Section, data []byte) {
+			sec.SkyLight = make([]byte, len(data))
+			copy(sec.SkyLight, data)
+		})
+		applyLightMask(p.BlockLightMask, p.BlockLight, func(sec *level.Section, data []byte) {
+			sec.BlockLight = make([]byte, len(data))
+			copy(sec.BlockLight, data)
+		})
 
-		for localPos, stateID := range blocks {
-			blockX := localPos[0]
-			blockY := localPos[1]
-			blockZ := localPos[2]
-			blockIdx := (blockY << 8) | (blockZ << 4) | blockX
-			section.SetBlock(int(blockIdx), level.BlocksState(stateID))
+		// 將空光照標記的 section 清空，以符合協議
+		for bit := 0; bit < len(chunk.Sections); bit++ {
+			if bitSet(p.EmptySkyLightMask, bit) {
+				chunk.Sections[bit].SkyLight = nil
+			}
+			if bitSet(p.EmptyBlockLightMask, bit) {
+				chunk.Sections[bit].BlockLight = nil
+			}
 		}
 	})
 

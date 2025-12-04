@@ -2,7 +2,10 @@ package inventory
 
 import (
 	"context"
+	"fmt"
 
+	"git.konjactw.dev/falloutBot/go-mc/chat"
+	"git.konjactw.dev/falloutBot/go-mc/level/item"
 	"git.konjactw.dev/patyhank/minego/pkg/bot"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/server"
@@ -25,37 +28,37 @@ func NewManager(c bot.Client) *Manager {
 		currentContainerID: 0,
 	}
 
-	bot.AddHandler(c, func(ctx context.Context, p *client.SetContainerContent) {
-		if p.WindowID == 0 {
-			m.inventory.SetSlots(p.Slots)
+	bot.AddHandler(c, func(ctx context.Context, p *client.WindowItems) {
+		if p.WindowId == 0 {
+			m.inventory.SetSlots(convertWindowItems(p.Items))
 		} else if m.container != nil {
-			m.container.SetSlots(p.Slots)
+			m.container.SetSlots(convertWindowItems(p.Items))
 		}
-		m.c.Player().UpdateStateID(p.StateID)
+		m.c.Player().UpdateStateID(p.StateId)
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *client.ContainerSetSlot) {
-		if p.ContainerID == 0 {
-			m.inventory.SetSlot(int(p.Slot), p.ItemStack)
+	bot.AddHandler(c, func(ctx context.Context, p *client.SetSlot) {
+		if p.WindowId == 0 {
+			m.inventory.SetSlot(int(p.Slot), convertSetSlotItem(p.Item))
 		} else if m.container != nil {
-			m.container.SetSlot(int(p.Slot), p.ItemStack)
+			m.container.SetSlot(int(p.Slot), convertSetSlotItem(p.Item))
 		}
-		m.c.Player().UpdateStateID(p.StateID)
+		m.c.Player().UpdateStateID(p.StateId)
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *client.CloseContainer) {
-		if p.WindowID == m.currentContainerID {
+	bot.AddHandler(c, func(ctx context.Context, p *client.CloseWindow) {
+		if p.WindowId == m.currentContainerID {
 			m.currentContainerID = -1
 			if m.container != nil {
 				m.container = nil
 			}
 		}
 	})
-	bot.AddHandler(c, func(ctx context.Context, p *client.OpenScreen) {
-		m.currentContainerID = p.WindowID
-		m.container = NewContainer(c, p.WindowID)
+	bot.AddHandler(c, func(ctx context.Context, p *client.OpenWindow) {
+		m.currentContainerID = p.WindowId
+		m.container = NewContainer(c, p.WindowId)
 		go bot.PublishEvent(m.c, ContainerOpenEvent{
-			WindowID: p.WindowID,
-			Type:     p.WindowType,
-			Title:    p.WindowTitle,
+			WindowID: p.WindowId,
+			Type:     p.InventoryType,
+			Title:    chat.Message{Text: fmt.Sprintf("%v", p.WindowTitle)},
 		})
 	})
 
@@ -79,22 +82,36 @@ func (m *Manager) CurrentContainerID() int32 {
 
 func (m *Manager) Close() {
 	if m.currentContainerID != -1 {
-		_ = m.c.WritePacket(context.Background(), &server.ContainerClose{WindowID: m.currentContainerID})
+		_ = m.c.WritePacket(context.Background(), &server.CloseWindow{WindowId: m.currentContainerID})
 		m.currentContainerID = -1
 	} else {
-		_ = m.c.WritePacket(context.Background(), &server.ContainerClose{WindowID: 0})
+		_ = m.c.WritePacket(context.Background(), &server.CloseWindow{WindowId: 0})
 		m.currentContainerID = -1
 	}
 }
 
 // Click 點擊容器slot
 func (m *Manager) Click(id int32, slotIndex int16, mode int32, button int32) error {
-	clickPacket := &server.ContainerClick{
-		WindowID: id,
-		StateID:  m.c.Player().StateID(),
-		Slot:     slotIndex,
-		Button:   int8(button),
-		Mode:     mode,
+	clickPacket := &server.WindowClick{
+		WindowId:    id,
+		StateId:     m.c.Player().StateID(),
+		Slot:        slotIndex,
+		MouseButton: int8(button),
+		Mode:        mode,
 	}
 	return m.c.WritePacket(context.Background(), clickPacket)
+}
+
+// convertWindowItems 轉換新協議的物品格式為 slot.Slot
+func convertWindowItems(items []client.WindowItemsTemp) []slot.Slot {
+	res := make([]slot.Slot, len(items))
+	for i, it := range items {
+		res[i] = slot.Slot{Count: it.ItemCount, ItemID: item.ID(it.ItemId)}
+	}
+	return res
+}
+
+// convertSetSlotItem 將 SetSlotItem 轉換為 slot.Slot
+func convertSetSlotItem(it client.SetSlotItem) slot.Slot {
+	return slot.Slot{Count: it.ItemCount, ItemID: item.ID(it.ItemId)}
 }
