@@ -17,4 +17,4 @@ require (
 	golang.org/x/net v0.47.0
 )
 
-replace github.com/konjacbot/prismarine-go => ../prismarine-go
+replace github.com/konjacbot/prismarine-go => github.com/konenala/prismarine-go v0.0.0-20251203015614-890b84de5277
