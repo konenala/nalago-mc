@@ -88,14 +88,6 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 0:
-		var val float32
-		temp, err = (*pk.Float)(&val).ReadFrom(r)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-		p.Health = val
 	case 2:
 		var val float32
 		temp, err = (*pk.Float)(&val).ReadFrom(r)
@@ -104,6 +96,14 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 			return n, err
 		}
 		p.Health = val
+	case 0:
+		var val float32
+		temp, err = (*pk.Float)(&val).ReadFrom(r)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+		p.Health = val
 	default:
 		// 無對應負載
 	}
@@ -134,7 +134,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 4:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -144,7 +144,7 @@ func (p *BossBar) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Dividers = val
-	case 0:
+	case 4:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)

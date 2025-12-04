@@ -49,28 +49,28 @@ func (p *SoundEffect) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 1:
-		p.SoundCategory = "music"
+	case 0:
+		p.SoundCategory = "master"
 	case 2:
 		p.SoundCategory = "record"
 	case 3:
 		p.SoundCategory = "weather"
-	case 5:
-		p.SoundCategory = "hostile"
-	case 9:
-		p.SoundCategory = "voice"
-	case 10:
-		p.SoundCategory = "ui"
-	case 0:
-		p.SoundCategory = "master"
 	case 4:
 		p.SoundCategory = "block"
+	case 5:
+		p.SoundCategory = "hostile"
 	case 6:
 		p.SoundCategory = "neutral"
 	case 7:
 		p.SoundCategory = "player"
+	case 9:
+		p.SoundCategory = "voice"
+	case 1:
+		p.SoundCategory = "music"
 	case 8:
 		p.SoundCategory = "ambient"
+	case 10:
+		p.SoundCategory = "ui"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for SoundCategory", mapperVal)
 	}
@@ -126,8 +126,8 @@ func (p SoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.SoundCategory {
-	case "music":
-		temp, err = pk.VarInt(1).WriteTo(w)
+	case "master":
+		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -144,32 +144,14 @@ func (p SoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "hostile":
-		temp, err = pk.VarInt(5).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "voice":
-		temp, err = pk.VarInt(9).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "ui":
-		temp, err = pk.VarInt(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "master":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "block":
 		temp, err = pk.VarInt(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "hostile":
+		temp, err = pk.VarInt(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -186,8 +168,26 @@ func (p SoundEffect) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
+	case "voice":
+		temp, err = pk.VarInt(9).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "music":
+		temp, err = pk.VarInt(1).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
 	case "ambient":
 		temp, err = pk.VarInt(8).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "ui":
+		temp, err = pk.VarInt(10).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

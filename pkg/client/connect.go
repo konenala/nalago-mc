@@ -12,7 +12,6 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/packetid"
 
 	"git.konjactw.dev/patyhank/minego/pkg/auth"
-	"git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 )
 
 func (b *botClient) login() error {
@@ -114,17 +113,38 @@ func (b *botClient) configuration() (err error) {
 			}
 			time.Sleep(2 * time.Millisecond)
 		case packetid.ClientboundConfigResourcePackPush:
-			var pkt client.AddResourcePack
-			err = p.Scan(&pkt)
-			if err != nil {
+			var (
+				uuid      pk.UUID
+				url       pk.String
+				hash      pk.String
+				required  pk.Boolean
+				hasPrompt pk.Boolean
+				prompt    chat.Message
+			)
+			if err = p.Scan(&uuid, &url, &hash, &required, &hasPrompt); err != nil {
 				return err
 			}
-			if b.configRPHook != nil {
-				b.configRPHook(pkt.UUID)
-			} else if configResourcePackHook != nil { // fallback to global hook
-				configResourcePackHook(pkt.UUID)
+			if bool(hasPrompt) {
+				if err = p.Scan(&prompt); err != nil {
+					return err
+				}
 			}
-			u := pk.UUID(pkt.UUID)
+			req := ResourcePackRequest{
+				UUID:          uuid,
+				URL:           string(url),
+				Hash:          string(hash),
+				Forced:        bool(required),
+				PromptMessage: "",
+			}
+			if bool(hasPrompt) {
+				req.PromptMessage = prompt.String()
+			}
+			if b.configRPHook != nil {
+				b.configRPHook(req)
+			} else if configResourcePackHook != nil { // fallback to global hook
+				configResourcePackHook(req)
+			}
+			u := uuid
 			pktOut := pk.Marshal(packetid.ServerboundConfigResourcePack, u, pk.VarInt(3))
 			b.logPacket("out", pktOut)
 			if err = b.conn.WritePacket(pktOut); err != nil { // accepted

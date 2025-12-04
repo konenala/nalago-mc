@@ -29,8 +29,6 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 0:
-		p.Type = "world_surface_wg"
 	case 1:
 		p.Type = "world_surface"
 	case 2:
@@ -41,6 +39,8 @@ func (p *MapChunkHeightmapsEntry) ReadFrom(r io.Reader) (n int64, err error) {
 		p.Type = "motion_blocking"
 	case 5:
 		p.Type = "motion_blocking_no_leaves"
+	case 0:
+		p.Type = "world_surface_wg"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Type", mapperVal)
 	}
@@ -71,12 +71,6 @@ func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Type {
-	case "world_surface_wg":
-		temp, err = pk.VarInt(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "world_surface":
 		temp, err = pk.VarInt(1).WriteTo(w)
 		n += temp
@@ -103,6 +97,12 @@ func (p MapChunkHeightmapsEntry) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "motion_blocking_no_leaves":
 		temp, err = pk.VarInt(5).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "world_surface_wg":
+		temp, err = pk.VarInt(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

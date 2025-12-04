@@ -19,8 +19,8 @@ type ScoreboardScore struct {
 	DisplayName  *pk.NBTField
 	NumberFormat *int32
 	// Switch 基於 NumberFormat：
-	//   1 -> anonymousNbt
 	//   2 -> anonymousNbt
+	//   1 -> anonymousNbt
 	//   default -> void
 	Styling interface{}
 }

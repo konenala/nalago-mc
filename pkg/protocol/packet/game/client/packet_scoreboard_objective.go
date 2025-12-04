@@ -85,7 +85,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 
 	switch p.Action {
-	case 2:
+	case 0:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)
@@ -95,7 +95,7 @@ func (p *ScoreboardObjective) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 		val = int32(elem)
 		p.Type = val
-	case 0:
+	case 2:
 		var val int32
 		var elem pk.VarInt
 		temp, err = elem.ReadFrom(r)

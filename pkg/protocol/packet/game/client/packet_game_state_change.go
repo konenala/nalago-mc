@@ -35,34 +35,34 @@ func (p *GameStateChange) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 6:
-		p.Reason = "play_arrow_hit_sound"
-	case 11:
-		p.Reason = "immediate_respawn"
-	case 12:
-		p.Reason = "limited_crafting"
-	case 1:
-		p.Reason = "start_raining"
 	case 2:
 		p.Reason = "stop_raining"
+	case 4:
+		p.Reason = "win_game"
 	case 7:
 		p.Reason = "rain_level_change"
-	case 8:
-		p.Reason = "thunder_level_change"
 	case 9:
 		p.Reason = "puffer_fish_sting"
-	case 10:
-		p.Reason = "guardian_elder_effect"
-	case 13:
-		p.Reason = "level_chunks_load_start"
+	case 11:
+		p.Reason = "immediate_respawn"
 	case 0:
 		p.Reason = "no_respawn_block_available"
 	case 3:
 		p.Reason = "change_game_mode"
-	case 4:
-		p.Reason = "win_game"
 	case 5:
 		p.Reason = "demo_event"
+	case 6:
+		p.Reason = "play_arrow_hit_sound"
+	case 8:
+		p.Reason = "thunder_level_change"
+	case 10:
+		p.Reason = "guardian_elder_effect"
+	case 12:
+		p.Reason = "limited_crafting"
+	case 13:
+		p.Reason = "level_chunks_load_start"
+	case 1:
+		p.Reason = "start_raining"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Reason", mapperVal)
 	}
@@ -82,32 +82,14 @@ func (p GameStateChange) WriteTo(w io.Writer) (n int64, err error) {
 	_ = temp
 
 	switch p.Reason {
-	case "play_arrow_hit_sound":
-		temp, err = pk.UnsignedByte(6).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "immediate_respawn":
-		temp, err = pk.UnsignedByte(11).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "limited_crafting":
-		temp, err = pk.UnsignedByte(12).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "start_raining":
-		temp, err = pk.UnsignedByte(1).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "stop_raining":
 		temp, err = pk.UnsignedByte(2).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "win_game":
+		temp, err = pk.UnsignedByte(4).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -118,26 +100,14 @@ func (p GameStateChange) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "thunder_level_change":
-		temp, err = pk.UnsignedByte(8).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "puffer_fish_sting":
 		temp, err = pk.UnsignedByte(9).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "guardian_elder_effect":
-		temp, err = pk.UnsignedByte(10).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "level_chunks_load_start":
-		temp, err = pk.UnsignedByte(13).WriteTo(w)
+	case "immediate_respawn":
+		temp, err = pk.UnsignedByte(11).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
@@ -154,14 +124,44 @@ func (p GameStateChange) WriteTo(w io.Writer) (n int64, err error) {
 		if err != nil {
 			return n, err
 		}
-	case "win_game":
-		temp, err = pk.UnsignedByte(4).WriteTo(w)
+	case "demo_event":
+		temp, err = pk.UnsignedByte(5).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
 		}
-	case "demo_event":
-		temp, err = pk.UnsignedByte(5).WriteTo(w)
+	case "play_arrow_hit_sound":
+		temp, err = pk.UnsignedByte(6).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "thunder_level_change":
+		temp, err = pk.UnsignedByte(8).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "guardian_elder_effect":
+		temp, err = pk.UnsignedByte(10).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "limited_crafting":
+		temp, err = pk.UnsignedByte(12).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "level_chunks_load_start":
+		temp, err = pk.UnsignedByte(13).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "start_raining":
+		temp, err = pk.UnsignedByte(1).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err

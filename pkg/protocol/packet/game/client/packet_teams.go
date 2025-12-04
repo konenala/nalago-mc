@@ -49,16 +49,16 @@ func (p *Teams) ReadFrom(r io.Reader) (n int64, err error) {
 		return n, err
 	}
 	switch mapperVal {
-	case 4:
-		p.Mode = "leave"
-	case 0:
-		p.Mode = "add"
 	case 1:
 		p.Mode = "remove"
 	case 2:
 		p.Mode = "change"
 	case 3:
 		p.Mode = "join"
+	case 4:
+		p.Mode = "leave"
+	case 0:
+		p.Mode = "add"
 	default:
 		return n, fmt.Errorf("unknown mapper value %d for Mode", mapperVal)
 	}
@@ -83,18 +83,6 @@ func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 	}
 
 	switch p.Mode {
-	case "leave":
-		temp, err = pk.Byte(4).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
-	case "add":
-		temp, err = pk.Byte(0).WriteTo(w)
-		n += temp
-		if err != nil {
-			return n, err
-		}
 	case "remove":
 		temp, err = pk.Byte(1).WriteTo(w)
 		n += temp
@@ -109,6 +97,18 @@ func (p Teams) WriteTo(w io.Writer) (n int64, err error) {
 		}
 	case "join":
 		temp, err = pk.Byte(3).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "leave":
+		temp, err = pk.Byte(4).WriteTo(w)
+		n += temp
+		if err != nil {
+			return n, err
+		}
+	case "add":
+		temp, err = pk.Byte(0).WriteTo(w)
 		n += temp
 		if err != nil {
 			return n, err
