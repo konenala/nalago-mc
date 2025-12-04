@@ -1,6 +1,7 @@
 package world
 
 import (
+	"bytes"
 	"container/list"
 	"context"
 	"errors"
@@ -18,6 +19,7 @@ import (
 	"git.konjactw.dev/patyhank/minego/pkg/protocol/metadata"
 	cp "git.konjactw.dev/patyhank/minego/pkg/protocol/packet/game/client"
 
+	"git.konjactw.dev/falloutBot/go-mc/nbt"
 	"github.com/google/uuid"
 )
 
@@ -45,6 +47,66 @@ func NewWorld(c bot.Client) *World {
 		pos2d := level.ChunkPos{p.X, p.Z}
 		chunk := level.EmptyChunk(24)
 		_ = chunk.PutData(p.ChunkData)
+		// 高度圖
+		for _, hm := range p.Heightmaps {
+			chunk.HeightMaps = append(chunk.HeightMaps, level.HeightMap{
+				Type: int32(mapHeightmapType(hm.Type)),
+				Data: toLongSlice(hm.Data),
+			})
+		}
+		// 方塊實體（從 NBT 讀取絕對 x/z）
+		for _, be := range p.BlockEntities {
+			var raw map[string]interface{}
+			buf := &bytes.Buffer{}
+			_, _ = be.NbtData.WriteTo(buf)
+			dataBytes := buf.Bytes()
+			if err := nbt.Unmarshal(dataBytes, &raw); err == nil {
+				var x, z int32
+				switch v := raw["x"].(type) {
+				case int32:
+					x = v
+				case int:
+					x = int32(v)
+				}
+				switch v := raw["z"].(type) {
+				case int32:
+					z = v
+				case int:
+					z = int32(v)
+				}
+				chunk.BlockEntity = append(chunk.BlockEntity, level.BlockEntity{
+					XZ:   int8(((x & 0xF) << 4) | (z & 0xF)),
+					Y:    be.Y,
+					Type: block.EntityType(be.Type),
+					Data: nbt.RawMessage{Type: 0, Data: dataBytes},
+				})
+			}
+		}
+		// 光照
+		applyLightMask := func(mask []int64, lights [][]uint8, setter func(sec *level.Section, data []byte)) {
+			lightIdx := 0
+			maxSec := len(chunk.Sections)
+			for bit := 0; bit < maxSec && lightIdx < len(lights); bit++ {
+				if bitSet(mask, bit) {
+					sec := &chunk.Sections[bit]
+					data := make([]byte, len(lights[lightIdx]))
+					copy(data, lights[lightIdx])
+					setter(sec, data)
+					lightIdx++
+				}
+			}
+		}
+		applyLightMask(p.SkyLightMask, p.SkyLight, func(sec *level.Section, data []byte) { sec.SkyLight = data })
+		applyLightMask(p.BlockLightMask, p.BlockLight, func(sec *level.Section, data []byte) { sec.BlockLight = data })
+		for bit := 0; bit < len(chunk.Sections); bit++ {
+			if bitSet(p.EmptySkyLightMask, bit) {
+				chunk.Sections[bit].SkyLight = nil
+			}
+			if bitSet(p.EmptyBlockLightMask, bit) {
+				chunk.Sections[bit].BlockLight = nil
+			}
+		}
+
 		w.columns[pos2d] = chunk
 	})
 
@@ -138,8 +200,8 @@ func NewWorld(c bot.Client) *World {
 		if !ok {
 			return
 		}
-		sectionY := ly >> 4
-		if sectionY < 0 || int(sectionY) >= len(chunk.Sections) {
+		sectionY := sectionIndex(int32(ly >> 4))
+		if sectionY < 0 || sectionY >= len(chunk.Sections) {
 			return
 		}
 		section := chunk.Sections[sectionY]
@@ -152,23 +214,23 @@ func NewWorld(c bot.Client) *World {
 		w.chunkLock.Lock()
 		defer w.chunkLock.Unlock()
 
-		chunkX, chunkZ := decodeChunkXZ(int64(p.ChunkCoordinates))
-		pos2d := level.ChunkPos{int32(chunkX), int32(chunkZ)}
+		chunkX, chunkY, chunkZ := decodeChunkSectionPos(int64(p.ChunkCoordinates))
+		pos2d := level.ChunkPos{chunkX, chunkZ}
 		chunk, ok := w.columns[pos2d]
 		if !ok {
 			return
 		}
+		secIdx := sectionIndex(chunkY)
+		if secIdx < 0 || secIdx >= len(chunk.Sections) {
+			return
+		}
+		section := chunk.Sections[secIdx]
 		for _, rec := range p.Records {
 			stateID := rec >> 12
 			lpos := rec & 0xFFF
 			lx := (lpos >> 8) & 0xF
 			lz := (lpos >> 4) & 0xF
 			ly := lpos & 0xF
-			sectionY := int32(ly >> 4) // always 0..0 for section-local; keep 0
-			if sectionY < 0 || int(sectionY) >= len(chunk.Sections) {
-				continue
-			}
-			section := chunk.Sections[sectionY]
 			blockIdx := (int(ly&15) << 8) | (int(lz) << 4) | int(lx)
 			section.SetBlock(blockIdx, level.BlocksState(stateID))
 		}
@@ -382,6 +444,34 @@ func (w *World) GetEntitiesByType(entityType int32) []bot.Entity {
 		}
 	}
 	return entities
+}
+
+// mapHeightmapType 對應 minecraft-data 的 heightmap 名稱
+func mapHeightmapType(t string) int {
+	switch t {
+	case "world_surface_wg":
+		return 0
+	case "world_surface":
+		return 1
+	case "ocean_floor_wg":
+		return 2
+	case "ocean_floor":
+		return 3
+	case "motion_blocking":
+		return 4
+	case "motion_blocking_no_leaves":
+		return 5
+	default:
+		return -1
+	}
+}
+
+func toLongSlice(in []int64) []pk.Long {
+	out := make([]pk.Long, len(in))
+	for i, v := range in {
+		out[i] = pk.Long(v)
+	}
+	return out
 }
 
 func abs[T constraints.Signed | constraints.Float](x T) T {

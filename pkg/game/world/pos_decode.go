@@ -34,3 +34,20 @@ func bitSet(mask []int64, idx int) bool {
 	}
 	return (mask[word] & (1 << bit)) != 0
 }
+
+// chunkSectionPos long: 21 bits each for x,y,z (two's complement)
+func decodeChunkSectionPos(v int64) (x, y, z int32) {
+	x = int32(v >> 42)
+	y = int32((v << 22) >> 43) // shift to keep sign
+	z = int32((v << 43) >> 43)
+	return
+}
+
+// sectionIndex 把 chunk section Y 轉為 slice index，假設 chunk 覆蓋 -64..319 (24 sections)
+func sectionIndex(chunkY int32) int {
+	idx := int(chunkY + 4) // -64/16 = -4
+	if idx < 0 || idx >= 24 {
+		return -1
+	}
+	return idx
+}
